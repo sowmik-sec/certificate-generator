@@ -15,6 +15,7 @@ export interface FabricCanvasApi {
   exportSVG: () => string;
   exportJSON: () => Record<string, unknown>;
   loadFromJSON: (json: Record<string, unknown>) => void;
+  getCanvas: () => fabric.Canvas | null;
 }
 
 // Default options for added text
@@ -143,6 +144,7 @@ const FabricCanvas = forwardRef<FabricCanvasApi, object>((props, ref) => {
         fabricCanvasRef.current?.renderAll();
       });
     },
+    getCanvas: () => fabricCanvasRef.current,
   }));
 
   return (
