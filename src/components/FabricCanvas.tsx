@@ -1,28 +1,32 @@
-
-import React, { useRef, useEffect, useImperativeHandle, forwardRef } from 'react';
-import { fabric } from 'fabric';
+import React, {
+  useRef,
+  useEffect,
+  useImperativeHandle,
+  forwardRef,
+} from "react";
+import * as fabric from 'fabric';
 
 // TypeScript interface for the exposed API
 export interface FabricCanvasApi {
-  addText: (text: string, options?: fabric.ITextboxOptions) => void;
+  addText: (text: string, options?: fabric.TextboxProps) => void;
   addImageFromFile: (file: File) => void;
   addImageFromUrl: (url: string) => void;
   exportPNG: () => string;
   exportSVG: () => string;
-  exportJSON: () => Record<string, any>;
-  loadFromJSON: (json: Record<string, any>) => void;
+  exportJSON: () => Record<string, unknown>;
+  loadFromJSON: (json: Record<string, unknown>) => void;
 }
 
 // Default options for added text
-const defaultTextOptions: fabric.ITextboxOptions = {
+const defaultTextOptions: Partial<fabric.TextboxProps> = {
   left: 50,
   top: 50,
   width: 200,
   fontSize: 20,
-  fill: '#000000',
+  fill: "#000000",
 };
 
-const FabricCanvas = forwardRef<FabricCanvasApi, {}>((props, ref) => {
+const FabricCanvas = forwardRef<FabricCanvasApi, object>((props, ref) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fabricCanvasRef = useRef<fabric.Canvas | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -34,7 +38,7 @@ const FabricCanvas = forwardRef<FabricCanvasApi, {}>((props, ref) => {
       const canvas = new fabric.Canvas(canvasRef.current, {
         width: container.offsetWidth,
         height: (container.offsetWidth * 8.5) / 11, // Maintain 11x8.5 aspect ratio
-        backgroundColor: '#ffffff',
+        backgroundColor: "#ffffff",
       });
       fabricCanvasRef.current = canvas;
 
@@ -47,11 +51,11 @@ const FabricCanvas = forwardRef<FabricCanvasApi, {}>((props, ref) => {
         }
       };
 
-      window.addEventListener('resize', handleResize);
+      window.addEventListener("resize", handleResize);
 
       // Cleanup function
       return () => {
-        window.removeEventListener('resize', handleResize);
+        window.removeEventListener("resize", handleResize);
         fabricCanvasRef.current?.dispose();
         fabricCanvasRef.current = null;
       };
@@ -86,7 +90,7 @@ const FabricCanvas = forwardRef<FabricCanvasApi, {}>((props, ref) => {
       const reader = new FileReader();
       reader.onload = (e) => {
         if (e.target?.result) {
-          fabric.Image.fromURL(e.target.result as string, (img) => {
+          fabric.Image.fromURL(e.target.result as string).then((img) => {
             fabricCanvasRef.current?.add(img);
             fabricCanvasRef.current?.renderAll();
           });
@@ -100,10 +104,10 @@ const FabricCanvas = forwardRef<FabricCanvasApi, {}>((props, ref) => {
      * @param url - The URL of the image.
      */
     addImageFromUrl: (url) => {
-      fabric.Image.fromURL(url, (img) => {
+      fabric.Image.fromURL(url, { crossOrigin: "anonymous" }).then((img) => {
         fabricCanvasRef.current?.add(img);
         fabricCanvasRef.current?.renderAll();
-      }, { crossOrigin: 'anonymous' });
+      });
     },
 
     /**
@@ -111,7 +115,7 @@ const FabricCanvas = forwardRef<FabricCanvasApi, {}>((props, ref) => {
      * @returns The PNG data URL.
      */
     exportPNG: () => {
-      return fabricCanvasRef.current?.toDataURL({ format: 'png' }) || '';
+      return fabricCanvasRef.current?.toDataURL({ format: "png", multiplier: 1 }) || "";
     },
 
     /**
@@ -119,7 +123,7 @@ const FabricCanvas = forwardRef<FabricCanvasApi, {}>((props, ref) => {
      * @returns The SVG string.
      */
     exportSVG: () => {
-      return fabricCanvasRef.current?.toSVG() || '';
+      return fabricCanvasRef.current?.toSVG() || "";
     },
 
     /**
@@ -142,12 +146,12 @@ const FabricCanvas = forwardRef<FabricCanvasApi, {}>((props, ref) => {
   }));
 
   return (
-    <div ref={containerRef} style={{ width: '100%', height: 'auto' }}>
+    <div ref={containerRef} style={{ width: "100%", height: "auto" }}>
       <canvas ref={canvasRef} />
     </div>
   );
 });
 
-FabricCanvas.displayName = 'FabricCanvas';
+FabricCanvas.displayName = "FabricCanvas";
 
 export default FabricCanvas;
