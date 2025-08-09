@@ -63,6 +63,24 @@ const FabricCanvas = forwardRef<FabricCanvasApi, object>((props, ref) => {
     }
   }, []);
 
+  const scaleAndCenterImage = (img: fabric.Image) => {
+    const canvas = fabricCanvasRef.current;
+    if (!canvas) return;
+
+    const canvasWidth = canvas.getWidth();
+    const canvasHeight = canvas.getHeight();
+    const scale = (canvasWidth * 0.6) / (img.width || 1);
+
+    img.scale(scale);
+    img.set({
+      left: (canvasWidth - img.getScaledWidth()) / 2,
+      top: (canvasHeight - img.getScaledHeight()) / 2,
+    });
+    canvas.add(img);
+    canvas.setActiveObject(img);
+    canvas.renderAll();
+  };
+
   // Expose canvas manipulation methods
   useImperativeHandle(ref, () => ({
     /**
@@ -92,8 +110,7 @@ const FabricCanvas = forwardRef<FabricCanvasApi, object>((props, ref) => {
       reader.onload = (e) => {
         if (e.target?.result) {
           fabric.Image.fromURL(e.target.result as string).then((img) => {
-            fabricCanvasRef.current?.add(img);
-            fabricCanvasRef.current?.renderAll();
+            scaleAndCenterImage(img);
           });
         }
       };
@@ -106,8 +123,7 @@ const FabricCanvas = forwardRef<FabricCanvasApi, object>((props, ref) => {
      */
     addImageFromUrl: (url) => {
       fabric.Image.fromURL(url, { crossOrigin: "anonymous" }).then((img) => {
-        fabricCanvasRef.current?.add(img);
-        fabricCanvasRef.current?.renderAll();
+        scaleAndCenterImage(img);
       });
     },
 
