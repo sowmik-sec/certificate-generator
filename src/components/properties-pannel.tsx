@@ -26,11 +26,23 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
   useEffect(() => {
     if (selectedObject) {
       setAttributes({
-        fill: selectedObject.fill || "#000000",
-        fontFamily: selectedObject.fontFamily || "Arial",
-        fontSize: selectedObject.fontSize || 40,
+        fill:
+          typeof selectedObject.fill === "string"
+            ? selectedObject.fill
+            : "#000000",
+        fontFamily:
+          selectedObject.type === "textbox" && "fontFamily" in selectedObject
+            ? (selectedObject as any).fontFamily || "Arial"
+            : "Arial",
+        fontSize:
+          selectedObject.type === "textbox" && "fontSize" in selectedObject
+            ? (selectedObject as any).fontSize || 40
+            : 40,
         opacity: selectedObject.opacity ?? 1,
-        stroke: selectedObject.stroke || "#333333",
+        stroke:
+          typeof selectedObject.stroke === "string"
+            ? selectedObject.stroke
+            : "#333333",
         strokeWidth: selectedObject.strokeWidth || 4,
       });
     }
@@ -40,14 +52,30 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
     if (!canvas || !selectedObject) return;
     setAttributes((prev) => ({ ...prev, [prop]: value }));
     if (selectedObject.type === "group") {
-      selectedObject.forEachObject((obj: any) => {
-        if (prop === "stroke") {
-          obj.set("stroke", value);
-          if (obj.type === "triangle") obj.set("fill", value);
-        } else {
-          obj.set(prop, value);
-        }
-      });
+      // Cast selectedObject to fabric.Group to access forEachObject
+      if (
+        "forEachObject" in selectedObject &&
+        typeof (selectedObject as any).forEachObject === "function"
+      ) {
+        (selectedObject as any).forEachObject((obj: any) => {
+          if (prop === "stroke") {
+            obj.set("stroke", value);
+            if (obj.type === "triangle") obj.set("fill", value);
+          } else {
+            obj.set(prop, value);
+          }
+        });
+      } else if (Array.isArray((selectedObject as any)._objects)) {
+        // Fallback for group objects
+        (selectedObject as any)._objects.forEach((obj: any) => {
+          if (prop === "stroke") {
+            obj.set("stroke", value);
+            if (obj.type === "triangle") obj.set("fill", value);
+          } else {
+            obj.set(prop, value);
+          }
+        });
+      }
     } else {
       selectedObject.set(prop, value);
     }
