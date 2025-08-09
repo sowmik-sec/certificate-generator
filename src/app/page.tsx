@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   Dna,
   Image as ImageIcon,
@@ -37,6 +37,7 @@ export default function CertificateGeneratorPage() {
   const [selectedObject, setSelectedObject] = useState<FabricObject>(null);
   const [editorMode, setEditorMode] = useState<EditorMode>("templates");
   const [copiedObject, setCopiedObject] = useState<FabricObject>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
 
   // Dynamically load Fabric.js from a CDN
   useEffect(() => {
@@ -335,7 +336,9 @@ export default function CertificateGeneratorPage() {
     });
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleBackgroundImageUpload = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = e.target.files?.[0];
     if (!file || !canvas || !fabric) return;
 
@@ -353,6 +356,22 @@ export default function CertificateGeneratorPage() {
       }
     };
     reader.readAsDataURL(file);
+    if (e.target) e.target.value = "";
+  };
+
+  const handleImageElementUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (f) => {
+      const data = f.target?.result;
+      if (typeof data === "string") {
+        addImageFromURL(data);
+      }
+    };
+    reader.readAsDataURL(file);
+    if (e.target) e.target.value = "";
   };
 
   const generateAITemplate = async (userPrompt: string) => {
@@ -429,6 +448,13 @@ export default function CertificateGeneratorPage() {
 
   return (
     <div className="flex flex-col md:flex-row h-screen w-screen bg-gray-100 font-sans">
+      <input
+        type="file"
+        accept="image/*"
+        ref={imageInputRef}
+        className="hidden"
+        onChange={handleImageElementUpload}
+      />
       <aside className="w-full md:w-20 bg-gray-800 text-white flex md:flex-col items-center p-2 md:py-4">
         <div className="text-2xl font-bold mr-auto md:mr-0 md:mb-8">CG</div>
         <nav className="flex flex-row md:flex-col space-x-2 md:space-x-0 md:space-y-4">
@@ -469,11 +495,7 @@ export default function CertificateGeneratorPage() {
             <Type size={24} />
           </button>
           <button
-            onClick={() =>
-              addImageFromURL(
-                "https://placehold.co/200x200/EFEFEF/AAAAAA?text=Your+Image"
-              )
-            }
+            onClick={() => imageInputRef.current?.click()}
             className={`p-2 rounded-lg hover:bg-gray-700`}
             title="Add Image"
           >
@@ -495,7 +517,7 @@ export default function CertificateGeneratorPage() {
         {editorMode === "templates" && (
           <TemplatesPanel
             onSelectTemplate={loadTemplate}
-            onImageUpload={handleImageUpload}
+            onImageUpload={handleBackgroundImageUpload}
           />
         )}
         {editorMode === "ai-tools" && (
