@@ -7,7 +7,7 @@ import { useCallback, useEffect, useRef } from "react";
 interface CanvasComponentProps {
   fabric: FabricModule;
   setCanvas: (canvas: any) => void;
-  setSelectedObject: (obj: FabricObject) => void;
+  setSelectedObject: (obj: FabricObject | null) => void;
 }
 const CanvasComponent: React.FC<CanvasComponentProps> = ({
   fabric,
