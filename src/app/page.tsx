@@ -6,6 +6,8 @@ import ToolbarText from '../components/ToolbarText';
 
 import ImageUploader from '../components/ImageUploader';
 
+import TemplatePicker from '../components/TemplatePicker';
+
 export default function Home() {
   const fabricCanvasRef = useRef<FabricCanvasApi>(null);
 
@@ -14,6 +16,7 @@ export default function Home() {
       <div style={{ flex: 1, borderRight: '1px solid #ccc', padding: '10px' }}>
         <ToolbarText fabricCanvasRef={fabricCanvasRef} />
         <ImageUploader fabricCanvasRef={fabricCanvasRef} />
+        <TemplatePicker fabricCanvasRef={fabricCanvasRef} />
       </div>
       <div style={{ flex: 3, padding: '10px' }}>
         <FabricCanvas ref={fabricCanvasRef} />
