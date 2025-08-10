@@ -33,7 +33,7 @@ const TemplatesPanel: React.FC<TemplatesPanelProps> = ({
           accept="image/*"
           ref={fileInputRef}
           onChange={onImageUpload}
-          className="hidden"
+          className="hidden text-gray-700"
         />
         <button
           onClick={() => fileInputRef.current?.click()}

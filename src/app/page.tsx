@@ -5,10 +5,10 @@ import {
   Dna,
   Image as ImageIcon,
   Type,
-  Square,
   Download,
   Trash2,
   Wrench,
+  Component,
 } from "lucide-react";
 import TemplatesPanel from "@/components/templates-pannel";
 import ElementsPanel from "@/components/elements-pannel";
@@ -21,12 +21,7 @@ import PropertiesPanel from "@/components/properties-pannel";
 export type FabricModule = any;
 export type FabricObject = any;
 export type FabricCanvas = any;
-export type EditorMode =
-  | "templates"
-  | "elements"
-  | "text"
-  | "ai-tools"
-  | "tools";
+export type EditorMode = "templates" | "elements" | "text" | "tools";
 
 // Main App Component
 export default function CertificateGeneratorPage() {
@@ -164,7 +159,7 @@ export default function CertificateGeneratorPage() {
     canvas.renderAll();
   };
 
-  const addDottedLine = (options = {}) =>
+  const addDashedLine = (options = {}) =>
     addLine({ strokeDashArray: [10, 5], ...options });
 
   const addArrowLine = (options: { stroke?: string } = {}) => {
@@ -395,7 +390,7 @@ export default function CertificateGeneratorPage() {
         type="file"
         accept="image/*"
         ref={imageInputRef}
-        className="hidden"
+        className="hidden text-gray-700"
         onChange={handleImageElementUpload}
       />
       <aside className="w-full md:w-20 bg-gray-800 text-white flex md:flex-col items-center p-2 md:py-4">
@@ -443,7 +438,7 @@ export default function CertificateGeneratorPage() {
             }`}
             title="Elements"
           >
-            <Square size={24} />
+            <Component size={24} />
           </button>
         </nav>
       </aside>
@@ -462,7 +457,7 @@ export default function CertificateGeneratorPage() {
             addCircle={addCircle}
             addTriangle={addTriangle}
             addLine={addLine}
-            addDottedLine={addDottedLine}
+            addDashedLine={addDashedLine}
             addArrowLine={addArrowLine}
           />
         )}

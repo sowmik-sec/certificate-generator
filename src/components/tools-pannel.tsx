@@ -65,7 +65,7 @@ const ToolsPanel: React.FC<ToolsPanelProps> = ({
               type="color"
               value={brushColor}
               onChange={(e) => setBrushColor(e.target.value)}
-              className="mt-1 block w-full h-10 rounded-md border-gray-300 shadow-sm"
+              className="mt-1 block w-full h-10 rounded-md border-gray-300 shadow-sm text-gray-700"
             />
           </div>
           <div>

@@ -7,7 +7,7 @@ interface ElementsPanelProps {
   addCircle: () => void;
   addTriangle: () => void;
   addLine: (options?: { stroke?: string; strokeDashArray?: number[] }) => void;
-  addDottedLine: (options?: { stroke?: string }) => void;
+  addDashedLine: (options?: { stroke?: string }) => void;
   addArrowLine: (options?: { stroke?: string }) => void;
 }
 const ElementsPanel: React.FC<ElementsPanelProps> = ({
@@ -15,7 +15,7 @@ const ElementsPanel: React.FC<ElementsPanelProps> = ({
   addCircle,
   addTriangle,
   addLine,
-  addDottedLine,
+  addDashedLine,
   addArrowLine,
 }) => {
   const [lineColor, setLineColor] = useState("#333333");
@@ -45,7 +45,7 @@ const ElementsPanel: React.FC<ElementsPanelProps> = ({
       action: () => addLine({ stroke: lineColor }),
     },
     {
-      name: "Dotted Line",
+      name: "Dashed Line",
       icon: (
         <svg
           width="40"
@@ -61,7 +61,7 @@ const ElementsPanel: React.FC<ElementsPanelProps> = ({
           />
         </svg>
       ),
-      action: () => addDottedLine({ stroke: lineColor }),
+      action: () => addDashedLine({ stroke: lineColor }),
     },
     {
       name: "Arrow",
@@ -97,7 +97,7 @@ const ElementsPanel: React.FC<ElementsPanelProps> = ({
             type="color"
             value={lineColor}
             onChange={(e) => setLineColor(e.target.value)}
-            className="w-full h-10 rounded-md border-gray-300 shadow-sm cursor-pointer"
+            className="w-full h-10 rounded-md border-gray-300 shadow-sm cursor-pointer text-gray-700"
           />
         </div>
         <div className="grid grid-cols-2 gap-4">
