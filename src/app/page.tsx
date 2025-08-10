@@ -187,6 +187,43 @@ export default function CertificateGeneratorPage() {
     canvas.renderAll();
   };
 
+  const addZigzagLine = (options: { stroke?: string } = {}) => {
+    if (!canvas || !fabric) return;
+    const defaultStroke = "#333333";
+    const strokeColor = options.stroke || defaultStroke;
+
+    const zigzagPath =
+      "M 50 50 L 75 25 L 100 50 L 125 25 L 150 50 L 175 25 L 200 50";
+    const zigzag = new fabric.Path(zigzagPath, {
+      left: 200,
+      top: 200,
+      stroke: strokeColor,
+      strokeWidth: 4,
+      fill: "",
+    });
+    canvas.add(zigzag);
+    canvas.setActiveObject(zigzag);
+    canvas.renderAll();
+  };
+
+  const addWavyLine = (options: { stroke?: string } = {}) => {
+    if (!canvas || !fabric) return;
+    const defaultStroke = "#333333";
+    const strokeColor = options.stroke || defaultStroke;
+
+    const wavyPath = "M 50 50 Q 75 25, 100 50 T 150 50 T 200 50";
+    const wavy = new fabric.Path(wavyPath, {
+      left: 200,
+      top: 200,
+      stroke: strokeColor,
+      strokeWidth: 4,
+      fill: "",
+    });
+    canvas.add(wavy);
+    canvas.setActiveObject(wavy);
+    canvas.renderAll();
+  };
+
   const addStickyNote = () => {
     if (!canvas || !fabric) return;
     const noteBg = new fabric.Rect({
@@ -459,6 +496,8 @@ export default function CertificateGeneratorPage() {
             addLine={addLine}
             addDashedLine={addDashedLine}
             addArrowLine={addArrowLine}
+            addZigzagLine={addZigzagLine}
+            addWavyLine={addWavyLine}
           />
         )}
         {editorMode === "text" && (

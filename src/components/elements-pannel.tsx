@@ -9,6 +9,8 @@ interface ElementsPanelProps {
   addLine: (options?: { stroke?: string; strokeDashArray?: number[] }) => void;
   addDashedLine: (options?: { stroke?: string }) => void;
   addArrowLine: (options?: { stroke?: string }) => void;
+  addZigzagLine: (options?: { stroke?: string }) => void;
+  addWavyLine: (options?: { stroke?: string }) => void;
 }
 const ElementsPanel: React.FC<ElementsPanelProps> = ({
   addSquare,
@@ -17,6 +19,8 @@ const ElementsPanel: React.FC<ElementsPanelProps> = ({
   addLine,
   addDashedLine,
   addArrowLine,
+  addZigzagLine,
+  addWavyLine,
 }) => {
   const [lineColor, setLineColor] = useState("#333333");
 
@@ -83,6 +87,46 @@ const ElementsPanel: React.FC<ElementsPanelProps> = ({
         </svg>
       ),
       action: () => addArrowLine({ stroke: lineColor }),
+    },
+    {
+      name: "Zigzag Line",
+      icon: (
+        <svg
+          width="40"
+          height="40"
+          viewBox="0 0 40 40"
+          className="text-gray-700"
+        >
+          <path
+            d="M5 35 L10 5 L20 35 L30 5 L35 35"
+            stroke="currentColor"
+            strokeWidth="4"
+            fill="none"
+            strokeLinecap="round"
+          />
+        </svg>
+      ),
+      action: () => addZigzagLine({ stroke: lineColor }),
+    },
+    {
+      name: "Wavy Line",
+      icon: (
+        <svg
+          width="40"
+          height="40"
+          viewBox="0 0 40 40"
+          className="text-gray-700"
+        >
+          <path
+            d="M5 20 Q10 5, 15 20 T25 20 T35 20"
+            stroke="currentColor"
+            strokeWidth="4"
+            fill="none"
+            strokeLinecap="round"
+          />
+        </svg>
+      ),
+      action: () => addWavyLine({ stroke: lineColor }),
     },
   ];
   return (
