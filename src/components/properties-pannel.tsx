@@ -180,7 +180,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
             onChange={(e) =>
               handlePropertyChange("strokeWidth", parseInt(e.target.value, 10))
             }
-            className="mt-1 block w-full pl-3 pr-3 py-2 text-base border-gray-300 rounded-md"
+            className="mt-1 block w-full pl-3 pr-3 py-2 text-base border-gray-300 rounded-md text-gray-700"
           />
         </div>
       )}

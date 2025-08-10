@@ -164,18 +164,22 @@ export default function CertificateGeneratorPage() {
     canvas.renderAll();
   };
 
-  const addDottedLine = () => addLine({ strokeDashArray: [10, 5] });
+  const addDottedLine = (options = {}) =>
+    addLine({ strokeDashArray: [10, 5], ...options });
 
-  const addArrowLine = () => {
+  const addArrowLine = (options: { stroke?: string } = {}) => {
     if (!canvas || !fabric) return;
+    const defaultStroke = "#333333";
+    const strokeColor = options.stroke || defaultStroke;
+
     const line = new fabric.Line([50, 50, 250, 50], {
-      stroke: "#333333",
+      stroke: strokeColor,
       strokeWidth: 4,
     });
     const arrowhead = new fabric.Triangle({
       width: 15,
       height: 20,
-      fill: "#333333",
+      fill: strokeColor,
       left: 250,
       top: 50,
       originX: "center",

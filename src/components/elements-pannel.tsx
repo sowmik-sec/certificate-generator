@@ -1,13 +1,14 @@
 "use client";
 import { Circle, Minus, Square, Triangle } from "lucide-react";
+import { useState } from "react";
 
 interface ElementsPanelProps {
   addSquare: () => void;
   addCircle: () => void;
   addTriangle: () => void;
-  addLine: () => void;
-  addDottedLine: () => void;
-  addArrowLine: () => void;
+  addLine: (options?: { stroke?: string; strokeDashArray?: number[] }) => void;
+  addDottedLine: (options?: { stroke?: string }) => void;
+  addArrowLine: (options?: { stroke?: string }) => void;
 }
 const ElementsPanel: React.FC<ElementsPanelProps> = ({
   addSquare,
@@ -17,6 +18,8 @@ const ElementsPanel: React.FC<ElementsPanelProps> = ({
   addDottedLine,
   addArrowLine,
 }) => {
+  const [lineColor, setLineColor] = useState("#333333");
+
   const shapes = [
     {
       name: "Square",
@@ -34,11 +37,12 @@ const ElementsPanel: React.FC<ElementsPanelProps> = ({
       action: addTriangle,
     },
   ];
+
   const lines = [
     {
       name: "Line",
       icon: <Minus size={40} className="text-gray-700" />,
-      action: addLine,
+      action: () => addLine({ stroke: lineColor }),
     },
     {
       name: "Dotted Line",
@@ -57,7 +61,7 @@ const ElementsPanel: React.FC<ElementsPanelProps> = ({
           />
         </svg>
       ),
-      action: addDottedLine,
+      action: () => addDottedLine({ stroke: lineColor }),
     },
     {
       name: "Arrow",
@@ -78,13 +82,24 @@ const ElementsPanel: React.FC<ElementsPanelProps> = ({
           />
         </svg>
       ),
-      action: addArrowLine,
+      action: () => addArrowLine({ stroke: lineColor }),
     },
   ];
   return (
     <div className="space-y-6">
       <div>
         <h3 className="text-lg font-semibold mb-4">Lines</h3>
+        <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Line Color
+          </label>
+          <input
+            type="color"
+            value={lineColor}
+            onChange={(e) => setLineColor(e.target.value)}
+            className="w-full h-10 rounded-md border-gray-300 shadow-sm cursor-pointer"
+          />
+        </div>
         <div className="grid grid-cols-2 gap-4">
           {lines.map((line) => (
             <button
