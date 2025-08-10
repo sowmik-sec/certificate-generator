@@ -399,17 +399,6 @@ const ElementsPanel: React.FC<ElementsPanelProps> = ({
     <div className="space-y-6">
       <div>
         <h3 className="text-lg font-semibold mb-4">Lines</h3>
-        <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Line Color
-          </label>
-          <input
-            type="color"
-            value={lineColor}
-            onChange={(e) => setLineColor(e.target.value)}
-            className="w-full h-10 rounded-md border-gray-300 shadow-sm cursor-pointer text-gray-700"
-          />
-        </div>
         <div className="grid grid-cols-3 gap-3">
           {lines.map((line) => (
             <button
