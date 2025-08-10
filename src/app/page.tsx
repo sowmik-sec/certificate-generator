@@ -21,7 +21,12 @@ import PropertiesPanel from "@/components/properties-pannel";
 export type FabricModule = any;
 export type FabricObject = any;
 export type FabricCanvas = any;
-export type EditorMode = "templates" | "elements" | "text" | "tools";
+export type EditorMode =
+  | "templates"
+  | "elements"
+  | "text"
+  | "ai-tools"
+  | "tools";
 
 // Main App Component
 export default function CertificateGeneratorPage() {
@@ -197,6 +202,7 @@ export default function CertificateGeneratorPage() {
       left: 10,
       fontSize: 20,
       fontFamily: "Georgia",
+      fill: "#000000",
     });
     const group = new fabric.Group([noteBg, noteText], { left: 150, top: 150 });
     canvas.add(group);
@@ -228,6 +234,8 @@ export default function CertificateGeneratorPage() {
           left: j * cellWidth + cellPadding / 2,
           top: i * cellHeight + cellPadding / 2,
           fontSize: 16,
+          fill: "#000000",
+          fontFamily: "Arial",
         });
         tableObjects.push(cell, text);
       }
@@ -398,6 +406,7 @@ export default function CertificateGeneratorPage() {
           >
             <Dna size={24} />
           </button>
+
           <button
             onClick={() => setEditorMode("tools")}
             className={`p-2 rounded-lg ${

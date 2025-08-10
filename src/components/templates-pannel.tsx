@@ -56,7 +56,9 @@ const TemplatesPanel: React.FC<TemplatesPanelProps> = ({
             <div className="h-32 bg-gray-300 flex items-center justify-center text-gray-500">
               {template.name} Certificate
             </div>
-            <p className="text-center mt-2 text-sm">{template.name}</p>
+            <p className="text-center mt-2 text-sm text-gray-800">
+              {template.name}
+            </p>
           </div>
         ))}
       </div>
