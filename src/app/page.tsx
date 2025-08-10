@@ -8,11 +8,9 @@ import {
   Square,
   Download,
   Trash2,
-  Sparkles,
   Wrench,
 } from "lucide-react";
 import TemplatesPanel from "@/components/templates-pannel";
-import AIToolsPanel from "@/components/ai-tools-pannel";
 import ElementsPanel from "@/components/elements-pannel";
 import TextPanel from "@/components/text-pannel";
 import ToolsPanel from "@/components/tools-pannel";
@@ -23,12 +21,7 @@ import PropertiesPanel from "@/components/properties-pannel";
 export type FabricModule = any;
 export type FabricObject = any;
 export type FabricCanvas = any;
-export type EditorMode =
-  | "templates"
-  | "elements"
-  | "text"
-  | "ai-tools"
-  | "tools";
+export type EditorMode = "templates" | "elements" | "text" | "tools";
 
 // Main App Component
 export default function CertificateGeneratorPage() {
@@ -374,68 +367,6 @@ export default function CertificateGeneratorPage() {
     if (e.target) e.target.value = "";
   };
 
-  const generateAITemplate = async (userPrompt: string) => {
-    if (!canvas || !fabric) return;
-    const systemPrompt = `You are an expert certificate designer. A user wants a certificate for: "${userPrompt}". Your task is to generate a complete certificate design as a JSON object that conforms to the Fabric.js canvas format (version 5.3.0). The canvas size is 800x566. The JSON should include: 1. A "background" color (e.g., "#ffffff"). 2. An "objects" array containing Fabric.js objects (like 'rect', 'textbox'). For each object, include properties like 'type', 'left', 'top', 'width', 'height', 'fill', 'fontFamily', 'fontSize', 'text', 'textAlign', etc. Use common and web-safe fonts like 'Arial', 'Georgia', 'Times New Roman', 'Verdana', 'Courier New'. Ensure text elements are well-placed and legible. Use placeholder text like "[Recipient Name]", "[Course Name]", "[Date]", etc. where appropriate. Be creative with shapes ('rect') to add borders or decorative elements. Make sure the design is professional and aesthetically pleasing. Respond with ONLY the valid JSON object. Do not include any other text or markdown formatting.`;
-
-    canvas.clear();
-    const loadingText = new fabric.Textbox(
-      "✨ Generating your certificate with AI...",
-      {
-        left: 400,
-        top: 283,
-        width: 500,
-        fontSize: 24,
-        fontFamily: "Arial",
-        fill: "#888888",
-        originX: "center",
-        originY: "center",
-      }
-    );
-    canvas.add(loadingText);
-    canvas.renderAll();
-
-    try {
-      const payload = {
-        contents: [{ role: "user", parts: [{ text: systemPrompt }] }],
-        generationConfig: { responseMimeType: "application/json" },
-      };
-      const apiKey = "";
-      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
-      const response = await fetch(apiUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      if (!response.ok)
-        throw new Error(`API call failed with status: ${response.status}`);
-      const result = await response.json();
-      const jsonText = result.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (jsonText) {
-        loadTemplate(JSON.parse(jsonText));
-      } else {
-        throw new Error("Invalid response from AI");
-      }
-    } catch (error) {
-      console.error("Error generating AI template:", error);
-      canvas.clear();
-      const errorText = new fabric.Textbox(
-        "Sorry, something went wrong. Please try again.",
-        {
-          left: 400,
-          top: 283,
-          width: 500,
-          fontSize: 20,
-          fill: "#ff0000",
-          originX: "center",
-          originY: "center",
-        }
-      );
-      canvas.add(errorText);
-      canvas.renderAll();
-    }
-  };
-
   if (!fabric) {
     return (
       <div className="flex h-screen w-screen items-center justify-center bg-gray-100">
@@ -466,15 +397,6 @@ export default function CertificateGeneratorPage() {
             title="Templates"
           >
             <Dna size={24} />
-          </button>
-          <button
-            onClick={() => setEditorMode("ai-tools")}
-            className={`p-2 rounded-lg ${
-              editorMode === "ai-tools" ? "bg-purple-500" : "hover:bg-gray-700"
-            }`}
-            title="AI Tools"
-          >
-            <Sparkles size={24} />
           </button>
           <button
             onClick={() => setEditorMode("tools")}
@@ -520,14 +442,7 @@ export default function CertificateGeneratorPage() {
             onImageUpload={handleBackgroundImageUpload}
           />
         )}
-        {editorMode === "ai-tools" && (
-          <AIToolsPanel
-            generateAITemplate={generateAITemplate}
-            canvas={canvas}
-            addImageFromURL={addImageFromURL}
-            selectedObject={selectedObject}
-          />
-        )}
+
         {editorMode === "elements" && (
           <ElementsPanel
             addSquare={addSquare}

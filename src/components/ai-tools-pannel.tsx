@@ -120,7 +120,7 @@ const AIToolsPanel: React.FC<AIToolsPanelProps> = ({
           value={templatePrompt}
           onChange={(e) => setTemplatePrompt(e.target.value)}
           placeholder="e.g., A formal certificate for a business award"
-          className="w-full p-2 border rounded-md h-24"
+          className="w-full p-2 border rounded-md h-24 text-black"
           disabled={isGeneratingTemplate}
         />
         <button
@@ -141,7 +141,7 @@ const AIToolsPanel: React.FC<AIToolsPanelProps> = ({
           value={imagePrompt}
           onChange={(e) => setImagePrompt(e.target.value)}
           placeholder="e.g., A golden laurel wreath logo"
-          className="w-full p-2 border rounded-md h-24"
+          className="w-full p-2 border rounded-md h-24 text-black"
           disabled={isGeneratingImage}
         />
         <button
@@ -162,7 +162,7 @@ const AIToolsPanel: React.FC<AIToolsPanelProps> = ({
           value={colorPrompt}
           onChange={(e) => setColorPrompt(e.target.value)}
           placeholder="e.g., A calm and professional theme"
-          className="w-full p-2 border rounded-md h-24"
+          className="w-full p-2 border rounded-md h-24 text-black"
           disabled={isGeneratingColors}
         />
         <button
