@@ -1,11 +1,27 @@
 "use client";
-import { Circle, Minus, Square, Triangle } from "lucide-react";
+import {
+  Circle,
+  Minus,
+  Square,
+  Triangle,
+  Star,
+  Heart,
+  Hexagon,
+} from "lucide-react";
 import { useState } from "react";
 
 interface ElementsPanelProps {
   addSquare: () => void;
   addCircle: () => void;
   addTriangle: () => void;
+  addRectangle: () => void;
+  addEllipse: () => void;
+  addStar: () => void;
+  addHeart: () => void;
+  addHexagon: () => void;
+  addPentagon: () => void;
+  addDiamond: () => void;
+  addArrowShape: () => void;
   addLine: (options?: { stroke?: string; strokeDashArray?: number[] }) => void;
   addDashedLine: (options?: { stroke?: string }) => void;
   addArrowLine: (options?: { stroke?: string }) => void;
@@ -22,6 +38,14 @@ const ElementsPanel: React.FC<ElementsPanelProps> = ({
   addSquare,
   addCircle,
   addTriangle,
+  addRectangle,
+  addEllipse,
+  addStar,
+  addHeart,
+  addHexagon,
+  addPentagon,
+  addDiamond,
+  addArrowShape,
   addLine,
   addDashedLine,
   addArrowLine,
@@ -39,18 +63,134 @@ const ElementsPanel: React.FC<ElementsPanelProps> = ({
   const shapes = [
     {
       name: "Square",
-      icon: <Square size={40} className="text-gray-700" />,
+      icon: <Square size={32} className="text-gray-700" />,
       action: addSquare,
     },
     {
+      name: "Rectangle",
+      icon: (
+        <svg
+          width="32"
+          height="32"
+          viewBox="0 0 32 32"
+          className="text-gray-700"
+        >
+          <rect
+            x="4"
+            y="10"
+            width="24"
+            height="12"
+            stroke="currentColor"
+            strokeWidth="2"
+            fill="none"
+          />
+        </svg>
+      ),
+      action: addRectangle,
+    },
+    {
       name: "Circle",
-      icon: <Circle size={40} className="text-gray-700" />,
+      icon: <Circle size={32} className="text-gray-700" />,
       action: addCircle,
     },
     {
+      name: "Ellipse",
+      icon: (
+        <svg
+          width="32"
+          height="32"
+          viewBox="0 0 32 32"
+          className="text-gray-700"
+        >
+          <ellipse
+            cx="16"
+            cy="16"
+            rx="12"
+            ry="8"
+            stroke="currentColor"
+            strokeWidth="2"
+            fill="none"
+          />
+        </svg>
+      ),
+      action: addEllipse,
+    },
+    {
       name: "Triangle",
-      icon: <Triangle size={40} className="text-gray-700" />,
+      icon: <Triangle size={32} className="text-gray-700" />,
       action: addTriangle,
+    },
+    {
+      name: "Star",
+      icon: <Star size={32} className="text-gray-700" />,
+      action: addStar,
+    },
+    {
+      name: "Heart",
+      icon: <Heart size={32} className="text-gray-700" />,
+      action: addHeart,
+    },
+    {
+      name: "Hexagon",
+      icon: <Hexagon size={32} className="text-gray-700" />,
+      action: addHexagon,
+    },
+    {
+      name: "Pentagon",
+      icon: (
+        <svg
+          width="32"
+          height="32"
+          viewBox="0 0 32 32"
+          className="text-gray-700"
+        >
+          <path
+            d="M16 4 L28 12 L24 26 L8 26 L4 12 Z"
+            stroke="currentColor"
+            strokeWidth="2"
+            fill="none"
+          />
+        </svg>
+      ),
+      action: addPentagon,
+    },
+    {
+      name: "Diamond",
+      icon: (
+        <svg
+          width="32"
+          height="32"
+          viewBox="0 0 32 32"
+          className="text-gray-700"
+        >
+          <path
+            d="M16 4 L28 16 L16 28 L4 16 Z"
+            stroke="currentColor"
+            strokeWidth="2"
+            fill="none"
+          />
+        </svg>
+      ),
+      action: addDiamond,
+    },
+    {
+      name: "Arrow",
+      icon: (
+        <svg
+          width="32"
+          height="32"
+          viewBox="0 0 32 32"
+          className="text-gray-700"
+        >
+          <path
+            d="M4 14 L20 14 L20 10 L28 16 L20 22 L20 18 L4 18 Z"
+            stroke="currentColor"
+            strokeWidth="2"
+            fill="none"
+          />
+        </svg>
+      ),
+      action: addArrowShape,
     },
   ];
 
@@ -287,15 +427,15 @@ const ElementsPanel: React.FC<ElementsPanelProps> = ({
       </div>
       <div>
         <h3 className="text-lg font-semibold mb-4">Shapes</h3>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-3 gap-3">
           {shapes.map((shape) => (
             <button
               key={shape.name}
               onClick={shape.action}
-              className="flex flex-col items-center justify-center p-4 bg-white rounded-lg shadow-sm hover:shadow-md hover:bg-gray-50 transition-all"
+              className="flex flex-col items-center justify-center p-3 bg-white rounded-lg shadow-sm hover:shadow-md hover:bg-gray-50 transition-all"
             >
               {shape.icon}
-              <span className="mt-2 text-sm text-gray-600">{shape.name}</span>
+              <span className="mt-1 text-xs text-gray-600">{shape.name}</span>
             </button>
           ))}
         </div>

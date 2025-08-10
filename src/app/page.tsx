@@ -330,6 +330,127 @@ export default function CertificateGeneratorPage() {
     canvas.renderAll();
   };
 
+  const addRectangle = () => {
+    if (!canvas || !fabric) return;
+    const rect = new fabric.Rect({
+      left: 200,
+      top: 150,
+      fill: "#8E24AA",
+      width: 200,
+      height: 100,
+    });
+    canvas.add(rect);
+    canvas.setActiveObject(rect);
+    canvas.renderAll();
+  };
+
+  const addEllipse = () => {
+    if (!canvas || !fabric) return;
+    const ellipse = new fabric.Ellipse({
+      left: 200,
+      top: 150,
+      fill: "#FF7043",
+      rx: 100,
+      ry: 60,
+    });
+    canvas.add(ellipse);
+    canvas.setActiveObject(ellipse);
+    canvas.renderAll();
+  };
+
+  const addStar = () => {
+    if (!canvas || !fabric) return;
+    const starPath =
+      "M 50 0 L 61 35 L 98 35 L 68 57 L 79 91 L 50 70 L 21 91 L 32 57 L 2 35 L 39 35 Z";
+    const star = new fabric.Path(starPath, {
+      left: 200,
+      top: 150,
+      fill: "#FFD700",
+      scaleX: 1.5,
+      scaleY: 1.5,
+    });
+    canvas.add(star);
+    canvas.setActiveObject(star);
+    canvas.renderAll();
+  };
+
+  const addHeart = () => {
+    if (!canvas || !fabric) return;
+    const heartPath =
+      "M 50 25 C 50 15, 35 10, 25 25 C 15 10, 0 15, 0 25 C 0 35, 25 60, 50 85 C 75 60, 100 35, 100 25 C 100 15, 85 10, 75 25 C 65 10, 50 15, 50 25 Z";
+    const heart = new fabric.Path(heartPath, {
+      left: 200,
+      top: 150,
+      fill: "#E91E63",
+      scaleX: 1.5,
+      scaleY: 1.5,
+    });
+    canvas.add(heart);
+    canvas.setActiveObject(heart);
+    canvas.renderAll();
+  };
+
+  const addHexagon = () => {
+    if (!canvas || !fabric) return;
+    const hexPath = "M 50 0 L 93.3 25 L 93.3 75 L 50 100 L 6.7 75 L 6.7 25 Z";
+    const hexagon = new fabric.Path(hexPath, {
+      left: 200,
+      top: 150,
+      fill: "#4CAF50",
+      scaleX: 1.5,
+      scaleY: 1.5,
+    });
+    canvas.add(hexagon);
+    canvas.setActiveObject(hexagon);
+    canvas.renderAll();
+  };
+
+  const addPentagon = () => {
+    if (!canvas || !fabric) return;
+    const pentPath = "M 50 0 L 95 35 L 80 90 L 20 90 L 5 35 Z";
+    const pentagon = new fabric.Path(pentPath, {
+      left: 200,
+      top: 150,
+      fill: "#FF9800",
+      scaleX: 1.5,
+      scaleY: 1.5,
+    });
+    canvas.add(pentagon);
+    canvas.setActiveObject(pentagon);
+    canvas.renderAll();
+  };
+
+  const addDiamond = () => {
+    if (!canvas || !fabric) return;
+    const diamondPath = "M 50 0 L 100 50 L 50 100 L 0 50 Z";
+    const diamond = new fabric.Path(diamondPath, {
+      left: 200,
+      top: 150,
+      fill: "#9C27B0",
+      scaleX: 1.5,
+      scaleY: 1.5,
+    });
+    canvas.add(diamond);
+    canvas.setActiveObject(diamond);
+    canvas.renderAll();
+  };
+
+  const addArrowShape = () => {
+    if (!canvas || !fabric) return;
+    const arrowPath =
+      "M 0 40 L 60 40 L 60 20 L 100 50 L 60 80 L 60 60 L 0 60 Z";
+    const arrow = new fabric.Path(arrowPath, {
+      left: 200,
+      top: 150,
+      fill: "#2196F3",
+      scaleX: 1.5,
+      scaleY: 1.5,
+    });
+    canvas.add(arrow);
+    canvas.setActiveObject(arrow);
+    canvas.renderAll();
+  };
+
   const addStickyNote = () => {
     if (!canvas || !fabric) return;
     const noteBg = new fabric.Rect({
@@ -599,6 +720,14 @@ export default function CertificateGeneratorPage() {
             addSquare={addSquare}
             addCircle={addCircle}
             addTriangle={addTriangle}
+            addRectangle={addRectangle}
+            addEllipse={addEllipse}
+            addStar={addStar}
+            addHeart={addHeart}
+            addHexagon={addHexagon}
+            addPentagon={addPentagon}
+            addDiamond={addDiamond}
+            addArrowShape={addArrowShape}
             addLine={addLine}
             addDashedLine={addDashedLine}
             addArrowLine={addArrowLine}
