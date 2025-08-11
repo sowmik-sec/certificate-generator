@@ -18,13 +18,21 @@ const TemplatesPanel: React.FC<TemplatesPanelProps> = ({
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [backgroundColor, setBackgroundColor] = useState("#ffffff");
-  
+
   const templates = [
+    {
+      name: "Blank Canvas",
+      json: {
+        version: "5.3.1",
+        objects: [],
+        background: backgroundColor,
+      },
+    },
     { name: "Modern", json: modernTemplate },
     { name: "Classic", json: classicTemplate },
     { name: "Playful", json: playfulTemplate },
   ];
-  
+
   const handleTemplateSelect = (templateJson: any) => {
     // Create a copy of the template with custom background color
     const customTemplate = {
@@ -33,7 +41,7 @@ const TemplatesPanel: React.FC<TemplatesPanelProps> = ({
     };
     onSelectTemplate(customTemplate);
   };
-  
+
   const handleBackgroundColorChange = (color: string) => {
     setBackgroundColor(color);
     if (canvas) {
@@ -61,7 +69,7 @@ const TemplatesPanel: React.FC<TemplatesPanelProps> = ({
           <span>Upload an Image</span>
         </button>
       </div>
-      
+
       {/* Background Color Selector */}
       <div className="mb-6 p-3 bg-purple-50 border border-purple-200 rounded-lg">
         <h3 className="font-semibold text-purple-800 mb-2 flex items-center">
@@ -77,15 +85,26 @@ const TemplatesPanel: React.FC<TemplatesPanelProps> = ({
           />
           <div className="flex flex-wrap gap-2">
             {[
-              '#ffffff', '#f8f9fa', '#e9ecef', '#dee2e6',
-              '#fdf5e6', '#fff8dc', '#f0f8ff', '#f5f5f5',
-              '#ffe4e1', '#f0fff0', '#f5f5dc', '#ffefd5'
+              "#ffffff",
+              "#f8f9fa",
+              "#e9ecef",
+              "#dee2e6",
+              "#fdf5e6",
+              "#fff8dc",
+              "#f0f8ff",
+              "#f5f5f5",
+              "#ffe4e1",
+              "#f0fff0",
+              "#f5f5dc",
+              "#ffefd5",
             ].map((color) => (
               <button
                 key={color}
                 onClick={() => handleBackgroundColorChange(color)}
                 className={`w-8 h-8 rounded border-2 ${
-                  backgroundColor === color ? 'border-purple-500' : 'border-gray-300'
+                  backgroundColor === color
+                    ? "border-purple-500"
+                    : "border-gray-300"
                 }`}
                 style={{ backgroundColor: color }}
                 title={color}
@@ -94,7 +113,7 @@ const TemplatesPanel: React.FC<TemplatesPanelProps> = ({
           </div>
         </div>
       </div>
-      
+
       <h3 className="text-lg font-semibold my-4 pt-4 border-t">
         Choose a Template
       </h3>
@@ -105,8 +124,21 @@ const TemplatesPanel: React.FC<TemplatesPanelProps> = ({
             className="border rounded-lg p-2 cursor-pointer hover:shadow-md bg-white transition-all"
             onClick={() => handleTemplateSelect(template.json)}
           >
-            <div className="h-32 bg-gray-300 flex items-center justify-center text-gray-500 rounded">
-              {template.name} Certificate
+            <div
+              className={`h-32 flex items-center justify-center text-gray-500 rounded ${
+                template.name === "Blank Canvas"
+                  ? "bg-gray-100 border-2 border-dashed border-gray-300"
+                  : "bg-gray-300"
+              }`}
+            >
+              {template.name === "Blank Canvas" ? (
+                <div className="text-center">
+                  <div className="text-2xl mb-1">📄</div>
+                  <div className="text-sm">Start Fresh</div>
+                </div>
+              ) : (
+                `${template.name} Certificate`
+              )}
             </div>
             <p className="text-center mt-2 text-sm text-gray-800 font-medium">
               {template.name}
