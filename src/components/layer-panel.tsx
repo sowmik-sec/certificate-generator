@@ -103,7 +103,7 @@ const LayerPanel: React.FC<LayerPanelProps> = ({
       if (!obj.id) {
         obj.id = `layer-${Date.now()}-${index}`;
       }
-      
+
       return {
         id: obj.id,
         name: obj.layerName || generateLayerName(obj, index),
@@ -379,11 +379,11 @@ const LayerPanel: React.FC<LayerPanelProps> = ({
                         setEditingLayer(null);
                       }}
                       onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
+                        if (e.key === "Enter") {
                           renameLayer(layer.id, editingName);
                           setEditingLayer(null);
                         }
-                        if (e.key === 'Escape') {
+                        if (e.key === "Escape") {
                           setEditingLayer(null);
                           setEditingName(layer.name);
                         }
@@ -392,7 +392,7 @@ const LayerPanel: React.FC<LayerPanelProps> = ({
                       autoFocus
                     />
                   ) : (
-                    <p 
+                    <p
                       className="text-sm font-medium text-gray-900 truncate cursor-pointer hover:text-blue-600"
                       onDoubleClick={() => {
                         setEditingLayer(layer.id);

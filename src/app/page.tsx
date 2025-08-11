@@ -25,6 +25,10 @@ import TextPanel from "@/components/text-pannel";
 import AlignmentToolbar from "@/components/alignment-toolbar";
 import LayerPanel from "@/components/layer-panel";
 import jsPDF from "jspdf";
+import CanvasSizePanel, {
+  CanvasSize,
+  PRESET_SIZES,
+} from "@/components/canvas-size-panel";
 
 // Simplified types to `any` to prevent build-time type resolution errors on the server.
 export type FabricModule = any;
@@ -43,6 +47,7 @@ export default function CertificateGeneratorPage() {
   const imageInputRef = useRef<HTMLInputElement>(null);
   const [history, setHistory] = useState<any[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
+  const [canvasSize, setCanvasSize] = useState<CanvasSize>(PRESET_SIZES.CUSTOM);
 
   const saveToHistory = useCallback(() => {
     if (!canvas) return;
@@ -116,24 +121,71 @@ export default function CertificateGeneratorPage() {
 
   const handleSetCanvas = useCallback((canvasInstance: any) => {
     setCanvas(canvasInstance);
-    
+
     // Set up selection tracking for alignment toolbar
     if (canvasInstance) {
-      canvasInstance.on('selection:created', (e: any) => {
+      canvasInstance.on("selection:created", (e: any) => {
         const selectedObjs = e.selected || [e.target].filter(Boolean);
         setSelectedObjects(selectedObjs);
       });
-      
-      canvasInstance.on('selection:updated', (e: any) => {
+
+      canvasInstance.on("selection:updated", (e: any) => {
         const selectedObjs = e.selected || [e.target].filter(Boolean);
         setSelectedObjects(selectedObjs);
       });
-      
-      canvasInstance.on('selection:cleared', () => {
+
+      canvasInstance.on("selection:cleared", () => {
         setSelectedObjects([]);
       });
     }
   }, []);
+
+  const handleCanvasSizeChange = useCallback(
+    (newSize: CanvasSize) => {
+      const previousSize = canvasSize;
+
+      if (canvas) {
+        // Calculate scale factors
+        const scaleX = newSize.width / previousSize.width;
+        const scaleY = newSize.height / previousSize.height;
+
+        // Check if there are objects on canvas and if scale change is significant
+        const objects = canvas.getObjects();
+        const hasObjects = objects.length > 0;
+        const significantChange =
+          Math.abs(scaleX - 1) > 0.1 || Math.abs(scaleY - 1) > 0.1;
+
+        if (hasObjects && significantChange) {
+          const shouldScale = window.confirm(
+            "Changing canvas size will scale existing objects. Do you want to continue?"
+          );
+
+          if (!shouldScale) {
+            return; // User cancelled
+          }
+
+          // Scale all objects
+          objects.forEach((obj: any) => {
+            if (obj.type !== "grid-line" && obj.id !== "alignment-line") {
+              obj.scaleX = (obj.scaleX || 1) * scaleX;
+              obj.scaleY = (obj.scaleY || 1) * scaleY;
+              obj.left = obj.left * scaleX;
+              obj.top = obj.top * scaleY;
+              obj.setCoords();
+            }
+          });
+        }
+
+        // Set new canvas dimensions
+        canvas.setDimensions({ width: newSize.width, height: newSize.height });
+        canvas.renderAll();
+        saveToHistory();
+      }
+
+      setCanvasSize(newSize);
+    },
+    [canvas, canvasSize, saveToHistory]
+  );
 
   const addText = (text: string, options: any) => {
     if (!canvas || !fabric) return;
@@ -1162,18 +1214,18 @@ export default function CertificateGeneratorPage() {
   // Group selected objects
   const groupObjects = useCallback(() => {
     if (!canvas || !fabric) return;
-    
+
     const activeObjects = canvas.getActiveObjects();
     if (activeObjects.length < 2) return;
-    
+
     const group = new fabric.Group(activeObjects, {
       left: 0,
       top: 0,
     });
-    
+
     // Remove original objects from canvas
     activeObjects.forEach((obj: any) => canvas.remove(obj));
-    
+
     // Add grouped object
     canvas.add(group);
     canvas.setActiveObject(group);
@@ -1184,16 +1236,16 @@ export default function CertificateGeneratorPage() {
   // Ungroup selected group
   const ungroupObjects = useCallback(() => {
     if (!canvas || !fabric) return;
-    
+
     const activeObject = canvas.getActiveObject();
-    if (!activeObject || activeObject.type !== 'group') return;
-    
+    if (!activeObject || activeObject.type !== "group") return;
+
     const group = activeObject as any;
     const objects = group._objects.slice(); // Create a copy of the objects array
-    
+
     // Remove the group from canvas
     canvas.remove(group);
-    
+
     // Add individual objects back to canvas
     objects.forEach((obj: any) => {
       // Reset object properties
@@ -1206,7 +1258,7 @@ export default function CertificateGeneratorPage() {
       });
       canvas.add(obj);
     });
-    
+
     // Select all ungrouped objects
     canvas.discardActiveObject();
     if (objects.length > 1) {
@@ -1217,7 +1269,7 @@ export default function CertificateGeneratorPage() {
     } else if (objects.length === 1) {
       canvas.setActiveObject(objects[0]);
     }
-    
+
     canvas.renderAll();
     saveToHistory();
   }, [canvas, fabric, saveToHistory]);
@@ -1293,7 +1345,14 @@ export default function CertificateGeneratorPage() {
     };
     window.addEventListener("keydown", handleLayerShortcuts);
     return () => window.removeEventListener("keydown", handleLayerShortcuts);
-  }, [groupObjects, ungroupObjects, bringForward, sendBackward, bringToFront, sendToBack]);
+  }, [
+    groupObjects,
+    ungroupObjects,
+    bringForward,
+    sendBackward,
+    bringToFront,
+    sendToBack,
+  ]);
 
   const exportAsPNG = () => {
     if (!canvas) return;
@@ -1310,7 +1369,9 @@ export default function CertificateGeneratorPage() {
     if (!canvas) return;
 
     const dataURL = canvas.toDataURL({ format: "png", quality: 1 });
-    const pdf = new jsPDF({ orientation: "landscape" });
+    const orientation =
+      canvasSize.orientation === "portrait" ? "portrait" : "landscape";
+    const pdf = new jsPDF({ orientation });
     const imgProps = pdf.getImageProperties(dataURL);
     const pdfWidth = pdf.internal.pageSize.getWidth();
     const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
@@ -1319,12 +1380,99 @@ export default function CertificateGeneratorPage() {
     pdf.save("certificate.pdf");
   };
 
-  const loadTemplate = (templateJson: any) => {
-    if (!canvas) return;
-    canvas.loadFromJSON(templateJson, () => {
-      canvas.renderAll();
-    });
-  };
+  const loadTemplate = useCallback(
+    (templateJson: any) => {
+      if (!canvas) return;
+
+      // Template original dimensions (what templates were designed for)
+      const originalWidth = 800;
+      const originalHeight = 566;
+
+      // Current canvas dimensions
+      const currentWidth = canvasSize.width;
+      const currentHeight = canvasSize.height;
+
+      // Check if canvas size matches template size
+      const isSameDimensions =
+        currentWidth === originalWidth && currentHeight === originalHeight;
+
+      if (isSameDimensions) {
+        // Load template as-is if dimensions match
+        canvas.loadFromJSON(templateJson, () => {
+          canvas.renderAll();
+          saveToHistory();
+        });
+        return;
+      }
+
+      // Calculate scale factors for different canvas size
+      const scaleX = currentWidth / originalWidth;
+      const scaleY = currentHeight / originalHeight;
+
+      // For maintaining aspect ratio in extreme cases, use uniform scaling
+      const aspectRatioChange = Math.abs(
+        currentWidth / currentHeight - originalWidth / originalHeight
+      );
+      const useUniformScaling = aspectRatioChange > 0.3; // If aspect ratio changes significantly
+      const uniformScale = Math.min(scaleX, scaleY);
+
+      // Create a scaled copy of the template
+      const scaledTemplate = {
+        ...templateJson,
+        objects: templateJson.objects.map((obj: any) => {
+          const scaledObj = { ...obj };
+
+          // Choose scaling strategy
+          const effectiveScaleX = useUniformScaling ? uniformScale : scaleX;
+          const effectiveScaleY = useUniformScaling ? uniformScale : scaleY;
+
+          // Scale position and dimensions
+          if (scaledObj.left !== undefined) {
+            scaledObj.left *= effectiveScaleX;
+            // Center objects horizontally if using uniform scaling and canvas is wider
+            if (useUniformScaling && scaleX > scaleY) {
+              scaledObj.left +=
+                (currentWidth - originalWidth * uniformScale) / 2;
+            }
+          }
+          if (scaledObj.top !== undefined) {
+            scaledObj.top *= effectiveScaleY;
+            // Center objects vertically if using uniform scaling and canvas is taller
+            if (useUniformScaling && scaleY > scaleX) {
+              scaledObj.top +=
+                (currentHeight - originalHeight * uniformScale) / 2;
+            }
+          }
+          if (scaledObj.width !== undefined) scaledObj.width *= effectiveScaleX;
+          if (scaledObj.height !== undefined)
+            scaledObj.height *= effectiveScaleY;
+
+          // Scale font size for text objects
+          if (scaledObj.fontSize !== undefined) {
+            scaledObj.fontSize *= uniformScale; // Always use uniform scale for text
+          }
+
+          // Scale stroke width
+          if (scaledObj.strokeWidth !== undefined) {
+            scaledObj.strokeWidth *= uniformScale;
+          }
+
+          // For textbox objects, also scale width appropriately
+          if (scaledObj.type === "textbox" && scaledObj.width !== undefined) {
+            scaledObj.width *= effectiveScaleX;
+          }
+
+          return scaledObj;
+        }),
+      };
+
+      canvas.loadFromJSON(scaledTemplate, () => {
+        canvas.renderAll();
+        saveToHistory();
+      });
+    },
+    [canvas, canvasSize, saveToHistory]
+  );
 
   const handleBackgroundImageUpload = (
     e: React.ChangeEvent<HTMLInputElement>
@@ -1509,16 +1657,17 @@ export default function CertificateGeneratorPage() {
                 <span className="text-sm">Group</span>
               </button>
             )}
-            {selectedObjects.length === 1 && selectedObjects[0]?.type === 'group' && (
-              <button
-                onClick={ungroupObjects}
-                className="flex items-center space-x-1 px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-                title="Ungroup Objects"
-              >
-                <Ungroup size={16} />
-                <span className="text-sm">Ungroup</span>
-              </button>
-            )}
+            {selectedObjects.length === 1 &&
+              selectedObjects[0]?.type === "group" && (
+                <button
+                  onClick={ungroupObjects}
+                  className="flex items-center space-x-1 px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                  title="Ungroup Objects"
+                >
+                  <Ungroup size={16} />
+                  <span className="text-sm">Ungroup</span>
+                </button>
+              )}
             {selectedObjects.length > 0 && (
               <>
                 <div className="w-px h-6 bg-gray-300"></div>
@@ -1554,6 +1703,14 @@ export default function CertificateGeneratorPage() {
             )}
           </div>
 
+          {/* Center Controls - Canvas Size */}
+          <div className="flex items-center space-x-2">
+            <CanvasSizePanel
+              currentSize={canvasSize}
+              onSizeChange={handleCanvasSizeChange}
+            />
+          </div>
+
           {/* Right side controls */}
           <div className="flex items-center space-x-2">
             {selectedObject && (
@@ -1582,19 +1739,31 @@ export default function CertificateGeneratorPage() {
         </header>
 
         {/* Alignment Toolbar */}
-        <AlignmentToolbar 
-          canvas={canvas} 
-          selectedObjects={selectedObjects}
-        />
+        <AlignmentToolbar canvas={canvas} selectedObjects={selectedObjects} />
 
         {/* Canvas and Properties Panel Container */}
         <div className="flex-1 flex overflow-hidden">
           {/* Canvas Area */}
-          <div className="flex-1 flex items-center justify-center p-4 md:p-8 bg-gray-300 overflow-hidden min-w-0">
+          <div
+            className="flex-1 flex items-center justify-center p-4 md:p-8 overflow-hidden min-w-0"
+            style={{
+              backgroundImage: `
+                   linear-gradient(45deg, #f0f0f0 25%, transparent 25%), 
+                   linear-gradient(-45deg, #f0f0f0 25%, transparent 25%), 
+                   linear-gradient(45deg, transparent 75%, #f0f0f0 75%), 
+                   linear-gradient(-45deg, transparent 75%, #f0f0f0 75%)
+                 `,
+              backgroundSize: "20px 20px",
+              backgroundPosition: "0 0, 0 10px, 10px -10px, -10px 0px",
+              backgroundColor: "#e5e5e5",
+            }}
+          >
             <CanvasComponent
               fabric={fabric}
               setCanvas={handleSetCanvas}
               setSelectedObject={setSelectedObject}
+              canvasWidth={canvasSize.width}
+              canvasHeight={canvasSize.height}
             />
           </div>
 
@@ -1608,7 +1777,7 @@ export default function CertificateGeneratorPage() {
                 onSelectionChange={setSelectedObjects}
               />
             </div>
-            
+
             {/* Properties Panel - Only show when object is selected */}
             {selectedObject && (
               <div className="border-t border-gray-200 max-h-96 overflow-y-auto p-4">

@@ -10,6 +10,8 @@ interface CanvasComponentProps {
   setSelectedObject: (obj: FabricObject | null) => void;
   snapToObjects?: boolean;
   snapTolerance?: number;
+  canvasWidth?: number;
+  canvasHeight?: number;
 }
 const CanvasComponent: React.FC<CanvasComponentProps> = ({
   fabric,
@@ -17,25 +19,48 @@ const CanvasComponent: React.FC<CanvasComponentProps> = ({
   setSelectedObject,
   snapToObjects = true,
   snapTolerance = 10,
+  canvasWidth = 800,
+  canvasHeight = 566,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const alignmentLinesRef = useRef<any[]>([]);
 
-  const resizeCanvas = useCallback((canvasInstance: FabricCanvas) => {
-    if (!containerRef.current || !canvasInstance) return;
-    const { width, height } = containerRef.current.getBoundingClientRect();
-    const scale = Math.min(width / 800, height / 566);
-    canvasInstance.setDimensions({ width: 800 * scale, height: 566 * scale });
-    canvasInstance.setZoom(scale);
-    canvasInstance.renderAll();
-  }, []);
+  const resizeCanvas = useCallback(
+    (canvasInstance: FabricCanvas) => {
+      if (!containerRef.current || !canvasInstance) return;
+
+      const container = containerRef.current;
+      const { width: containerWidth, height: containerHeight } =
+        container.getBoundingClientRect();
+
+      // Calculate scale to fit canvas in container with some padding
+      const padding = 40; // 20px padding on each side
+      const availableWidth = containerWidth - padding;
+      const availableHeight = containerHeight - padding;
+
+      const scaleX = availableWidth / canvasWidth;
+      const scaleY = availableHeight / canvasHeight;
+      const scale = Math.min(scaleX, scaleY, 1); // Don't scale up beyond 100%
+
+      const scaledWidth = canvasWidth * scale;
+      const scaledHeight = canvasHeight * scale;
+
+      canvasInstance.setDimensions({
+        width: scaledWidth,
+        height: scaledHeight,
+      });
+      canvasInstance.setZoom(scale);
+      canvasInstance.renderAll();
+    },
+    [canvasWidth, canvasHeight]
+  );
 
   useEffect(() => {
     if (!canvasRef.current || !fabric) return;
     const canvasInstance = new fabric.Canvas(canvasRef.current, {
-      width: 800,
-      height: 566,
+      width: canvasWidth,
+      height: canvasHeight,
       backgroundColor: "#ffffff",
     });
 
@@ -429,11 +454,28 @@ const CanvasComponent: React.FC<CanvasComponentProps> = ({
     resizeCanvas,
     snapTolerance,
     snapToObjects,
+    canvasWidth,
+    canvasHeight,
   ]);
 
+  // Handle canvas size changes - re-center when dimensions change
+  useEffect(() => {
+    if (canvasRef.current && fabric) {
+      const canvasInstance = fabric.getCanvasFromElement?.(canvasRef.current);
+      if (canvasInstance) {
+        resizeCanvas(canvasInstance);
+      }
+    }
+  }, [canvasWidth, canvasHeight, fabric, resizeCanvas]);
+
   return (
-    <div ref={containerRef} className="w-full h-full shadow-lg">
-      <canvas ref={canvasRef} />
+    <div
+      ref={containerRef}
+      className="w-full h-full flex items-center justify-center"
+    >
+      <div className="shadow-xl bg-white rounded-lg overflow-hidden border border-gray-200 relative transition-all duration-300 ease-in-out">
+        <canvas ref={canvasRef} className="display-block" />
+      </div>
     </div>
   );
 };
