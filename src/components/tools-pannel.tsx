@@ -7,15 +7,25 @@ interface ToolsPanelProps {
   canvas: FabricCanvas;
   addStickyNote: () => void;
   addTable: (rows: number, cols: number) => void;
+  addSimpleFrame: (options?: { stroke?: string; strokeWidth?: number }) => void;
+  addDoubleFrame: (options?: { stroke?: string; strokeWidth?: number }) => void;
+  addDecorativeFrame: (options?: { stroke?: string; strokeWidth?: number }) => void;
+  addRoundedFrame: (options?: { stroke?: string; strokeWidth?: number }) => void;
 }
 const ToolsPanel: React.FC<ToolsPanelProps> = ({
   canvas,
   addStickyNote,
   addTable,
+  addSimpleFrame,
+  addDoubleFrame,
+  addDecorativeFrame,
+  addRoundedFrame,
 }) => {
   const [isDrawing, setIsDrawing] = useState(false);
   const [brushColor, setBrushColor] = useState("#000000");
   const [brushSize, setBrushSize] = useState(5);
+  const [frameColor, setFrameColor] = useState("#8B4513");
+  const [frameWidth, setFrameWidth] = useState(4);
 
   useEffect(() => {
     if (!canvas) return;
@@ -114,6 +124,161 @@ const ToolsPanel: React.FC<ToolsPanelProps> = ({
           </div>
         </div>
       )}
+      
+      {/* Frames Section */}
+      <div className="mt-6">
+        <h4 className="text-md font-semibold mb-3">Frames</h4>
+        
+        {/* Frame Color and Width Controls */}
+        <div className="mb-4 p-3 bg-gray-50 rounded-lg space-y-3">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Frame Color
+            </label>
+            <div className="flex items-center space-x-2">
+              <input
+                type="color"
+                value={frameColor}
+                onChange={(e) => setFrameColor(e.target.value)}
+                className="w-12 h-8 rounded border border-gray-300 cursor-pointer"
+              />
+              <span className="text-sm text-gray-600">{frameColor}</span>
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Frame Width: {frameWidth}px
+            </label>
+            <input
+              type="range"
+              min="1"
+              max="12"
+              value={frameWidth}
+              onChange={(e) => setFrameWidth(parseInt(e.target.value, 10))}
+              className="w-full"
+            />
+          </div>
+        </div>
+        
+        {/* Frame Types */}
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            onClick={() => addSimpleFrame({ stroke: frameColor, strokeWidth: frameWidth })}
+            className="flex flex-col items-center justify-center p-3 bg-white rounded-lg shadow-sm hover:shadow-md hover:bg-gray-50 transition-all"
+          >
+            <svg
+              width="40"
+              height="40"
+              viewBox="0 0 40 40"
+              className="text-gray-700 mb-2"
+            >
+              <rect
+                x="5"
+                y="5"
+                width="30"
+                height="30"
+                stroke="currentColor"
+                strokeWidth="3"
+                fill="none"
+              />
+            </svg>
+            <span className="text-xs text-gray-600">Simple</span>
+          </button>
+          
+          <button
+            onClick={() => addDoubleFrame({ stroke: frameColor, strokeWidth: frameWidth })}
+            className="flex flex-col items-center justify-center p-3 bg-white rounded-lg shadow-sm hover:shadow-md hover:bg-gray-50 transition-all"
+          >
+            <svg
+              width="40"
+              height="40"
+              viewBox="0 0 40 40"
+              className="text-gray-700 mb-2"
+            >
+              <rect
+                x="3"
+                y="3"
+                width="34"
+                height="34"
+                stroke="currentColor"
+                strokeWidth="2"
+                fill="none"
+              />
+              <rect
+                x="7"
+                y="7"
+                width="26"
+                height="26"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                fill="none"
+              />
+            </svg>
+            <span className="text-xs text-gray-600">Double</span>
+          </button>
+          
+          <button
+            onClick={() => addDecorativeFrame({ stroke: frameColor, strokeWidth: frameWidth })}
+            className="flex flex-col items-center justify-center p-3 bg-white rounded-lg shadow-sm hover:shadow-md hover:bg-gray-50 transition-all"
+          >
+            <svg
+              width="40"
+              height="40"
+              viewBox="0 0 40 40"
+              className="text-gray-700 mb-2"
+            >
+              <rect
+                x="3"
+                y="3"
+                width="34"
+                height="34"
+                stroke="currentColor"
+                strokeWidth="2"
+                fill="none"
+              />
+              <rect
+                x="7"
+                y="7"
+                width="26"
+                height="26"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                fill="none"
+              />
+              <rect x="3" y="3" width="4" height="4" fill="currentColor" />
+              <rect x="33" y="3" width="4" height="4" fill="currentColor" />
+              <rect x="3" y="33" width="4" height="4" fill="currentColor" />
+              <rect x="33" y="33" width="4" height="4" fill="currentColor" />
+            </svg>
+            <span className="text-xs text-gray-600">Decorative</span>
+          </button>
+          
+          <button
+            onClick={() => addRoundedFrame({ stroke: frameColor, strokeWidth: frameWidth })}
+            className="flex flex-col items-center justify-center p-3 bg-white rounded-lg shadow-sm hover:shadow-md hover:bg-gray-50 transition-all"
+          >
+            <svg
+              width="40"
+              height="40"
+              viewBox="0 0 40 40"
+              className="text-gray-700 mb-2"
+            >
+              <rect
+                x="5"
+                y="5"
+                width="30"
+                height="30"
+                rx="5"
+                ry="5"
+                stroke="currentColor"
+                strokeWidth="3"
+                fill="none"
+              />
+            </svg>
+            <span className="text-xs text-gray-600">Rounded</span>
+          </button>
+        </div>
+      </div>
     </div>
   );
 };
