@@ -91,331 +91,492 @@ const TextPanel: React.FC<TextPanelProps> = ({
   };
 
   return (
-    <div className="space-y-4">
-      <h3 className="text-lg font-semibold mb-4">Text Styles</h3>
+    <div className="h-full overflow-y-auto">
+      <div className="p-4 space-y-6">
+        {/* Header */}
+        <div className="border-b border-gray-200 pb-3">
+          <h3 className="text-lg font-semibold text-gray-800">Text Styles</h3>
+          <p className="text-sm text-gray-500 mt-1">
+            Customize your text appearance
+          </p>
+        </div>
 
-      {/* Text Style Options */}
-      <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
-        <h4 className="text-md font-medium text-gray-700">Text Properties</h4>
+        {/* Quick Add Buttons */}
+        <div className="space-y-3">
+          <h4 className="text-sm font-medium text-gray-700 uppercase tracking-wide">
+            Quick Add
+          </h4>
 
-        {/* Font Family */}
-        <div>
-          <label className="block text-sm font-medium text-gray-600 mb-1">
-            Font Family
-          </label>
-          <select
-            value={textOptions.fontFamily}
-            onChange={(e) => handleOptionChange("fontFamily", e.target.value)}
-            className="w-full p-2 border border-gray-300 rounded-md text-sm"
+          <button
+            onClick={() => addHeading(textOptions)}
+            className="w-full p-3 bg-white rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-sm text-left transition-all duration-200"
           >
-            {fontFamilies.map((font) => (
-              <option key={font} value={font} style={{ fontFamily: font }}>
-                {font}
-              </option>
-            ))}
-          </select>
-        </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-lg font-bold text-gray-800 truncate">
+                  Add Heading
+                </p>
+                <span className="text-xs text-gray-500">
+                  Large title text - 88px
+                </span>
+              </div>
+              <div className="text-gray-400">
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 4v16m8-8H4"
+                  />
+                </svg>
+              </div>
+            </div>
+          </button>
 
-        {/* Font Weight */}
-        <div>
-          <label className="block text-sm font-medium text-gray-600 mb-1">
-            Font Weight
-          </label>
-          <select
-            value={textOptions.fontWeight}
-            onChange={(e) => handleOptionChange("fontWeight", e.target.value)}
-            className="w-full p-2 border border-gray-300 rounded-md text-sm"
+          <button
+            onClick={() => addSubheading(textOptions)}
+            className="w-full p-3 bg-white rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-sm text-left transition-all duration-200"
           >
-            {fontWeights.map((weight) => (
-              <option key={weight.value} value={weight.value}>
-                {weight.label}
-              </option>
-            ))}
-          </select>
-        </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-base font-semibold text-gray-700 truncate">
+                  Add Subheading
+                </p>
+                <span className="text-xs text-gray-500">
+                  Medium subtitle - 44px
+                </span>
+              </div>
+              <div className="text-gray-400">
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 4v16m8-8H4"
+                  />
+                </svg>
+              </div>
+            </div>
+          </button>
 
-        {/* Text Alignment */}
-        <div>
-          <label className="block text-sm font-medium text-gray-600 mb-1">
-            Text Alignment
-          </label>
-          <select
-            value={textOptions.textAlign}
-            onChange={(e) => handleOptionChange("textAlign", e.target.value)}
-            className="w-full p-2 border border-gray-300 rounded-md text-sm"
+          <button
+            onClick={() => addBodyText(textOptions)}
+            className="w-full p-3 bg-white rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-sm text-left transition-all duration-200"
           >
-            {textAlignments.map((align) => (
-              <option key={align.value} value={align.value}>
-                {align.label}
-              </option>
-            ))}
-          </select>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600 truncate">Add Body Text</p>
+                <span className="text-xs text-gray-500">
+                  Regular paragraph text
+                </span>
+              </div>
+              <div className="text-gray-400">
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 4v16m8-8H4"
+                  />
+                </svg>
+              </div>
+            </div>
+          </button>
         </div>
 
-        {/* Text Color */}
-        <div>
-          <label className="block text-sm font-medium text-gray-600 mb-1">
-            Text Color
-          </label>
-          <div className="flex items-center space-x-2">
-            <input
-              type="color"
-              value={textOptions.fill}
-              onChange={(e) => handleOptionChange("fill", e.target.value)}
-              className="w-12 h-8 border border-gray-300 rounded cursor-pointer"
-            />
-            <input
-              type="text"
-              value={textOptions.fill}
-              onChange={(e) => handleOptionChange("fill", e.target.value)}
-              className="flex-1 p-2 border border-gray-300 rounded-md text-sm font-mono"
-              placeholder="#000000"
-            />
+        {/* Font Properties */}
+        <div className="space-y-4">
+          <h4 className="text-sm font-medium text-gray-700 uppercase tracking-wide">
+            Font Properties
+          </h4>
+
+          {/* Font Family & Weight Row */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-2">
+                Font Family
+              </label>
+              <select
+                value={textOptions.fontFamily}
+                onChange={(e) =>
+                  handleOptionChange("fontFamily", e.target.value)
+                }
+                className="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                {fontFamilies.map((font) => (
+                  <option key={font} value={font}>
+                    {font}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-2">
+                Weight
+              </label>
+              <select
+                value={textOptions.fontWeight}
+                onChange={(e) =>
+                  handleOptionChange("fontWeight", e.target.value)
+                }
+                className="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                {fontWeights.map((weight) => (
+                  <option key={weight.value} value={weight.value}>
+                    {weight.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Font Size */}
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-2">
+              Font Size
+            </label>
+            <div className="flex items-center space-x-3">
+              <input
+                type="range"
+                min="8"
+                max="120"
+                value={textOptions.fontSize}
+                onChange={(e) =>
+                  handleOptionChange("fontSize", parseInt(e.target.value))
+                }
+                className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+              />
+              <div className="flex items-center space-x-1 w-20 flex-shrink-0">
+                <input
+                  type="number"
+                  min="8"
+                  max="120"
+                  value={textOptions.fontSize}
+                  onChange={(e) =>
+                    handleOptionChange("fontSize", parseInt(e.target.value))
+                  }
+                  className="w-12 p-1.5 border border-gray-300 rounded text-xs text-center focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                <span className="text-xs text-gray-500">px</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Line Height */}
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-2">
+              Line Height
+            </label>
+            <div className="flex items-center space-x-3">
+              <input
+                type="range"
+                min="0.5"
+                max="3"
+                step="0.1"
+                value={textOptions.lineHeight}
+                onChange={(e) =>
+                  handleOptionChange("lineHeight", parseFloat(e.target.value))
+                }
+                className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+              />
+              <div className="flex items-center space-x-1 w-20 flex-shrink-0">
+                <input
+                  type="number"
+                  min="0.5"
+                  max="3"
+                  step="0.1"
+                  value={textOptions.lineHeight}
+                  onChange={(e) =>
+                    handleOptionChange("lineHeight", parseFloat(e.target.value))
+                  }
+                  className="w-12 p-1.5 border border-gray-300 rounded text-xs text-center focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                <span className="text-xs text-gray-500"></span>
+              </div>
+            </div>
+          </div>
+
+          {/* Letter Spacing */}
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-2">
+              Letter Spacing
+            </label>
+            <div className="flex items-center space-x-3">
+              <input
+                type="range"
+                min="-5"
+                max="20"
+                step="0.5"
+                value={textOptions.letterSpacing}
+                onChange={(e) =>
+                  handleOptionChange(
+                    "letterSpacing",
+                    parseFloat(e.target.value)
+                  )
+                }
+                className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+              />
+              <div className="flex items-center space-x-1 w-20 flex-shrink-0">
+                <input
+                  type="number"
+                  min="-5"
+                  max="20"
+                  step="0.5"
+                  value={textOptions.letterSpacing}
+                  onChange={(e) =>
+                    handleOptionChange(
+                      "letterSpacing",
+                      parseFloat(e.target.value)
+                    )
+                  }
+                  className="w-12 p-1.5 border border-gray-300 rounded text-xs text-center focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                <span className="text-xs text-gray-500">px</span>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Font Size */}
-        <div>
-          <label className="block text-sm font-medium text-gray-600 mb-1">
-            Font Size
-          </label>
-          <div className="flex items-center space-x-2">
-            <input
-              type="range"
-              min="8"
-              max="120"
-              value={textOptions.fontSize}
-              onChange={(e) =>
-                handleOptionChange("fontSize", parseInt(e.target.value))
-              }
-              className="flex-1"
-            />
-            <input
-              type="number"
-              min="8"
-              max="120"
-              value={textOptions.fontSize}
-              onChange={(e) =>
-                handleOptionChange("fontSize", parseInt(e.target.value))
-              }
-              className="w-16 p-1 border border-gray-300 rounded text-sm text-center"
-            />
-            <span className="text-sm text-gray-500">px</span>
-          </div>
-        </div>
+        {/* Colors */}
+        <div className="space-y-4">
+          <h4 className="text-sm font-medium text-gray-700 uppercase tracking-wide">
+            Colors
+          </h4>
 
-        {/* Line Height */}
-        <div>
-          <label className="block text-sm font-medium text-gray-600 mb-1">
-            Line Height
-          </label>
-          <div className="flex items-center space-x-2">
-            <input
-              type="range"
-              min="0.5"
-              max="3"
-              step="0.1"
-              value={textOptions.lineHeight}
-              onChange={(e) =>
-                handleOptionChange("lineHeight", parseFloat(e.target.value))
-              }
-              className="flex-1"
-            />
-            <input
-              type="number"
-              min="0.5"
-              max="3"
-              step="0.1"
-              value={textOptions.lineHeight}
-              onChange={(e) =>
-                handleOptionChange("lineHeight", parseFloat(e.target.value))
-              }
-              className="w-16 p-1 border border-gray-300 rounded text-sm text-center"
-            />
-          </div>
-        </div>
-
-        {/* Letter Spacing */}
-        <div>
-          <label className="block text-sm font-medium text-gray-600 mb-1">
-            Letter Spacing
-          </label>
-          <div className="flex items-center space-x-2">
-            <input
-              type="range"
-              min="-5"
-              max="20"
-              step="0.5"
-              value={textOptions.letterSpacing}
-              onChange={(e) =>
-                handleOptionChange("letterSpacing", parseFloat(e.target.value))
-              }
-              className="flex-1"
-            />
-            <input
-              type="number"
-              min="-5"
-              max="20"
-              step="0.5"
-              value={textOptions.letterSpacing}
-              onChange={(e) =>
-                handleOptionChange("letterSpacing", parseFloat(e.target.value))
-              }
-              className="w-16 p-1 border border-gray-300 rounded text-sm text-center"
-            />
-            <span className="text-sm text-gray-500">px</span>
-          </div>
-        </div>
-
-        {/* Text Style Options */}
-        <div>
-          <label className="block text-sm font-medium text-gray-600 mb-2">
-            Text Style
-          </label>
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={() =>
-                handleOptionChange(
-                  "fontStyle",
-                  textOptions.fontStyle === "italic" ? "normal" : "italic"
-                )
-              }
-              className={`px-3 py-1 text-sm rounded border transition-colors ${
-                textOptions.fontStyle === "italic"
-                  ? "bg-blue-100 border-blue-300 text-blue-800"
-                  : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
-              }`}
-            >
-              <em>Italic</em>
-            </button>
-            <button
-              type="button"
-              onClick={() =>
-                handleOptionChange("underline", !textOptions.underline)
-              }
-              className={`px-3 py-1 text-sm rounded border transition-colors ${
-                textOptions.underline
-                  ? "bg-blue-100 border-blue-300 text-blue-800"
-                  : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
-              }`}
-            >
-              <u>Underline</u>
-            </button>
-          </div>
-        </div>
-
-        {/* Text Transform */}
-        <div>
-          <label className="block text-sm font-medium text-gray-600 mb-1">
-            Text Transform
-          </label>
-          <select
-            value={textOptions.textTransform}
-            onChange={(e) =>
-              handleOptionChange("textTransform", e.target.value)
-            }
-            className="w-full p-2 border border-gray-300 rounded-md text-sm"
-          >
-            <option value="none">None</option>
-            <option value="uppercase">UPPERCASE</option>
-            <option value="lowercase">lowercase</option>
-            <option value="capitalize">Capitalize Each Word</option>
-          </select>
-        </div>
-
-        {/* Text Stroke */}
-        <div>
-          <label className="block text-sm font-medium text-gray-600 mb-1">
-            Text Stroke
-          </label>
-          <div className="space-y-2">
-            <div className="flex items-center space-x-2">
+          {/* Text Color */}
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-2">
+              Text Color
+            </label>
+            <div className="flex items-center space-x-3">
               <input
                 type="color"
-                value={textOptions.stroke || "#000000"}
-                onChange={(e) => handleOptionChange("stroke", e.target.value)}
-                className="w-12 h-8 border border-gray-300 rounded cursor-pointer"
+                value={textOptions.fill}
+                onChange={(e) => handleOptionChange("fill", e.target.value)}
+                className="w-10 h-10 border border-gray-300 rounded-lg cursor-pointer flex-shrink-0"
               />
               <input
                 type="text"
-                value={textOptions.stroke}
-                onChange={(e) => handleOptionChange("stroke", e.target.value)}
-                className="flex-1 p-2 border border-gray-300 rounded-md text-sm font-mono"
-                placeholder="No stroke"
+                value={textOptions.fill}
+                onChange={(e) => handleOptionChange("fill", e.target.value)}
+                className="flex-1 min-w-0 p-2.5 border border-gray-300 rounded-lg text-sm font-mono focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="#000000"
               />
             </div>
-            <div className="flex items-center space-x-2">
-              <span className="text-sm text-gray-600 w-16">Width:</span>
-              <input
-                type="range"
-                min="0"
-                max="10"
-                step="0.5"
-                value={textOptions.strokeWidth}
-                onChange={(e) =>
-                  handleOptionChange("strokeWidth", parseFloat(e.target.value))
-                }
-                className="flex-1"
-              />
-              <input
-                type="number"
-                min="0"
-                max="10"
-                step="0.5"
-                value={textOptions.strokeWidth}
-                onChange={(e) =>
-                  handleOptionChange("strokeWidth", parseFloat(e.target.value))
-                }
-                className="w-16 p-1 border border-gray-300 rounded text-sm text-center"
-              />
+          </div>
+
+          {/* Background Color */}
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-2">
+              Background Color
+            </label>
+            <div className="space-y-2">
+              <div className="flex items-center space-x-3">
+                <input
+                  type="color"
+                  value={textOptions.backgroundColor || "#ffffff"}
+                  onChange={(e) =>
+                    handleOptionChange("backgroundColor", e.target.value)
+                  }
+                  className="w-10 h-10 border border-gray-300 rounded-lg cursor-pointer flex-shrink-0"
+                />
+                <input
+                  type="text"
+                  value={textOptions.backgroundColor}
+                  onChange={(e) =>
+                    handleOptionChange("backgroundColor", e.target.value)
+                  }
+                  className="flex-1 min-w-0 p-2.5 border border-gray-300 rounded-lg text-sm font-mono focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Transparent"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={() => handleOptionChange("backgroundColor", "")}
+                className="w-full px-3 py-2 text-xs bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+              >
+                Clear Background
+              </button>
             </div>
           </div>
         </div>
 
-        {/* Background Color */}
-        <div>
-          <label className="block text-sm font-medium text-gray-600 mb-1">
-            Background Color
-          </label>
-          <div className="flex items-center space-x-2">
-            <input
-              type="color"
-              value={textOptions.backgroundColor || "#ffffff"}
+        {/* Alignment & Transform */}
+        <div className="space-y-4">
+          <h4 className="text-sm font-medium text-gray-700 uppercase tracking-wide">
+            Alignment & Style
+          </h4>
+
+          {/* Text Alignment */}
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-2">
+              Text Alignment
+            </label>
+            <div className="grid grid-cols-4 gap-2">
+              {textAlignments.map((align) => (
+                <button
+                  key={align.value}
+                  onClick={() => handleOptionChange("textAlign", align.value)}
+                  className={`p-2 text-xs rounded-lg border transition-colors ${
+                    textOptions.textAlign === align.value
+                      ? "bg-blue-100 border-blue-300 text-blue-800"
+                      : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+                  }`}
+                >
+                  {align.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Text Transform */}
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-2">
+              Text Transform
+            </label>
+            <select
+              value={textOptions.textTransform}
               onChange={(e) =>
-                handleOptionChange("backgroundColor", e.target.value)
+                handleOptionChange("textTransform", e.target.value)
               }
-              className="w-12 h-8 border border-gray-300 rounded cursor-pointer"
-            />
-            <input
-              type="text"
-              value={textOptions.backgroundColor}
-              onChange={(e) =>
-                handleOptionChange("backgroundColor", e.target.value)
-              }
-              className="flex-1 p-2 border border-gray-300 rounded-md text-sm font-mono"
-              placeholder="No background"
-            />
-            <button
-              type="button"
-              onClick={() => handleOptionChange("backgroundColor", "")}
-              className="px-2 py-1 text-xs bg-gray-200 hover:bg-gray-300 rounded transition-colors"
+              className="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
-              Clear
-            </button>
+              <option value="none">None</option>
+              <option value="uppercase">UPPERCASE</option>
+              <option value="lowercase">lowercase</option>
+              <option value="capitalize">Capitalize Each Word</option>
+            </select>
+          </div>
+
+          {/* Text Style Toggles */}
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-2">
+              Text Style
+            </label>
+            <div className="flex space-x-2">
+              <button
+                type="button"
+                onClick={() =>
+                  handleOptionChange(
+                    "fontStyle",
+                    textOptions.fontStyle === "italic" ? "normal" : "italic"
+                  )
+                }
+                className={`flex-1 px-3 py-2 text-sm rounded-lg border transition-colors ${
+                  textOptions.fontStyle === "italic"
+                    ? "bg-blue-100 border-blue-300 text-blue-800"
+                    : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+                }`}
+              >
+                <em>Italic</em>
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  handleOptionChange("underline", !textOptions.underline)
+                }
+                className={`flex-1 px-3 py-2 text-sm rounded-lg border transition-colors ${
+                  textOptions.underline
+                    ? "bg-blue-100 border-blue-300 text-blue-800"
+                    : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+                }`}
+              >
+                <u>Underline</u>
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Text Effects */}
-        <div>
-          <label className="block text-sm font-medium text-gray-600 mb-2">
+        {/* Effects */}
+        <div className="space-y-4">
+          <h4 className="text-sm font-medium text-gray-700 uppercase tracking-wide">
             Effects
-          </label>
-          <div className="flex flex-wrap gap-2">
+          </h4>
+
+          {/* Text Stroke */}
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-2">
+              Text Stroke
+            </label>
+            <div className="space-y-3">
+              <div className="flex items-center space-x-3">
+                <input
+                  type="color"
+                  value={textOptions.stroke || "#000000"}
+                  onChange={(e) => handleOptionChange("stroke", e.target.value)}
+                  className="w-10 h-10 border border-gray-300 rounded-lg cursor-pointer flex-shrink-0"
+                />
+                <input
+                  type="text"
+                  value={textOptions.stroke}
+                  onChange={(e) => handleOptionChange("stroke", e.target.value)}
+                  className="flex-1 min-w-0 p-2.5 border border-gray-300 rounded-lg text-sm font-mono focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="No stroke"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">
+                  Stroke Width
+                </label>
+                <div className="flex items-center space-x-3">
+                  <input
+                    type="range"
+                    min="0"
+                    max="10"
+                    step="0.5"
+                    value={textOptions.strokeWidth}
+                    onChange={(e) =>
+                      handleOptionChange(
+                        "strokeWidth",
+                        parseFloat(e.target.value)
+                      )
+                    }
+                    className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                  />
+                  <input
+                    type="number"
+                    min="0"
+                    max="10"
+                    step="0.5"
+                    value={textOptions.strokeWidth}
+                    onChange={(e) =>
+                      handleOptionChange(
+                        "strokeWidth",
+                        parseFloat(e.target.value)
+                      )
+                    }
+                    className="w-16 p-1.5 border border-gray-300 rounded text-xs text-center focus:ring-2 focus:ring-blue-500 focus:border-transparent flex-shrink-0"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Shadow Effect */}
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-2">
+              Shadow Effect
+            </label>
             <button
               type="button"
               onClick={() => handleOptionChange("shadow", !textOptions.shadow)}
-              className={`px-3 py-1 text-sm rounded border transition-colors ${
+              className={`w-full px-3 py-2 text-sm rounded-lg border transition-colors ${
                 textOptions.shadow
                   ? "bg-purple-100 border-purple-300 text-purple-800"
                   : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
@@ -425,195 +586,135 @@ const TextPanel: React.FC<TextPanelProps> = ({
             </button>
           </div>
         </div>
-      </div>
 
-      {/* Text Style Buttons */}
-      <div className="space-y-3">
-        <button
-          onClick={() => addHeading(textOptions)}
-          className="w-full p-4 bg-white rounded-lg shadow-sm hover:shadow-md text-left border border-gray-200 transition-shadow"
-        >
-          <p
-            className="text-2xl font-bold text-gray-800"
-            style={{
-              fontFamily: textOptions.fontFamily,
-              fontWeight: textOptions.fontWeight,
-              textAlign: textOptions.textAlign,
-              color: textOptions.fill,
-              lineHeight: textOptions.lineHeight,
-              letterSpacing: `${textOptions.letterSpacing}px`,
-              fontStyle: textOptions.fontStyle,
-              textDecoration: textOptions.underline ? "underline" : "none",
-              textTransform: textOptions.textTransform,
-            }}
-          >
-            Add a heading
-          </p>
-          <span className="text-xs text-gray-500 mt-1 block">
-            Large title text - Default: 88px
-          </span>
-        </button>
+        {/* Quick Presets */}
+        <div className="space-y-4">
+          <h4 className="text-sm font-medium text-gray-700 uppercase tracking-wide">
+            Quick Presets
+          </h4>
 
-        <button
-          onClick={() => addSubheading(textOptions)}
-          className="w-full p-4 bg-white rounded-lg shadow-sm hover:shadow-md text-left border border-gray-200 transition-shadow"
-        >
-          <p
-            className="text-lg font-semibold text-gray-700"
-            style={{
-              fontFamily: textOptions.fontFamily,
-              fontWeight: textOptions.fontWeight,
-              textAlign: textOptions.textAlign,
-              color: textOptions.fill,
-              lineHeight: textOptions.lineHeight,
-              letterSpacing: `${textOptions.letterSpacing}px`,
-              fontStyle: textOptions.fontStyle,
-              textDecoration: textOptions.underline ? "underline" : "none",
-              textTransform: textOptions.textTransform,
-            }}
-          >
-            Add a subheading
-          </p>
-          <span className="text-xs text-gray-500 mt-1 block">
-            Medium subtitle text - Default: 44px
-          </span>
-        </button>
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              onClick={() => {
+                const elegantOptions: Partial<TextOptions> = {
+                  fontFamily: "Georgia",
+                  fontWeight: "normal",
+                  fill: "#2c3e50",
+                  textAlign: "center",
+                };
+                setTextOptions((prev) => ({ ...prev, ...elegantOptions }));
+              }}
+              className="p-3 text-left bg-blue-50 hover:bg-blue-100 rounded-lg border border-blue-200 transition-colors"
+            >
+              <span className="block font-medium text-blue-800 text-sm">
+                Elegant
+              </span>
+              <span className="block text-xs text-blue-600 mt-1">
+                Georgia, Center
+              </span>
+            </button>
 
-        <button
-          onClick={() => addBodyText(textOptions)}
-          className="w-full p-4 bg-white rounded-lg shadow-sm hover:shadow-md text-left border border-gray-200 transition-shadow"
-        >
-          <p
-            className="text-base text-gray-600"
-            style={{
-              fontFamily: textOptions.fontFamily,
-              fontWeight: textOptions.fontWeight,
-              textAlign: textOptions.textAlign,
-              color: textOptions.fill,
-              lineHeight: textOptions.lineHeight,
-              letterSpacing: `${textOptions.letterSpacing}px`,
-              fontStyle: textOptions.fontStyle,
-              textDecoration: textOptions.underline ? "underline" : "none",
-              textTransform: textOptions.textTransform,
-            }}
-          >
-            Add a little bit of body text
-          </p>
-          <span className="text-xs text-gray-500 mt-1 block">
-            Regular paragraph text - Uses current font size
-          </span>
-        </button>
-      </div>
+            <button
+              onClick={() => {
+                const modernOptions: Partial<TextOptions> = {
+                  fontFamily: "Arial",
+                  fontWeight: "600",
+                  fill: "#34495e",
+                  textAlign: "left",
+                };
+                setTextOptions((prev) => ({ ...prev, ...modernOptions }));
+              }}
+              className="p-3 text-left bg-green-50 hover:bg-green-100 rounded-lg border border-green-200 transition-colors"
+            >
+              <span className="block font-medium text-green-800 text-sm">
+                Modern
+              </span>
+              <span className="block text-xs text-green-600 mt-1">
+                Arial, Semi-bold
+              </span>
+            </button>
 
-      {/* Quick Style Presets */}
-      <div className="space-y-3">
-        <h4 className="text-md font-medium text-gray-700">Quick Presets</h4>
+            <button
+              onClick={() => {
+                const classicOptions: Partial<TextOptions> = {
+                  fontFamily: "Times New Roman",
+                  fontWeight: "normal",
+                  fill: "#000000",
+                  textAlign: "justify",
+                };
+                setTextOptions((prev) => ({ ...prev, ...classicOptions }));
+              }}
+              className="p-3 text-left bg-amber-50 hover:bg-amber-100 rounded-lg border border-amber-200 transition-colors"
+            >
+              <span className="block font-medium text-amber-800 text-sm">
+                Classic
+              </span>
+              <span className="block text-xs text-amber-600 mt-1">
+                Times, Justify
+              </span>
+            </button>
 
-        <div className="grid grid-cols-2 gap-2">
-          <button
-            onClick={() => {
-              const elegantOptions: Partial<TextOptions> = {
-                fontFamily: "Georgia",
-                fontWeight: "normal",
-                fill: "#2c3e50",
-                textAlign: "center",
-              };
-              setTextOptions((prev) => ({ ...prev, ...elegantOptions }));
-            }}
-            className="p-2 text-sm bg-blue-50 hover:bg-blue-100 rounded border border-blue-200 transition-colors"
-          >
-            <span className="font-medium text-blue-800">Elegant</span>
-            <br />
-            <span className="text-xs text-blue-600">Georgia, Center</span>
-          </button>
-
-          <button
-            onClick={() => {
-              const modernOptions: Partial<TextOptions> = {
-                fontFamily: "Arial",
-                fontWeight: "600",
-                fill: "#34495e",
-                textAlign: "left",
-              };
-              setTextOptions((prev) => ({ ...prev, ...modernOptions }));
-            }}
-            className="p-2 text-sm bg-green-50 hover:bg-green-100 rounded border border-green-200 transition-colors"
-          >
-            <span className="font-medium text-green-800">Modern</span>
-            <br />
-            <span className="text-xs text-green-600">Arial, Semi-bold</span>
-          </button>
-
-          <button
-            onClick={() => {
-              const classicOptions: Partial<TextOptions> = {
-                fontFamily: "Times New Roman",
-                fontWeight: "normal",
-                fill: "#000000",
-                textAlign: "justify",
-              };
-              setTextOptions((prev) => ({ ...prev, ...classicOptions }));
-            }}
-            className="p-2 text-sm bg-amber-50 hover:bg-amber-100 rounded border border-amber-200 transition-colors"
-          >
-            <span className="font-medium text-amber-800">Classic</span>
-            <br />
-            <span className="text-xs text-amber-600">Times, Justify</span>
-          </button>
-
-          <button
-            onClick={() => {
-              const boldOptions: Partial<TextOptions> = {
-                fontFamily: "Impact",
-                fontWeight: "bold",
-                fill: "#e74c3c",
-                textAlign: "center",
-              };
-              setTextOptions((prev) => ({ ...prev, ...boldOptions }));
-            }}
-            className="p-2 text-sm bg-red-50 hover:bg-red-100 rounded border border-red-200 transition-colors"
-          >
-            <span className="font-medium text-red-800">Bold</span>
-            <br />
-            <span className="text-xs text-red-600">Impact, Bold</span>
-          </button>
+            <button
+              onClick={() => {
+                const boldOptions: Partial<TextOptions> = {
+                  fontFamily: "Impact",
+                  fontWeight: "bold",
+                  fill: "#e74c3c",
+                  textAlign: "center",
+                };
+                setTextOptions((prev) => ({ ...prev, ...boldOptions }));
+              }}
+              className="p-3 text-left bg-red-50 hover:bg-red-100 rounded-lg border border-red-200 transition-colors"
+            >
+              <span className="block font-medium text-red-800 text-sm">
+                Bold
+              </span>
+              <span className="block text-xs text-red-600 mt-1">
+                Impact, Bold
+              </span>
+            </button>
+          </div>
         </div>
-      </div>
 
-      {/* Live Preview */}
-      <div className="space-y-3">
-        <h4 className="text-md font-medium text-gray-700">Live Preview</h4>
-        <div className="p-4 bg-white border border-gray-200 rounded-lg min-h-[80px] flex items-center justify-center">
-          <p
-            style={{
-              fontFamily: textOptions.fontFamily,
-              fontWeight: textOptions.fontWeight,
-              fontSize: `${Math.min(textOptions.fontSize, 32)}px`,
-              color: textOptions.fill,
-              textAlign: textOptions.textAlign,
-              lineHeight: textOptions.lineHeight,
-              letterSpacing: `${textOptions.letterSpacing}px`,
-              fontStyle: textOptions.fontStyle,
-              textDecoration: textOptions.underline ? "underline" : "none",
-              textTransform: textOptions.textTransform,
-              backgroundColor: textOptions.backgroundColor || "transparent",
-              padding: textOptions.backgroundColor ? "4px 8px" : "0",
-              borderRadius: textOptions.backgroundColor ? "4px" : "0",
-              textShadow: textOptions.shadow
-                ? "2px 2px 4px rgba(0,0,0,0.3)"
-                : "none",
-              WebkitTextStroke:
-                textOptions.strokeWidth > 0
-                  ? `${textOptions.strokeWidth}px ${textOptions.stroke}`
+        {/* Live Preview */}
+        <div className="space-y-4">
+          <h4 className="text-sm font-medium text-gray-700 uppercase tracking-wide">
+            Live Preview
+          </h4>
+          <div className="p-4 bg-white border border-gray-200 rounded-lg min-h-[100px] flex items-center justify-center">
+            <p
+              style={{
+                fontFamily: textOptions.fontFamily,
+                fontWeight: textOptions.fontWeight,
+                fontSize: `${Math.min(textOptions.fontSize, 24)}px`,
+                color: textOptions.fill,
+                textAlign: textOptions.textAlign,
+                lineHeight: textOptions.lineHeight,
+                letterSpacing: `${textOptions.letterSpacing}px`,
+                fontStyle: textOptions.fontStyle,
+                textDecoration: textOptions.underline ? "underline" : "none",
+                textTransform: textOptions.textTransform,
+                backgroundColor: textOptions.backgroundColor || "transparent",
+                padding: textOptions.backgroundColor ? "6px 12px" : "0",
+                borderRadius: textOptions.backgroundColor ? "6px" : "0",
+                textShadow: textOptions.shadow
+                  ? "2px 2px 4px rgba(0,0,0,0.3)"
                   : "none",
-            }}
-          >
-            Sample Text Preview
+                WebkitTextStroke:
+                  textOptions.strokeWidth > 0
+                    ? `${textOptions.strokeWidth}px ${textOptions.stroke}`
+                    : "none",
+                maxWidth: "100%",
+                wordBreak: "break-word",
+              }}
+            >
+              Sample Text Preview
+            </p>
+          </div>
+          <p className="text-xs text-gray-500 text-center">
+            Preview displays text at reduced size for optimal viewing
           </p>
         </div>
-        <p className="text-xs text-gray-500 text-center">
-          Preview shows text at reduced size for display purposes
-        </p>
       </div>
     </div>
   );
