@@ -159,22 +159,24 @@ const TextPanel: React.FC<TextPanelProps> = ({
     "Times New Roman",
     "Georgia",
     "Verdana",
+    "Trebuchet MS",
+    "Impact",
     "Courier New",
     "Comic Sans MS",
-    "Impact",
-    "Trebuchet MS",
-    "Palatino",
+    "'Open Sans', sans-serif",
+    "'Roboto', sans-serif",
+    "'Lato', sans-serif",
+    "'Montserrat', sans-serif",
+    "'Poppins', sans-serif",
   ];
 
   const fontWeights = [
-    { label: "Thin", value: "100" },
     { label: "Light", value: "300" },
     { label: "Normal", value: "normal" },
     { label: "Medium", value: "500" },
     { label: "Semi Bold", value: "600" },
     { label: "Bold", value: "bold" },
     { label: "Extra Bold", value: "800" },
-    { label: "Black", value: "900" },
   ];
 
   const textAlignments = [
@@ -327,6 +329,14 @@ const TextPanel: React.FC<TextPanelProps> = ({
           <h4 className="text-sm font-medium text-gray-700 uppercase tracking-wide">
             Font Properties
           </h4>
+
+          <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+            <p className="text-xs text-amber-800">
+              💡 <strong>Tip:</strong> For best weight support, use Google Fonts
+              (Open Sans, Roboto, Lato, Montserrat, Poppins). System fonts may
+              only show Normal/Bold variations.
+            </p>
+          </div>
 
           {/* Font Family & Weight Row */}
           <div className="grid grid-cols-2 gap-3">
@@ -726,7 +736,7 @@ const TextPanel: React.FC<TextPanelProps> = ({
                   textAlign: "center",
                 };
                 setTextOptions((prev) => ({ ...prev, ...elegantOptions }));
-                
+
                 // Apply to selected object if it's a text object
                 if (isSelectedTextObject) {
                   Object.entries(elegantOptions).forEach(([key, value]) => {
@@ -753,7 +763,7 @@ const TextPanel: React.FC<TextPanelProps> = ({
                   textAlign: "left",
                 };
                 setTextOptions((prev) => ({ ...prev, ...modernOptions }));
-                
+
                 // Apply to selected object if it's a text object
                 if (isSelectedTextObject) {
                   Object.entries(modernOptions).forEach(([key, value]) => {
@@ -780,7 +790,7 @@ const TextPanel: React.FC<TextPanelProps> = ({
                   textAlign: "justify",
                 };
                 setTextOptions((prev) => ({ ...prev, ...classicOptions }));
-                
+
                 // Apply to selected object if it's a text object
                 if (isSelectedTextObject) {
                   Object.entries(classicOptions).forEach(([key, value]) => {
@@ -807,7 +817,7 @@ const TextPanel: React.FC<TextPanelProps> = ({
                   textAlign: "center",
                 };
                 setTextOptions((prev) => ({ ...prev, ...boldOptions }));
-                
+
                 // Apply to selected object if it's a text object
                 if (isSelectedTextObject) {
                   Object.entries(boldOptions).forEach(([key, value]) => {
