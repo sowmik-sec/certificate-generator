@@ -32,6 +32,54 @@ export default function CertificateGeneratorPage() {
   const [editorMode, setEditorMode] = useState<EditorMode>("templates");
   const [copiedObject, setCopiedObject] = useState<FabricObject>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
+  const [history, setHistory] = useState<any[]>([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
+
+  const saveToHistory = useCallback(() => {
+    if (!canvas) return;
+    const state = JSON.stringify(canvas.toJSON());
+    const newHistory = history.slice(0, historyIndex + 1);
+    newHistory.push(state);
+    setHistory(newHistory);
+    setHistoryIndex(newHistory.length - 1);
+  }, [canvas, history, historyIndex]);
+
+  const undo = useCallback(() => {
+    if (historyIndex > 0) {
+      const newIndex = historyIndex - 1;
+      canvas.loadFromJSON(JSON.parse(history[newIndex]), () => {
+        canvas.renderAll();
+        setHistoryIndex(newIndex);
+      });
+    }
+  }, [canvas, history, historyIndex]);
+
+  const redo = useCallback(() => {
+    if (historyIndex < history.length - 1) {
+      const newIndex = historyIndex + 1;
+      canvas.loadFromJSON(JSON.parse(history[newIndex]), () => {
+        canvas.renderAll();
+        setHistoryIndex(newIndex);
+      });
+    }
+  }, [canvas, history, historyIndex]);
+
+  // Add keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "z" && !e.shiftKey) {
+        undo();
+      }
+      if (
+        (e.ctrlKey || e.metaKey) &&
+        (e.key === "y" || (e.key === "z" && e.shiftKey))
+      ) {
+        redo();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [historyIndex, redo, undo]);
 
   // Dynamically load Fabric.js from a CDN
   useEffect(() => {
@@ -120,6 +168,7 @@ export default function CertificateGeneratorPage() {
     canvas.add(textObject);
     canvas.setActiveObject(textObject);
     canvas.renderAll();
+    saveToHistory(); // Save state after adding text
   };
   const addHeading = (customOptions: object = {}) =>
     addText("Add a heading", {
@@ -159,6 +208,7 @@ export default function CertificateGeneratorPage() {
         canvas.add(img);
         canvas.setActiveObject(img);
         canvas.renderAll();
+        saveToHistory(); // Save state after adding image
       },
       { crossOrigin: "anonymous" }
     );
@@ -176,6 +226,7 @@ export default function CertificateGeneratorPage() {
     canvas.add(rect);
     canvas.setActiveObject(rect);
     canvas.renderAll();
+    saveToHistory(); // Save state after adding square
   };
 
   const addCircle = (options: { fill?: string } = {}) => {
@@ -189,6 +240,7 @@ export default function CertificateGeneratorPage() {
     canvas.add(circle);
     canvas.setActiveObject(circle);
     canvas.renderAll();
+    saveToHistory(); // Save state after adding circle
   };
 
   const addTriangle = (options: { fill?: string } = {}) => {
@@ -203,6 +255,7 @@ export default function CertificateGeneratorPage() {
     canvas.add(triangle);
     canvas.setActiveObject(triangle);
     canvas.renderAll();
+    saveToHistory(); // Save state after adding triangle
   };
 
   const addLine = (options = {}) => {
@@ -217,6 +270,7 @@ export default function CertificateGeneratorPage() {
     canvas.add(line);
     canvas.setActiveObject(line);
     canvas.renderAll();
+    saveToHistory(); // Save state after adding line
   };
 
   const addDashedLine = (options = {}) =>
@@ -719,7 +773,8 @@ export default function CertificateGeneratorPage() {
     canvas.discardActiveObject();
     canvas.renderAll();
     setSelectedObject(null);
-  }, [canvas, selectedObject]);
+    saveToHistory(); // Save state after deletion
+  }, [canvas, selectedObject, saveToHistory]);
 
   const handleCopy = useCallback(() => {
     if (!selectedObject) return;
