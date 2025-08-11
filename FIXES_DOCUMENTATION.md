@@ -69,13 +69,38 @@
 - `src/components/properties-pannel.tsx` - Completely redesigned with contextual controls
 - `src/app/page.tsx` - Made properties panel always visible when object is selected
 
-### 5. Enhanced User Experience
+### 5. Layout and Responsive Design Fixes
+**Problem**: Horizontal scrollbar appeared when the properties panel was visible, causing layout issues.
+
+**Solution**:
+- Added proper `overflow-hidden` classes to prevent horizontal scrolling
+- Used `flex-shrink-0` on sidebar panels to prevent unwanted shrinking
+- Added `min-w-0` to main content area to allow proper flex behavior
+- Improved responsive layout structure with better flex controls
+
+**Files Modified**:
+- `src/app/page.tsx` - Fixed layout structure and overflow issues
+
+### 6. Text Panel Functionality
+**Problem**: Text panel buttons needed clarification on what they do (font sizes, weights).
+
+**Solution**:
+- Added descriptive text showing font sizes (88px for headings, 44px for subheadings, 24px for body)
+- Ensured buttons call the correct functions with proper default styling
+- Improved visual hierarchy with better descriptions
+
+**Files Modified**:
+- `src/components/text-pannel.tsx` - Enhanced button descriptions and functionality
+
+### 7. Enhanced User Experience
 **Additional Improvements Made**:
 - Better styling for table controls with proper focus states and transitions
 - Improved text alignment in both sticky notes and table cells (centered by default)
 - Added input validation to prevent invalid table dimensions
 - Enhanced visual feedback for interactive elements
 - Professional-grade contextual interface similar to Canva
+- Eliminated horizontal scrollbar issues
+- Responsive layout that works on all screen sizes
 
 ## How It Works Now
 

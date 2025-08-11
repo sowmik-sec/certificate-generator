@@ -1011,7 +1011,7 @@ export default function CertificateGeneratorPage() {
   }
 
   return (
-    <div className="flex flex-col md:flex-row h-screen w-screen bg-gray-100 font-sans">
+    <div className="flex flex-col md:flex-row h-screen w-screen bg-gray-100 font-sans overflow-hidden">
       <input
         type="file"
         accept="image/*"
@@ -1019,12 +1019,14 @@ export default function CertificateGeneratorPage() {
         className="hidden text-gray-700"
         onChange={handleImageElementUpload}
       />
-      <aside className="w-full md:w-20 bg-gray-800 text-white flex md:flex-col items-center p-2 md:py-4">
+      
+      {/* Left Sidebar - Navigation */}
+      <aside className="w-full md:w-20 bg-gray-800 text-white flex md:flex-col items-center p-2 md:py-4 flex-shrink-0">
         <div className="text-2xl font-bold mr-auto md:mr-0 md:mb-8">CG</div>
         <nav className="flex flex-row md:flex-col space-x-2 md:space-x-0 md:space-y-4">
           <button
             onClick={() => setEditorMode("templates")}
-            className={`p-2 rounded-lg ${
+            className={`p-2 rounded-lg transition-colors ${
               editorMode === "templates" ? "bg-blue-500" : "hover:bg-gray-700"
             }`}
             title="Templates"
@@ -1034,7 +1036,7 @@ export default function CertificateGeneratorPage() {
 
           <button
             onClick={() => setEditorMode("tools")}
-            className={`p-2 rounded-lg ${
+            className={`p-2 rounded-lg transition-colors ${
               editorMode === "tools" ? "bg-indigo-500" : "hover:bg-gray-700"
             }`}
             title="Tools"
@@ -1043,7 +1045,7 @@ export default function CertificateGeneratorPage() {
           </button>
           <button
             onClick={() => setEditorMode("text")}
-            className={`p-2 rounded-lg ${
+            className={`p-2 rounded-lg transition-colors ${
               editorMode === "text" ? "bg-yellow-500" : "hover:bg-gray-700"
             }`}
             title="Add Text"
@@ -1052,14 +1054,14 @@ export default function CertificateGeneratorPage() {
           </button>
           <button
             onClick={() => imageInputRef.current?.click()}
-            className={`p-2 rounded-lg hover:bg-gray-700`}
+            className={`p-2 rounded-lg hover:bg-gray-700 transition-colors`}
             title="Add Image"
           >
             <ImageIcon size={24} />
           </button>
           <button
             onClick={() => setEditorMode("elements")}
-            className={`p-2 rounded-lg ${
+            className={`p-2 rounded-lg transition-colors ${
               editorMode === "elements" ? "bg-green-500" : "hover:bg-gray-700"
             }`}
             title="Elements"
@@ -1069,7 +1071,8 @@ export default function CertificateGeneratorPage() {
         </nav>
       </aside>
 
-      <aside className="w-full md:w-80 bg-gray-200 p-4 overflow-y-auto h-64 md:h-screen">
+      {/* Left Panel - Tools */}
+      <aside className="w-full md:w-80 bg-gray-200 p-4 overflow-y-auto h-64 md:h-screen flex-shrink-0">
         {editorMode === "templates" && (
           <TemplatesPanel
             onSelectTemplate={loadTemplate}
@@ -1111,7 +1114,6 @@ export default function CertificateGeneratorPage() {
             addBodyText={addBodyText}
             selectedObject={selectedObject}
             canvas={canvas}
-            // fabric={fabric}
           />
         )}
         {editorMode === "tools" && (
@@ -1123,8 +1125,10 @@ export default function CertificateGeneratorPage() {
         )}
       </aside>
 
-      <main className="flex-1 flex flex-col">
-        <header className="bg-white shadow-md z-10 flex justify-end items-center p-2 space-x-2">
+      {/* Main Content Area */}
+      <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        {/* Header */}
+        <header className="bg-white shadow-md z-10 flex justify-end items-center p-2 space-x-2 flex-shrink-0">
           {selectedObject && (
             <button
               onClick={deleteSelected}
@@ -1142,16 +1146,20 @@ export default function CertificateGeneratorPage() {
           </button>
         </header>
 
-        <div className="flex-1 flex">
-          <div className="flex-1 flex items-center justify-center p-4 md:p-8 bg-gray-300 overflow-hidden">
+        {/* Canvas and Properties Panel Container */}
+        <div className="flex-1 flex overflow-hidden">
+          {/* Canvas Area */}
+          <div className="flex-1 flex items-center justify-center p-4 md:p-8 bg-gray-300 overflow-hidden min-w-0">
             <CanvasComponent
               fabric={fabric}
               setCanvas={handleSetCanvas}
               setSelectedObject={setSelectedObject}
             />
           </div>
+          
+          {/* Right Properties Panel */}
           {selectedObject && (
-            <aside className="w-80 bg-white border-l border-gray-200 p-4 overflow-y-auto shadow-lg">
+            <aside className="w-80 bg-white border-l border-gray-200 p-4 overflow-y-auto shadow-lg flex-shrink-0">
               <PropertiesPanel
                 selectedObject={selectedObject}
                 canvas={canvas}
