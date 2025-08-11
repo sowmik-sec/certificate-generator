@@ -1,5 +1,5 @@
 "use client";
-import { FabricCanvas } from "@/app/page";
+import { FabricCanvas } from "@/types/fabric";
 import { Pencil, StickyNote, Table } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -9,8 +9,14 @@ interface ToolsPanelProps {
   addTable: (rows: number, cols: number) => void;
   addSimpleFrame: (options?: { stroke?: string; strokeWidth?: number }) => void;
   addDoubleFrame: (options?: { stroke?: string; strokeWidth?: number }) => void;
-  addDecorativeFrame: (options?: { stroke?: string; strokeWidth?: number }) => void;
-  addRoundedFrame: (options?: { stroke?: string; strokeWidth?: number }) => void;
+  addDecorativeFrame: (options?: {
+    stroke?: string;
+    strokeWidth?: number;
+  }) => void;
+  addRoundedFrame: (options?: {
+    stroke?: string;
+    strokeWidth?: number;
+  }) => void;
 }
 const ToolsPanel: React.FC<ToolsPanelProps> = ({
   canvas,
@@ -124,11 +130,11 @@ const ToolsPanel: React.FC<ToolsPanelProps> = ({
           </div>
         </div>
       )}
-      
+
       {/* Frames Section */}
       <div className="mt-6">
         <h4 className="text-md font-semibold mb-3">Frames</h4>
-        
+
         {/* Frame Color and Width Controls */}
         <div className="mb-4 p-3 bg-gray-50 rounded-lg space-y-3">
           <div>
@@ -159,11 +165,13 @@ const ToolsPanel: React.FC<ToolsPanelProps> = ({
             />
           </div>
         </div>
-        
+
         {/* Frame Types */}
         <div className="grid grid-cols-2 gap-3">
           <button
-            onClick={() => addSimpleFrame({ stroke: frameColor, strokeWidth: frameWidth })}
+            onClick={() =>
+              addSimpleFrame({ stroke: frameColor, strokeWidth: frameWidth })
+            }
             className="flex flex-col items-center justify-center p-3 bg-white rounded-lg shadow-sm hover:shadow-md hover:bg-gray-50 transition-all"
           >
             <svg
@@ -184,9 +192,11 @@ const ToolsPanel: React.FC<ToolsPanelProps> = ({
             </svg>
             <span className="text-xs text-gray-600">Simple</span>
           </button>
-          
+
           <button
-            onClick={() => addDoubleFrame({ stroke: frameColor, strokeWidth: frameWidth })}
+            onClick={() =>
+              addDoubleFrame({ stroke: frameColor, strokeWidth: frameWidth })
+            }
             className="flex flex-col items-center justify-center p-3 bg-white rounded-lg shadow-sm hover:shadow-md hover:bg-gray-50 transition-all"
           >
             <svg
@@ -216,9 +226,14 @@ const ToolsPanel: React.FC<ToolsPanelProps> = ({
             </svg>
             <span className="text-xs text-gray-600">Double</span>
           </button>
-          
+
           <button
-            onClick={() => addDecorativeFrame({ stroke: frameColor, strokeWidth: frameWidth })}
+            onClick={() =>
+              addDecorativeFrame({
+                stroke: frameColor,
+                strokeWidth: frameWidth,
+              })
+            }
             className="flex flex-col items-center justify-center p-3 bg-white rounded-lg shadow-sm hover:shadow-md hover:bg-gray-50 transition-all"
           >
             <svg
@@ -252,9 +267,11 @@ const ToolsPanel: React.FC<ToolsPanelProps> = ({
             </svg>
             <span className="text-xs text-gray-600">Decorative</span>
           </button>
-          
+
           <button
-            onClick={() => addRoundedFrame({ stroke: frameColor, strokeWidth: frameWidth })}
+            onClick={() =>
+              addRoundedFrame({ stroke: frameColor, strokeWidth: frameWidth })
+            }
             className="flex flex-col items-center justify-center p-3 bg-white rounded-lg shadow-sm hover:shadow-md hover:bg-gray-50 transition-all"
           >
             <svg

@@ -50,13 +50,15 @@ export default function CertificateGeneratorPage() {
   const lineHooks = useCanvasLines(canvas, fabric, saveToHistory);
   const textHooks = useCanvasText(canvas, fabric, saveToHistory);
   const frameHooks = useCanvasFrames(canvas, fabric, saveToHistory);
-  
-  const {
-    deleteSelected,
-    addImageFromURL,
-    addStickyNote,
-    addTable,
-  } = useCanvasOperations(canvas, fabric, selectedObject, setSelectedObject, saveToHistory);
+
+  const { deleteSelected, addImageFromURL, addStickyNote, addTable } =
+    useCanvasOperations(
+      canvas,
+      fabric,
+      selectedObject,
+      setSelectedObject,
+      saveToHistory
+    );
 
   const layerManagement = useLayerManagement(canvas, fabric, saveToHistory);
   const { exportAsPNG, exportAsPDF } = useCanvasExport(canvas, canvasSize);

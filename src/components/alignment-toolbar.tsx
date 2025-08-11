@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import { FabricCanvas } from "@/app/page";
+import { FabricCanvas } from "@/types/fabric";
 import {
   AlignLeft,
   AlignCenter,

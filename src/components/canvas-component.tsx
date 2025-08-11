@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import { FabricCanvas, FabricModule } from "@/app/page";
+import { FabricCanvas, FabricModule } from "@/types/fabric";
 import { FabricObject } from "fabric";
 import { useCallback, useEffect, useRef } from "react";
 
