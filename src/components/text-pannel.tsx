@@ -202,23 +202,6 @@ const TextPanel: React.FC<TextPanelProps> = ({
   return (
     <div className="h-full overflow-y-auto">
       <div className="p-4 space-y-6">
-        {/* Header */}
-        <div className="border-b border-gray-200 pb-3">
-          <h3 className="text-lg font-semibold text-gray-800">Text Styles</h3>
-          <p className="text-sm text-gray-500 mt-1">
-            {isSelectedTextObject
-              ? "Editing selected text object"
-              : "Customize your text appearance"}
-          </p>
-          {isSelectedTextObject && (
-            <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-lg">
-              <p className="text-xs text-blue-800 font-medium">
-                ✓ Text object selected - changes will apply immediately
-              </p>
-            </div>
-          )}
-        </div>
-
         {/* Quick Add Buttons */}
         <div className="space-y-3">
           <h4 className="text-sm font-medium text-gray-700 uppercase tracking-wide">
