@@ -12,10 +12,10 @@ import {
 } from "lucide-react";
 import TemplatesPanel from "@/components/templates-pannel";
 import ElementsPanel from "@/components/elements-pannel";
-import TextPanel from "@/components/text-pannel";
 import ToolsPanel from "@/components/tools-pannel";
 import CanvasComponent from "@/components/canvas-component";
 import PropertiesPanel from "@/components/properties-pannel";
+import TextPanel from "@/components/text-pannel";
 
 // Simplified types to `any` to prevent build-time type resolution errors on the server.
 export type FabricModule = any;
@@ -1094,6 +1094,9 @@ export default function CertificateGeneratorPage() {
             addHeading={addHeading}
             addSubheading={addSubheading}
             addBodyText={addBodyText}
+            selectedObject={selectedObject}
+            canvas={canvas}
+            // fabric={fabric}
           />
         )}
         {editorMode === "tools" && (

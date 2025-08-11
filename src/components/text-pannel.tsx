@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import { useState } from "react";
+import React, { useState } from "react";
 
 type TextAlign = "left" | "center" | "right" | "justify";
 type TextTransform = "none" | "uppercase" | "lowercase" | "capitalize";
@@ -25,12 +26,16 @@ interface TextPanelProps {
   addHeading: (options?: object) => void;
   addSubheading: (options?: object) => void;
   addBodyText: (options?: object) => void;
+  selectedObject?: object;
+  canvas?: object;
 }
 
 const TextPanel: React.FC<TextPanelProps> = ({
   addHeading,
   addSubheading,
   addBodyText,
+  selectedObject,
+  canvas,
 }) => {
   const [textOptions, setTextOptions] = useState<TextOptions>({
     fontFamily: "Arial",
@@ -48,6 +53,105 @@ const TextPanel: React.FC<TextPanelProps> = ({
     backgroundColor: "",
     shadow: false,
   });
+
+  // Define a type for Fabric.js text objects
+  interface FabricTextObject {
+    type: "textbox" | "text" | "i-text";
+    fontFamily?: string;
+    fontWeight?: string;
+    textAlign?: TextAlign;
+    fill?: string;
+    fontSize?: number;
+    lineHeight?: number;
+    charSpacing?: number;
+    fontStyle?: string;
+    underline?: boolean;
+    text?: string;
+    stroke?: string;
+    strokeWidth?: number;
+    backgroundColor?: string;
+    shadow?: any;
+    set: (props: Record<string, unknown>) => void;
+  }
+
+  // Check if selected object is a text object
+  const isSelectedTextObject =
+    selectedObject &&
+    ((selectedObject as FabricTextObject).type === "textbox" ||
+      (selectedObject as FabricTextObject).type === "text" ||
+      (selectedObject as FabricTextObject).type === "i-text");
+
+  // Sync text options with selected object when selection changes
+  React.useEffect(() => {
+    if (isSelectedTextObject && selectedObject) {
+      const obj = selectedObject as any;
+      setTextOptions({
+        fontFamily: obj.fontFamily || "Arial",
+        fontWeight: obj.fontWeight || "normal",
+        textAlign: obj.textAlign || "left",
+        fill: obj.fill || "#000000",
+        fontSize: obj.fontSize || 24,
+        lineHeight: obj.lineHeight || 1.2,
+        letterSpacing: (obj.charSpacing || 0) / 50, // Convert from Fabric.js scale
+        fontStyle: obj.fontStyle || "normal",
+        underline: obj.underline || false,
+        textTransform: "none", // This is handled differently in Fabric.js
+        stroke: obj.stroke || "",
+        strokeWidth: obj.strokeWidth || 0,
+        backgroundColor: obj.backgroundColor || "",
+        shadow: obj.shadow ? true : false,
+      });
+    }
+  }, [selectedObject, isSelectedTextObject]);
+
+  // Update selected object when text options change
+  const updateSelectedObject = (
+    key: string,
+    value: string | number | boolean
+  ) => {
+    if (!isSelectedTextObject || !selectedObject || !canvas) return;
+
+    const obj = selectedObject as any;
+    const canvasObj = canvas as any;
+    const updateObj: Record<string, unknown> = {};
+
+    if (key === "letterSpacing") {
+      updateObj["charSpacing"] = (value as number) * 50; // Convert to Fabric.js scale
+    } else if (key === "textTransform") {
+      // For text transform, we need to modify the actual text content
+      const currentText = obj.text || "";
+      let transformedText = currentText;
+
+      switch (value) {
+        case "uppercase":
+          transformedText = currentText.toUpperCase();
+          break;
+        case "lowercase":
+          transformedText = currentText.toLowerCase();
+          break;
+        case "capitalize":
+          transformedText = currentText.replace(
+            /\w\S*/g,
+            (txt: string) =>
+              txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
+          );
+          break;
+        case "none":
+        default:
+          // Keep original text - we'd need to store original somewhere for this to work perfectly
+          break;
+      }
+
+      updateObj["text"] = transformedText;
+    } else if (key === "shadow") {
+      updateObj["shadow"] = value ? "rgba(0,0,0,0.3) 2px 2px 4px" : null;
+    } else {
+      updateObj[key] = value;
+    }
+
+    obj.set(updateObj);
+    canvasObj.renderAll();
+  };
 
   const fontFamilies = [
     "Arial",
@@ -88,6 +192,9 @@ const TextPanel: React.FC<TextPanelProps> = ({
       ...prev,
       [key]: value,
     }));
+
+    // Also update the selected object if it's a text object
+    updateSelectedObject(key, value);
   };
 
   return (
@@ -97,15 +204,31 @@ const TextPanel: React.FC<TextPanelProps> = ({
         <div className="border-b border-gray-200 pb-3">
           <h3 className="text-lg font-semibold text-gray-800">Text Styles</h3>
           <p className="text-sm text-gray-500 mt-1">
-            Customize your text appearance
+            {isSelectedTextObject
+              ? "Editing selected text object"
+              : "Customize your text appearance"}
           </p>
+          {isSelectedTextObject && (
+            <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-xs text-blue-800 font-medium">
+                ✓ Text object selected - changes will apply immediately
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Quick Add Buttons */}
         <div className="space-y-3">
           <h4 className="text-sm font-medium text-gray-700 uppercase tracking-wide">
-            Quick Add
+            {isSelectedTextObject ? "Add New Text" : "Quick Add"}
           </h4>
+
+          {isSelectedTextObject && (
+            <p className="text-xs text-gray-500 mb-3">
+              Click below to add new text with current settings, or modify
+              properties above to edit selected text.
+            </p>
+          )}
 
           <button
             onClick={() => addHeading(textOptions)}
@@ -603,6 +726,13 @@ const TextPanel: React.FC<TextPanelProps> = ({
                   textAlign: "center",
                 };
                 setTextOptions((prev) => ({ ...prev, ...elegantOptions }));
+                
+                // Apply to selected object if it's a text object
+                if (isSelectedTextObject) {
+                  Object.entries(elegantOptions).forEach(([key, value]) => {
+                    updateSelectedObject(key, value);
+                  });
+                }
               }}
               className="p-3 text-left bg-blue-50 hover:bg-blue-100 rounded-lg border border-blue-200 transition-colors"
             >
@@ -623,6 +753,13 @@ const TextPanel: React.FC<TextPanelProps> = ({
                   textAlign: "left",
                 };
                 setTextOptions((prev) => ({ ...prev, ...modernOptions }));
+                
+                // Apply to selected object if it's a text object
+                if (isSelectedTextObject) {
+                  Object.entries(modernOptions).forEach(([key, value]) => {
+                    updateSelectedObject(key, value);
+                  });
+                }
               }}
               className="p-3 text-left bg-green-50 hover:bg-green-100 rounded-lg border border-green-200 transition-colors"
             >
@@ -643,6 +780,13 @@ const TextPanel: React.FC<TextPanelProps> = ({
                   textAlign: "justify",
                 };
                 setTextOptions((prev) => ({ ...prev, ...classicOptions }));
+                
+                // Apply to selected object if it's a text object
+                if (isSelectedTextObject) {
+                  Object.entries(classicOptions).forEach(([key, value]) => {
+                    updateSelectedObject(key, value);
+                  });
+                }
               }}
               className="p-3 text-left bg-amber-50 hover:bg-amber-100 rounded-lg border border-amber-200 transition-colors"
             >
@@ -663,6 +807,13 @@ const TextPanel: React.FC<TextPanelProps> = ({
                   textAlign: "center",
                 };
                 setTextOptions((prev) => ({ ...prev, ...boldOptions }));
+                
+                // Apply to selected object if it's a text object
+                if (isSelectedTextObject) {
+                  Object.entries(boldOptions).forEach(([key, value]) => {
+                    updateSelectedObject(key, value);
+                  });
+                }
               }}
               className="p-3 text-left bg-red-50 hover:bg-red-100 rounded-lg border border-red-200 transition-colors"
             >
