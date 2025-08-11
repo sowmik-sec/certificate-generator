@@ -60,12 +60,24 @@ const ElementsPanel: React.FC<ElementsPanelProps> = ({
 }) => {
   const [lineColor, setLineColor] = useState("#333333");
   const [shapeColor, setShapeColor] = useState("#4A90E2");
-  
+
   // Predefined color palettes
   const colorPalette = [
-    '#4A90E2', '#E91E63', '#FFC107', '#8E24AA', '#FF7043',
-    '#4CAF50', '#2196F3', '#FF9800', '#9C27B0', '#607D8B',
-    '#F44336', '#03DAC5', '#6200EE', '#018786', '#000000'
+    "#4A90E2",
+    "#E91E63",
+    "#FFC107",
+    "#8E24AA",
+    "#FF7043",
+    "#4CAF50",
+    "#2196F3",
+    "#FF9800",
+    "#9C27B0",
+    "#607D8B",
+    "#F44336",
+    "#03DAC5",
+    "#6200EE",
+    "#018786",
+    "#000000",
   ];
 
   const shapes = [
@@ -408,7 +420,7 @@ const ElementsPanel: React.FC<ElementsPanelProps> = ({
       {/* Color Controls */}
       <div className="bg-gray-50 p-4 rounded-lg">
         <h3 className="text-md font-semibold mb-3">Colors</h3>
-        
+
         {/* Line Color */}
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -424,12 +436,21 @@ const ElementsPanel: React.FC<ElementsPanelProps> = ({
             <span className="text-sm text-gray-600">{lineColor}</span>
           </div>
           <div className="flex flex-wrap gap-2 mt-2">
-            {['#333333', '#666666', '#999999', '#E91E63', '#2196F3', '#4CAF50', '#FF9800', '#9C27B0'].map((color) => (
+            {[
+              "#333333",
+              "#666666",
+              "#999999",
+              "#E91E63",
+              "#2196F3",
+              "#4CAF50",
+              "#FF9800",
+              "#9C27B0",
+            ].map((color) => (
               <button
                 key={color}
                 onClick={() => setLineColor(color)}
                 className={`w-6 h-6 rounded border-2 ${
-                  lineColor === color ? 'border-gray-800' : 'border-gray-300'
+                  lineColor === color ? "border-gray-800" : "border-gray-300"
                 }`}
                 style={{ backgroundColor: color }}
                 title={color}
@@ -437,7 +458,7 @@ const ElementsPanel: React.FC<ElementsPanelProps> = ({
             ))}
           </div>
         </div>
-        
+
         {/* Shape Color */}
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -458,7 +479,7 @@ const ElementsPanel: React.FC<ElementsPanelProps> = ({
                 key={color}
                 onClick={() => setShapeColor(color)}
                 className={`w-6 h-6 rounded border-2 ${
-                  shapeColor === color ? 'border-gray-800' : 'border-gray-300'
+                  shapeColor === color ? "border-gray-800" : "border-gray-300"
                 }`}
                 style={{ backgroundColor: color }}
                 title={color}
@@ -467,9 +488,9 @@ const ElementsPanel: React.FC<ElementsPanelProps> = ({
           </div>
         </div>
       </div>
-      
+
       <div>
-        <h3 className="text-lg font-semibold mb-4">Lines</h3>
+        <h3 className="text-lg font-semibold mb-4 text-gray-800 ">Lines</h3>
         <div className="grid grid-cols-3 gap-3">
           {lines.map((line) => (
             <button
@@ -486,7 +507,7 @@ const ElementsPanel: React.FC<ElementsPanelProps> = ({
         </div>
       </div>
       <div>
-        <h3 className="text-lg font-semibold mb-4">Shapes</h3>
+        <h3 className="text-lg font-semibold mb-4 text-gray-800">Shapes</h3>
         <div className="grid grid-cols-3 gap-3">
           {shapes.map((shape) => (
             <button
