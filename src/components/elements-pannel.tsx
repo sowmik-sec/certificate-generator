@@ -11,17 +11,17 @@ import {
 import { useState } from "react";
 
 interface ElementsPanelProps {
-  addSquare: () => void;
-  addCircle: () => void;
-  addTriangle: () => void;
-  addRectangle: () => void;
-  addEllipse: () => void;
-  addStar: () => void;
-  addHeart: () => void;
-  addHexagon: () => void;
-  addPentagon: () => void;
-  addDiamond: () => void;
-  addArrowShape: () => void;
+  addSquare: (options?: { fill?: string }) => void;
+  addCircle: (options?: { fill?: string }) => void;
+  addTriangle: (options?: { fill?: string }) => void;
+  addRectangle: (options?: { fill?: string }) => void;
+  addEllipse: (options?: { fill?: string }) => void;
+  addStar: (options?: { fill?: string }) => void;
+  addHeart: (options?: { fill?: string }) => void;
+  addHexagon: (options?: { fill?: string }) => void;
+  addPentagon: (options?: { fill?: string }) => void;
+  addDiamond: (options?: { fill?: string }) => void;
+  addArrowShape: (options?: { fill?: string }) => void;
   addLine: (options?: { stroke?: string; strokeDashArray?: number[] }) => void;
   addDashedLine: (options?: { stroke?: string }) => void;
   addArrowLine: (options?: { stroke?: string }) => void;
@@ -59,12 +59,20 @@ const ElementsPanel: React.FC<ElementsPanelProps> = ({
   addDashDotLine,
 }) => {
   const [lineColor, setLineColor] = useState("#333333");
+  const [shapeColor, setShapeColor] = useState("#4A90E2");
+  
+  // Predefined color palettes
+  const colorPalette = [
+    '#4A90E2', '#E91E63', '#FFC107', '#8E24AA', '#FF7043',
+    '#4CAF50', '#2196F3', '#FF9800', '#9C27B0', '#607D8B',
+    '#F44336', '#03DAC5', '#6200EE', '#018786', '#000000'
+  ];
 
   const shapes = [
     {
       name: "Square",
       icon: <Square size={32} className="text-gray-700" />,
-      action: addSquare,
+      action: () => addSquare({ fill: shapeColor }),
     },
     {
       name: "Rectangle",
@@ -86,12 +94,12 @@ const ElementsPanel: React.FC<ElementsPanelProps> = ({
           />
         </svg>
       ),
-      action: addRectangle,
+      action: () => addRectangle({ fill: shapeColor }),
     },
     {
       name: "Circle",
       icon: <Circle size={32} className="text-gray-700" />,
-      action: addCircle,
+      action: () => addCircle({ fill: shapeColor }),
     },
     {
       name: "Ellipse",
@@ -113,27 +121,27 @@ const ElementsPanel: React.FC<ElementsPanelProps> = ({
           />
         </svg>
       ),
-      action: addEllipse,
+      action: () => addEllipse({ fill: shapeColor }),
     },
     {
       name: "Triangle",
       icon: <Triangle size={32} className="text-gray-700" />,
-      action: addTriangle,
+      action: () => addTriangle({ fill: shapeColor }),
     },
     {
       name: "Star",
       icon: <Star size={32} className="text-gray-700" />,
-      action: addStar,
+      action: () => addStar({ fill: shapeColor }),
     },
     {
       name: "Heart",
       icon: <Heart size={32} className="text-gray-700" />,
-      action: addHeart,
+      action: () => addHeart({ fill: shapeColor }),
     },
     {
       name: "Hexagon",
       icon: <Hexagon size={32} className="text-gray-700" />,
-      action: addHexagon,
+      action: () => addHexagon({ fill: shapeColor }),
     },
     {
       name: "Pentagon",
@@ -152,7 +160,7 @@ const ElementsPanel: React.FC<ElementsPanelProps> = ({
           />
         </svg>
       ),
-      action: addPentagon,
+      action: () => addPentagon({ fill: shapeColor }),
     },
     {
       name: "Diamond",
@@ -171,7 +179,7 @@ const ElementsPanel: React.FC<ElementsPanelProps> = ({
           />
         </svg>
       ),
-      action: addDiamond,
+      action: () => addDiamond({ fill: shapeColor }),
     },
     {
       name: "Arrow",
@@ -190,7 +198,7 @@ const ElementsPanel: React.FC<ElementsPanelProps> = ({
           />
         </svg>
       ),
-      action: addArrowShape,
+      action: () => addArrowShape({ fill: shapeColor }),
     },
   ];
 
@@ -397,6 +405,69 @@ const ElementsPanel: React.FC<ElementsPanelProps> = ({
   ];
   return (
     <div className="space-y-6">
+      {/* Color Controls */}
+      <div className="bg-gray-50 p-4 rounded-lg">
+        <h3 className="text-md font-semibold mb-3">Colors</h3>
+        
+        {/* Line Color */}
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Line Color
+          </label>
+          <div className="flex items-center space-x-2">
+            <input
+              type="color"
+              value={lineColor}
+              onChange={(e) => setLineColor(e.target.value)}
+              className="w-12 h-8 rounded border border-gray-300 cursor-pointer"
+            />
+            <span className="text-sm text-gray-600">{lineColor}</span>
+          </div>
+          <div className="flex flex-wrap gap-2 mt-2">
+            {['#333333', '#666666', '#999999', '#E91E63', '#2196F3', '#4CAF50', '#FF9800', '#9C27B0'].map((color) => (
+              <button
+                key={color}
+                onClick={() => setLineColor(color)}
+                className={`w-6 h-6 rounded border-2 ${
+                  lineColor === color ? 'border-gray-800' : 'border-gray-300'
+                }`}
+                style={{ backgroundColor: color }}
+                title={color}
+              />
+            ))}
+          </div>
+        </div>
+        
+        {/* Shape Color */}
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Shape Color
+          </label>
+          <div className="flex items-center space-x-2">
+            <input
+              type="color"
+              value={shapeColor}
+              onChange={(e) => setShapeColor(e.target.value)}
+              className="w-12 h-8 rounded border border-gray-300 cursor-pointer"
+            />
+            <span className="text-sm text-gray-600">{shapeColor}</span>
+          </div>
+          <div className="flex flex-wrap gap-2 mt-2">
+            {colorPalette.map((color) => (
+              <button
+                key={color}
+                onClick={() => setShapeColor(color)}
+                className={`w-6 h-6 rounded border-2 ${
+                  shapeColor === color ? 'border-gray-800' : 'border-gray-300'
+                }`}
+                style={{ backgroundColor: color }}
+                title={color}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+      
       <div>
         <h3 className="text-lg font-semibold mb-4">Lines</h3>
         <div className="grid grid-cols-3 gap-3">
