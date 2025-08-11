@@ -525,23 +525,29 @@ export default function CertificateGeneratorPage() {
       fontSize: 20,
       fontFamily: "Georgia",
       fill: "#000000",
+      textAlign: "center",
     });
-    const group = new fabric.Group([noteBg, noteText], { left: 150, top: 150 });
+
+    const group = new fabric.Group([noteBg, noteText], {
+      left: 150,
+      top: 150,
+      
+    });
+
     canvas.add(group);
     canvas.setActiveObject(group);
     canvas.renderAll();
   };
 
-  const addTable = () => {
+  const addTable = (rows: number, cols: number) => {
     if (!canvas || !fabric) return;
     const cellPadding = 10;
     const cellWidth = 150;
     const cellHeight = 50;
     const tableObjects = [];
-    for (let i = 0; i < 2; i++) {
-      // rows
-      for (let j = 0; j < 2; j++) {
-        // cols
+
+    for (let i = 0; i < rows; i++) {
+      for (let j = 0; j < cols; j++) {
         const cell = new fabric.Rect({
           width: cellWidth,
           height: cellHeight,
@@ -550,6 +556,7 @@ export default function CertificateGeneratorPage() {
           left: j * cellWidth,
           top: i * cellHeight,
         });
+
         const text = new fabric.Textbox(`Cell ${i}-${j}`, {
           width: cellWidth - cellPadding,
           height: cellHeight - cellPadding,
@@ -558,11 +565,19 @@ export default function CertificateGeneratorPage() {
           fontSize: 16,
           fill: "#000000",
           fontFamily: "Arial",
+          textAlign: "center",
         });
+
         tableObjects.push(cell, text);
       }
     }
-    const group = new fabric.Group(tableObjects, { left: 150, top: 150 });
+
+    const group = new fabric.Group(tableObjects, {
+      left: 150,
+      top: 150,
+      
+    });
+
     canvas.add(group);
     canvas.setActiveObject(group);
     canvas.renderAll();

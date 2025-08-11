@@ -46,30 +46,126 @@ const CanvasComponent: React.FC<CanvasComponentProps> = ({
     // Add double-click event listener for editing text in groups
     canvasInstance.on("mouse:dblclick", (options: any) => {
       const target = options.target;
+
       if (target && target.isType("group")) {
         const group = target;
-        const subTarget =
-          options.subTargets &&
-          options.subTargets.find((o: any) => o.isType("textbox"));
-
-        if (subTarget) {
-          const textbox = subTarget;
-          const items = group.getObjects();
-
-          group.toActiveSelection();
-          canvasInstance.setActiveObject(textbox);
-          textbox.enterEditing();
-          textbox.selectAll();
-
-          textbox.once("editing:exited", () => {
-            const newGroup = new fabric.Group(items, {
+        let clickedTextObject = null;
+        
+        // Get all text objects in the group
+        const textObjects = group.getObjects().filter((o: any) => o.isType("textbox"));
+        
+        if (textObjects.length > 0) {
+          const pointer = canvasInstance.getPointer(options.e);
+          
+          // Calculate the group's transformation matrix
+          const groupTransform = group.calcTransformMatrix();
+          const invertedTransform = fabric.util.invertTransform(groupTransform);
+          const localPoint = fabric.util.transformPoint(pointer, invertedTransform);
+          
+          // Find the closest text object to the click point
+          let minDistance = Infinity;
+          let bestMatch = null;
+          
+          for (const textObj of textObjects) {
+            // Get text object bounds in local coordinates
+            const textBounds = {
+              left: textObj.left - (textObj.width / 2),
+              top: textObj.top - (textObj.height / 2),
+              width: textObj.width,
+              height: textObj.height
+            };
+            
+            // Check if point is inside text bounds
+            if (
+              localPoint.x >= textBounds.left &&
+              localPoint.x <= textBounds.left + textBounds.width &&
+              localPoint.y >= textBounds.top &&
+              localPoint.y <= textBounds.top + textBounds.height
+            ) {
+              clickedTextObject = textObj;
+              break;
+            }
+            
+            // Calculate distance from click point to text center as fallback
+            const centerX = textBounds.left + textBounds.width / 2;
+            const centerY = textBounds.top + textBounds.height / 2;
+            const distance = Math.sqrt(
+              Math.pow(localPoint.x - centerX, 2) + Math.pow(localPoint.y - centerY, 2)
+            );
+            
+            if (distance < minDistance) {
+              minDistance = distance;
+              bestMatch = textObj;
+            }
+          }
+          
+          // If no direct hit, use the closest text object
+          if (!clickedTextObject) {
+            clickedTextObject = bestMatch || textObjects[0];
+          }
+          
+          if (clickedTextObject) {
+            console.log('Editing text object:', clickedTextObject.text);
+            
+            // Store original properties for restoration
+            const originalProps = {
               left: group.left,
               top: group.top,
+              scaleX: group.scaleX || 1,
+              scaleY: group.scaleY || 1,
+              angle: group.angle || 0
+            };
+            
+            // Store reference to group objects
+            const groupObjects = group.getObjects().slice();
+            
+            // Ungroup - restore object states and remove group
+            group._restoreObjectsState();
+            canvasInstance.remove(group);
+            
+            // Add individual objects back to canvas
+            groupObjects.forEach((obj: any) => {
+              canvasInstance.add(obj);
             });
-            canvasInstance.remove(...items);
-            canvasInstance.add(newGroup);
-            canvasInstance.setActiveObject(newGroup);
-          });
+            
+            canvasInstance.renderAll();
+            
+            // Set active object and enter editing mode
+            canvasInstance.setActiveObject(clickedTextObject);
+            clickedTextObject.enterEditing();
+            clickedTextObject.selectAll();
+            
+            // Handle editing exit
+            const handleEditExit = () => {
+              console.log('Exiting edit mode, regrouping...');
+              
+              try {
+                // Remove individual objects
+                groupObjects.forEach((obj: any) => {
+                  if (canvasInstance.contains(obj)) {
+                    canvasInstance.remove(obj);
+                  }
+                });
+                
+                // Create new group with updated objects
+                const newGroup = new fabric.Group(groupObjects, originalProps);
+                canvasInstance.add(newGroup);
+                canvasInstance.setActiveObject(newGroup);
+                canvasInstance.renderAll();
+              } catch (error) {
+                console.error('Error during regrouping:', error);
+                // Fallback: add objects back individually if grouping fails
+                groupObjects.forEach((obj: any) => {
+                  if (!canvasInstance.contains(obj)) {
+                    canvasInstance.add(obj);
+                  }
+                });
+                canvasInstance.renderAll();
+              }
+            };
+            
+            clickedTextObject.once("editing:exited", handleEditExit);
+          }
         }
       }
     });
