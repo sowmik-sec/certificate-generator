@@ -9,6 +9,12 @@ import {
   Trash2,
   Wrench,
   Component,
+  Group,
+  Ungroup,
+  MoveUp,
+  MoveDown,
+  ChevronUp,
+  ChevronDown,
 } from "lucide-react";
 import TemplatesPanel from "@/components/templates-pannel";
 import ElementsPanel from "@/components/elements-pannel";
@@ -17,6 +23,7 @@ import CanvasComponent from "@/components/canvas-component";
 import PropertiesPanel from "@/components/properties-pannel";
 import TextPanel from "@/components/text-pannel";
 import AlignmentToolbar from "@/components/alignment-toolbar";
+import LayerPanel from "@/components/layer-panel";
 import jsPDF from "jspdf";
 
 // Simplified types to `any` to prevent build-time type resolution errors on the server.
@@ -182,6 +189,7 @@ export default function CertificateGeneratorPage() {
       fontFamily: "Arial",
       fill: "#000000",
       lineHeight: 1.2,
+      id: `text-${Date.now()}`, // Add unique ID
       ...fabricOptions,
     });
     canvas.add(textObject);
@@ -223,6 +231,7 @@ export default function CertificateGeneratorPage() {
           top: 100,
           scaleX: 0.5,
           scaleY: 0.5,
+          id: `image-${Date.now()}`, // Add unique ID
         });
         canvas.add(img);
         canvas.setActiveObject(img);
@@ -241,6 +250,7 @@ export default function CertificateGeneratorPage() {
       fill: options.fill || "#4A90E2",
       width: 150,
       height: 150,
+      id: `rect-${Date.now()}`, // Add unique ID
     });
     canvas.add(rect);
     canvas.setActiveObject(rect);
@@ -255,6 +265,7 @@ export default function CertificateGeneratorPage() {
       top: 150,
       fill: options.fill || "#E91E63",
       radius: 75,
+      id: `circle-${Date.now()}`, // Add unique ID
     });
     canvas.add(circle);
     canvas.setActiveObject(circle);
@@ -1148,6 +1159,142 @@ export default function CertificateGeneratorPage() {
     };
   }, [selectedObject, deleteSelected, handleCopy, handlePaste, canvas]);
 
+  // Group selected objects
+  const groupObjects = useCallback(() => {
+    if (!canvas || !fabric) return;
+    
+    const activeObjects = canvas.getActiveObjects();
+    if (activeObjects.length < 2) return;
+    
+    const group = new fabric.Group(activeObjects, {
+      left: 0,
+      top: 0,
+    });
+    
+    // Remove original objects from canvas
+    activeObjects.forEach((obj: any) => canvas.remove(obj));
+    
+    // Add grouped object
+    canvas.add(group);
+    canvas.setActiveObject(group);
+    canvas.renderAll();
+    saveToHistory();
+  }, [canvas, fabric, saveToHistory]);
+
+  // Ungroup selected group
+  const ungroupObjects = useCallback(() => {
+    if (!canvas || !fabric) return;
+    
+    const activeObject = canvas.getActiveObject();
+    if (!activeObject || activeObject.type !== 'group') return;
+    
+    const group = activeObject as any;
+    const objects = group._objects.slice(); // Create a copy of the objects array
+    
+    // Remove the group from canvas
+    canvas.remove(group);
+    
+    // Add individual objects back to canvas
+    objects.forEach((obj: any) => {
+      // Reset object properties
+      obj.set({
+        left: obj.left + group.left,
+        top: obj.top + group.top,
+        scaleX: obj.scaleX * group.scaleX,
+        scaleY: obj.scaleY * group.scaleY,
+        angle: obj.angle + group.angle,
+      });
+      canvas.add(obj);
+    });
+    
+    // Select all ungrouped objects
+    canvas.discardActiveObject();
+    if (objects.length > 1) {
+      const selection = new fabric.ActiveSelection(objects, {
+        canvas: canvas,
+      });
+      canvas.setActiveObject(selection);
+    } else if (objects.length === 1) {
+      canvas.setActiveObject(objects[0]);
+    }
+    
+    canvas.renderAll();
+    saveToHistory();
+  }, [canvas, fabric, saveToHistory]);
+
+  // Bring to front
+  const bringToFront = useCallback(() => {
+    if (!canvas) return;
+    const activeObjects = canvas.getActiveObjects();
+    activeObjects.forEach((obj: any) => {
+      canvas.bringToFront(obj);
+    });
+    canvas.renderAll();
+  }, [canvas]);
+
+  // Send to back
+  const sendToBack = useCallback(() => {
+    if (!canvas) return;
+    const activeObjects = canvas.getActiveObjects();
+    activeObjects.forEach((obj: any) => {
+      canvas.sendToBack(obj);
+    });
+    canvas.renderAll();
+  }, [canvas]);
+
+  // Bring forward
+  const bringForward = useCallback(() => {
+    if (!canvas) return;
+    const activeObjects = canvas.getActiveObjects();
+    activeObjects.forEach((obj: any) => {
+      canvas.bringForward(obj);
+    });
+    canvas.renderAll();
+  }, [canvas]);
+
+  // Send backward
+  const sendBackward = useCallback(() => {
+    if (!canvas) return;
+    const activeObjects = canvas.getActiveObjects();
+    activeObjects.forEach((obj: any) => {
+      canvas.sendBackward(obj);
+    });
+    canvas.renderAll();
+  }, [canvas]);
+
+  // Add layer management keyboard shortcuts
+  useEffect(() => {
+    const handleLayerShortcuts = (e: KeyboardEvent) => {
+      // Layer management shortcuts
+      if ((e.ctrlKey || e.metaKey) && e.key === "g") {
+        e.preventDefault();
+        groupObjects();
+      }
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "G") {
+        e.preventDefault();
+        ungroupObjects();
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === "]") {
+        e.preventDefault();
+        bringForward();
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === "[") {
+        e.preventDefault();
+        sendBackward();
+      }
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "]") {
+        e.preventDefault();
+        bringToFront();
+      }
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "[") {
+        e.preventDefault();
+        sendToBack();
+      }
+    };
+    window.addEventListener("keydown", handleLayerShortcuts);
+    return () => window.removeEventListener("keydown", handleLayerShortcuts);
+  }, [groupObjects, ungroupObjects, bringForward, sendBackward, bringToFront, sendToBack]);
+
   const exportAsPNG = () => {
     if (!canvas) return;
     const dataURL = canvas.toDataURL({ format: "png", quality: 1 });
@@ -1349,29 +1496,89 @@ export default function CertificateGeneratorPage() {
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Header */}
-        <header className="bg-white shadow-md z-10 flex justify-end items-center p-2 space-x-2 flex-shrink-0">
-          {selectedObject && (
+        <header className="bg-white shadow-md z-10 flex justify-between items-center p-2 space-x-2 flex-shrink-0">
+          {/* Layer Management Controls */}
+          <div className="flex items-center space-x-2">
+            {selectedObjects.length > 1 && (
+              <button
+                onClick={groupObjects}
+                className="flex items-center space-x-1 px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                title="Group Objects"
+              >
+                <Group size={16} />
+                <span className="text-sm">Group</span>
+              </button>
+            )}
+            {selectedObjects.length === 1 && selectedObjects[0]?.type === 'group' && (
+              <button
+                onClick={ungroupObjects}
+                className="flex items-center space-x-1 px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                title="Ungroup Objects"
+              >
+                <Ungroup size={16} />
+                <span className="text-sm">Ungroup</span>
+              </button>
+            )}
+            {selectedObjects.length > 0 && (
+              <>
+                <div className="w-px h-6 bg-gray-300"></div>
+                <button
+                  onClick={bringToFront}
+                  className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                  title="Bring to Front"
+                >
+                  <MoveUp size={16} />
+                </button>
+                <button
+                  onClick={bringForward}
+                  className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                  title="Bring Forward"
+                >
+                  <ChevronUp size={16} />
+                </button>
+                <button
+                  onClick={sendBackward}
+                  className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                  title="Send Backward"
+                >
+                  <ChevronDown size={16} />
+                </button>
+                <button
+                  onClick={sendToBack}
+                  className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                  title="Send to Back"
+                >
+                  <MoveDown size={16} />
+                </button>
+              </>
+            )}
+          </div>
+
+          {/* Right side controls */}
+          <div className="flex items-center space-x-2">
+            {selectedObject && (
+              <button
+                onClick={deleteSelected}
+                className="p-2 text-gray-600 hover:bg-red-100 hover:text-red-600 rounded-lg transition-colors"
+              >
+                <Trash2 size={20} />
+              </button>
+            )}
             <button
-              onClick={deleteSelected}
-              className="p-2 text-gray-600 hover:bg-red-100 hover:text-red-600 rounded-lg transition-colors"
+              onClick={exportAsPNG}
+              className="flex items-center space-x-2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
             >
-              <Trash2 size={20} />
+              <Download size={20} />
+              <span>Export PNG</span>
             </button>
-          )}
-          <button
-            onClick={exportAsPNG}
-            className="flex items-center space-x-2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
-          >
-            <Download size={20} />
-            <span>Export PNG</span>
-          </button>
-          <button
-            onClick={exportAsPDF}
-            className="flex items-center space-x-2 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors"
-          >
-            <Download size={20} />
-            <span>Export PDF</span>
-          </button>
+            <button
+              onClick={exportAsPDF}
+              className="flex items-center space-x-2 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors"
+            >
+              <Download size={20} />
+              <span>Export PDF</span>
+            </button>
+          </div>
         </header>
 
         {/* Alignment Toolbar */}
@@ -1391,15 +1598,27 @@ export default function CertificateGeneratorPage() {
             />
           </div>
 
-          {/* Right Properties Panel */}
-          {selectedObject && (
-            <aside className="w-80 bg-white border-l border-gray-200 p-4 overflow-y-auto shadow-lg flex-shrink-0">
-              <PropertiesPanel
-                selectedObject={selectedObject}
+          {/* Right Panels */}
+          <aside className="w-80 bg-white border-l border-gray-200 overflow-hidden shadow-lg flex-shrink-0 flex flex-col">
+            {/* Layer Panel */}
+            <div className="flex-1 overflow-hidden">
+              <LayerPanel
                 canvas={canvas}
+                selectedObjects={selectedObjects}
+                onSelectionChange={setSelectedObjects}
               />
-            </aside>
-          )}
+            </div>
+            
+            {/* Properties Panel - Only show when object is selected */}
+            {selectedObject && (
+              <div className="border-t border-gray-200 max-h-96 overflow-y-auto p-4">
+                <PropertiesPanel
+                  selectedObject={selectedObject}
+                  canvas={canvas}
+                />
+              </div>
+            )}
+          </aside>
         </div>
       </main>
     </div>
