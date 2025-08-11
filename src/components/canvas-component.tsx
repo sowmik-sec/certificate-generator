@@ -8,14 +8,19 @@ interface CanvasComponentProps {
   fabric: FabricModule;
   setCanvas: (canvas: any) => void;
   setSelectedObject: (obj: FabricObject | null) => void;
+  snapToObjects?: boolean;
+  snapTolerance?: number;
 }
 const CanvasComponent: React.FC<CanvasComponentProps> = ({
   fabric,
   setCanvas,
   setSelectedObject,
+  snapToObjects = true,
+  snapTolerance = 10,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const alignmentLinesRef = useRef<any[]>([]);
 
   const resizeCanvas = useCallback((canvasInstance: FabricCanvas) => {
     if (!containerRef.current || !canvasInstance) return;
@@ -42,6 +47,176 @@ const CanvasComponent: React.FC<CanvasComponentProps> = ({
     );
     canvasInstance.on("selection:cleared", () => setSelectedObject(null));
     canvasInstance.on("object:modified", () => canvasInstance.renderAll());
+
+    // Snap-to-object guides functionality
+    const drawAlignmentLines = (aligningObject: any, canvasObjects: any[]) => {
+      const objectCenter = aligningObject.getCenterPoint();
+      const objectBounds = aligningObject.getBoundingRect();
+      const alignmentLines: any[] = [];
+      
+      canvasObjects.forEach((obj: any) => {
+        if (obj === aligningObject || obj.id === 'alignment-line' || obj.id === 'grid-line') return;
+        
+        const objCenter = obj.getCenterPoint();
+        const objBounds = obj.getBoundingRect();
+        const tolerance = snapTolerance;
+        
+        // Vertical alignment lines (center, left, right)
+        if (Math.abs(objectCenter.x - objCenter.x) < tolerance) {
+          const line = new fabric.Line([
+            objCenter.x, 0, 
+            objCenter.x, canvasInstance.getHeight() / canvasInstance.getZoom()
+          ], {
+            stroke: '#ff0000',
+            strokeWidth: 1,
+            strokeDashArray: [5, 5],
+            selectable: false,
+            evented: false,
+            id: 'alignment-line'
+          });
+          alignmentLines.push(line);
+          aligningObject.set({ left: objCenter.x });
+        }
+        
+        // Left edge alignment
+        if (Math.abs(objectBounds.left - objBounds.left) < tolerance) {
+          const line = new fabric.Line([
+            objBounds.left, 0,
+            objBounds.left, canvasInstance.getHeight() / canvasInstance.getZoom()
+          ], {
+            stroke: '#ff0000',
+            strokeWidth: 1,
+            strokeDashArray: [5, 5],
+            selectable: false,
+            evented: false,
+            id: 'alignment-line'
+          });
+          alignmentLines.push(line);
+          const diff = objBounds.left - objectBounds.left;
+          aligningObject.set({ left: aligningObject.left + diff });
+        }
+        
+        // Right edge alignment
+        if (Math.abs(objectBounds.left + objectBounds.width - (objBounds.left + objBounds.width)) < tolerance) {
+          const rightX = objBounds.left + objBounds.width;
+          const line = new fabric.Line([
+            rightX, 0,
+            rightX, canvasInstance.getHeight() / canvasInstance.getZoom()
+          ], {
+            stroke: '#ff0000',
+            strokeWidth: 1,
+            strokeDashArray: [5, 5],
+            selectable: false,
+            evented: false,
+            id: 'alignment-line'
+          });
+          alignmentLines.push(line);
+          const targetRight = rightX - objectBounds.width;
+          const diff = targetRight - objectBounds.left;
+          aligningObject.set({ left: aligningObject.left + diff });
+        }
+        
+        // Horizontal alignment lines (center, top, bottom)
+        if (Math.abs(objectCenter.y - objCenter.y) < tolerance) {
+          const line = new fabric.Line([
+            0, objCenter.y,
+            canvasInstance.getWidth() / canvasInstance.getZoom(), objCenter.y
+          ], {
+            stroke: '#ff0000',
+            strokeWidth: 1,
+            strokeDashArray: [5, 5],
+            selectable: false,
+            evented: false,
+            id: 'alignment-line'
+          });
+          alignmentLines.push(line);
+          aligningObject.set({ top: objCenter.y });
+        }
+        
+        // Top edge alignment
+        if (Math.abs(objectBounds.top - objBounds.top) < tolerance) {
+          const line = new fabric.Line([
+            0, objBounds.top,
+            canvasInstance.getWidth() / canvasInstance.getZoom(), objBounds.top
+          ], {
+            stroke: '#ff0000',
+            strokeWidth: 1,
+            strokeDashArray: [5, 5],
+            selectable: false,
+            evented: false,
+            id: 'alignment-line'
+          });
+          alignmentLines.push(line);
+          const diff = objBounds.top - objectBounds.top;
+          aligningObject.set({ top: aligningObject.top + diff });
+        }
+        
+        // Bottom edge alignment
+        if (Math.abs(objectBounds.top + objectBounds.height - (objBounds.top + objBounds.height)) < tolerance) {
+          const bottomY = objBounds.top + objBounds.height;
+          const line = new fabric.Line([
+            0, bottomY,
+            canvasInstance.getWidth() / canvasInstance.getZoom(), bottomY
+          ], {
+            stroke: '#ff0000',
+            strokeWidth: 1,
+            strokeDashArray: [5, 5],
+            selectable: false,
+            evented: false,
+            id: 'alignment-line'
+          });
+          alignmentLines.push(line);
+          const targetBottom = bottomY - objectBounds.height;
+          const diff = targetBottom - objectBounds.top;
+          aligningObject.set({ top: aligningObject.top + diff });
+        }
+      });
+      
+      return alignmentLines;
+    };
+    
+    const clearAlignmentLines = () => {
+      const lines = canvasInstance.getObjects().filter((obj: any) => obj.id === 'alignment-line');
+      lines.forEach((line: any) => canvasInstance.remove(line));
+      alignmentLinesRef.current = [];
+    };
+    
+    if (snapToObjects) {
+      canvasInstance.on('object:moving', (e: any) => {
+        clearAlignmentLines();
+        const movingObject = e.target;
+        const canvasObjects = canvasInstance.getObjects().filter((obj: any) => 
+          obj !== movingObject && obj.id !== 'alignment-line' && obj.id !== 'grid-line'
+        );
+        
+        if (canvasObjects.length > 0) {
+          const lines = drawAlignmentLines(movingObject, canvasObjects);
+          alignmentLinesRef.current = lines;
+          lines.forEach(line => {
+            canvasInstance.add(line);
+            canvasInstance.bringToFront(line);
+          });
+        }
+        
+        movingObject.setCoords();
+        canvasInstance.renderAll();
+      });
+      
+      canvasInstance.on('object:modified', () => {
+        clearAlignmentLines();
+        canvasInstance.renderAll();
+      });
+      
+      canvasInstance.on('selection:cleared', () => {
+        clearAlignmentLines();
+        canvasInstance.renderAll();
+      });
+      
+      canvasInstance.on('selection:created', () => {
+        clearAlignmentLines();
+        canvasInstance.renderAll();
+      });
+    }
 
     // Add double-click event listener for editing text in groups
     canvasInstance.on("mouse:dblclick", (options: any) => {

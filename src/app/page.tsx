@@ -16,6 +16,7 @@ import ToolsPanel from "@/components/tools-pannel";
 import CanvasComponent from "@/components/canvas-component";
 import PropertiesPanel from "@/components/properties-pannel";
 import TextPanel from "@/components/text-pannel";
+import AlignmentToolbar from "@/components/alignment-toolbar";
 import jsPDF from "jspdf";
 
 // Simplified types to `any` to prevent build-time type resolution errors on the server.
@@ -29,6 +30,7 @@ export default function CertificateGeneratorPage() {
   const [fabric, setFabric] = useState<FabricModule | null>(null);
   const [canvas, setCanvas] = useState<FabricCanvas>(null);
   const [selectedObject, setSelectedObject] = useState<FabricObject>(null);
+  const [selectedObjects, setSelectedObjects] = useState<any[]>([]);
   const [editorMode, setEditorMode] = useState<EditorMode>("templates");
   const [copiedObject, setCopiedObject] = useState<FabricObject>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
@@ -107,6 +109,23 @@ export default function CertificateGeneratorPage() {
 
   const handleSetCanvas = useCallback((canvasInstance: any) => {
     setCanvas(canvasInstance);
+    
+    // Set up selection tracking for alignment toolbar
+    if (canvasInstance) {
+      canvasInstance.on('selection:created', (e: any) => {
+        const selectedObjs = e.selected || [e.target].filter(Boolean);
+        setSelectedObjects(selectedObjs);
+      });
+      
+      canvasInstance.on('selection:updated', (e: any) => {
+        const selectedObjs = e.selected || [e.target].filter(Boolean);
+        setSelectedObjects(selectedObjs);
+      });
+      
+      canvasInstance.on('selection:cleared', () => {
+        setSelectedObjects([]);
+      });
+    }
   }, []);
 
   const addText = (text: string, options: any) => {
@@ -1354,6 +1373,12 @@ export default function CertificateGeneratorPage() {
             <span>Export PDF</span>
           </button>
         </header>
+
+        {/* Alignment Toolbar */}
+        <AlignmentToolbar 
+          canvas={canvas} 
+          selectedObjects={selectedObjects}
+        />
 
         {/* Canvas and Properties Panel Container */}
         <div className="flex-1 flex overflow-hidden">
