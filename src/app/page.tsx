@@ -60,29 +60,88 @@ export default function CertificateGeneratorPage() {
     setCanvas(canvasInstance);
   }, []);
 
-  const addText = (text: string, options: object) => {
+  const addText = (text: string, options: any) => {
     if (!canvas || !fabric) return;
-    const textObject = new fabric.Textbox(text, {
+
+    // Convert letterSpacing to charSpacing for Fabric.js
+    const fabricOptions = { ...options };
+    if (fabricOptions.letterSpacing !== undefined) {
+      fabricOptions.charSpacing = fabricOptions.letterSpacing * 50; // Fabric.js uses different scale
+      delete fabricOptions.letterSpacing;
+    }
+
+    // Handle underline
+    if (fabricOptions.underline) {
+      fabricOptions.underline = true;
+      delete fabricOptions.underline;
+    }
+
+    // Handle text transform (apply to text directly since Fabric.js doesn't have this CSS property)
+    let processedText = text;
+    if (fabricOptions.textTransform) {
+      switch (fabricOptions.textTransform) {
+        case "uppercase":
+          processedText = text.toUpperCase();
+          break;
+        case "lowercase":
+          processedText = text.toLowerCase();
+          break;
+        case "capitalize":
+          processedText = text.replace(
+            /\w\S*/g,
+            (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
+          );
+          break;
+      }
+      delete fabricOptions.textTransform;
+    }
+
+    // Handle shadow
+    if (fabricOptions.shadow) {
+      fabricOptions.shadow = "rgba(0,0,0,0.3) 2px 2px 4px";
+      delete fabricOptions.shadow;
+    }
+
+    // Handle background color
+    if (fabricOptions.backgroundColor) {
+      fabricOptions.backgroundColor = fabricOptions.backgroundColor;
+    }
+
+    const textObject = new fabric.Textbox(processedText, {
       left: 150,
       top: 200,
       width: 400,
       fontFamily: "Arial",
       fill: "#000000",
-      ...options,
+      lineHeight: 1.2,
+      ...fabricOptions,
     });
     canvas.add(textObject);
     canvas.setActiveObject(textObject);
     canvas.renderAll();
   };
+  const addHeading = (customOptions: object = {}) =>
+    addText("Add a heading", {
+      fontSize: 88,
+      fontWeight: "bold",
+      textAlign: "center",
+      ...customOptions,
+    });
 
-  const addHeading = () =>
-    addText("Add a heading", { fontSize: 88, fontWeight: "bold" });
-  const addSubheading = () =>
-    addText("Add a subheading", { fontSize: 44, fontWeight: "normal" });
-  const addBodyText = () =>
+  const addSubheading = (customOptions: object = {}) =>
+    addText("Add a subheading", {
+      fontSize: 44,
+      fontWeight: "600",
+      textAlign: "center",
+      ...customOptions,
+    });
+
+  const addBodyText = (customOptions: object = {}) =>
     addText("Add a little bit of body text", {
       fontSize: 24,
       fontWeight: "normal",
+      textAlign: "left",
+      ...customOptions,
     });
 
   const addImageFromURL = (url: string) => {
@@ -519,7 +578,7 @@ export default function CertificateGeneratorPage() {
 
   const handleCopy = useCallback(() => {
     if (!selectedObject) return;
-    
+
     // Create a safe copy by extracting properties manually
     const createSafeCopy = (obj: any) => {
       const safeCopy: any = {
@@ -536,64 +595,64 @@ export default function CertificateGeneratorPage() {
         flipX: obj.flipX || false,
         flipY: obj.flipY || false,
         skewX: obj.skewX || 0,
-        skewY: obj.skewY || 0
+        skewY: obj.skewY || 0,
       };
-      
+
       // Handle different object types
       switch (obj.type) {
-        case 'textbox':
-        case 'text':
-          safeCopy.text = obj.text || 'Text';
+        case "textbox":
+        case "text":
+          safeCopy.text = obj.text || "Text";
           safeCopy.fontSize = obj.fontSize || 20;
-          safeCopy.fontFamily = obj.fontFamily || 'Arial';
-          safeCopy.fontWeight = obj.fontWeight || 'normal';
-          safeCopy.fontStyle = obj.fontStyle || 'normal';
-          safeCopy.fill = obj.fill || '#000000';
-          safeCopy.textAlign = obj.textAlign || 'left';
+          safeCopy.fontFamily = obj.fontFamily || "Arial";
+          safeCopy.fontWeight = obj.fontWeight || "normal";
+          safeCopy.fontStyle = obj.fontStyle || "normal";
+          safeCopy.fill = obj.fill || "#000000";
+          safeCopy.textAlign = obj.textAlign || "left";
           safeCopy.lineHeight = obj.lineHeight || 1.16;
-          if (obj.type === 'textbox') {
+          if (obj.type === "textbox") {
             safeCopy.width = obj.width || 200;
           }
           break;
-          
-        case 'rect':
-        case 'triangle':
-        case 'circle':
-        case 'ellipse':
-          safeCopy.fill = obj.fill || '#000000';
+
+        case "rect":
+        case "triangle":
+        case "circle":
+        case "ellipse":
+          safeCopy.fill = obj.fill || "#000000";
           safeCopy.stroke = obj.stroke;
           safeCopy.strokeWidth = obj.strokeWidth || 1;
-          if (obj.type === 'circle') {
+          if (obj.type === "circle") {
             safeCopy.radius = obj.radius || 50;
           }
-          if (obj.type === 'ellipse') {
+          if (obj.type === "ellipse") {
             safeCopy.rx = obj.rx || 50;
             safeCopy.ry = obj.ry || 30;
           }
           break;
-          
-        case 'line':
+
+        case "line":
           safeCopy.x1 = obj.x1 || 0;
           safeCopy.y1 = obj.y1 || 0;
           safeCopy.x2 = obj.x2 || 100;
           safeCopy.y2 = obj.y2 || 0;
-          safeCopy.stroke = obj.stroke || '#000000';
+          safeCopy.stroke = obj.stroke || "#000000";
           safeCopy.strokeWidth = obj.strokeWidth || 1;
           safeCopy.strokeDashArray = obj.strokeDashArray;
           break;
-          
-        case 'path':
+
+        case "path":
           safeCopy.path = obj.path;
-          safeCopy.fill = obj.fill || '#000000';
+          safeCopy.fill = obj.fill || "#000000";
           safeCopy.stroke = obj.stroke;
           safeCopy.strokeWidth = obj.strokeWidth || 1;
           break;
-          
-        case 'image':
+
+        case "image":
           safeCopy.src = obj.getSrc ? obj.getSrc() : obj.src;
           break;
-          
-        case 'group':
+
+        case "group":
           // For groups, store basic info and mark for special handling
           safeCopy.objects = [];
           if (obj.getObjects) {
@@ -603,17 +662,17 @@ export default function CertificateGeneratorPage() {
           }
           break;
       }
-      
+
       return safeCopy;
     };
-    
+
     try {
       // First try the normal clone method
       selectedObject.clone((cloned: any) => {
         setCopiedObject(cloned);
       });
     } catch (error) {
-      console.log('Normal cloning failed, using safe copy method');
+      console.log("Normal cloning failed, using safe copy method:", error);
       // Use our safe copy method
       const safeCopy = createSafeCopy(selectedObject);
       setCopiedObject(safeCopy);
@@ -622,7 +681,7 @@ export default function CertificateGeneratorPage() {
 
   const handlePaste = useCallback(() => {
     if (!copiedObject || !canvas) return;
-    
+
     const createFabricObject = (objData: any) => {
       const baseProps = {
         left: (objData.left || 0) + 10,
@@ -634,133 +693,143 @@ export default function CertificateGeneratorPage() {
         flipX: objData.flipX || false,
         flipY: objData.flipY || false,
         skewX: objData.skewX || 0,
-        skewY: objData.skewY || 0
+        skewY: objData.skewY || 0,
       };
-      
+
       let fabricObj;
-      
+
       switch (objData.type) {
-        case 'textbox':
-          fabricObj = new fabric.Textbox(objData.text || 'Text', {
+        case "textbox":
+          fabricObj = new fabric.Textbox(objData.text || "Text", {
             ...baseProps,
             width: objData.width || 200,
             fontSize: objData.fontSize || 20,
-            fontFamily: objData.fontFamily || 'Arial',
-            fontWeight: objData.fontWeight || 'normal',
-            fontStyle: objData.fontStyle || 'normal',
-            fill: objData.fill || '#000000',
-            textAlign: objData.textAlign || 'left',
-            lineHeight: objData.lineHeight || 1.16
+            fontFamily: objData.fontFamily || "Arial",
+            fontWeight: objData.fontWeight || "normal",
+            fontStyle: objData.fontStyle || "normal",
+            fill: objData.fill || "#000000",
+            textAlign: objData.textAlign || "left",
+            lineHeight: objData.lineHeight || 1.16,
           });
           break;
-          
-        case 'text':
-          fabricObj = new fabric.Text(objData.text || 'Text', {
+
+        case "text":
+          fabricObj = new fabric.Text(objData.text || "Text", {
             ...baseProps,
             fontSize: objData.fontSize || 20,
-            fontFamily: objData.fontFamily || 'Arial',
-            fontWeight: objData.fontWeight || 'normal',
-            fontStyle: objData.fontStyle || 'normal',
-            fill: objData.fill || '#000000',
-            textAlign: objData.textAlign || 'left'
+            fontFamily: objData.fontFamily || "Arial",
+            fontWeight: objData.fontWeight || "normal",
+            fontStyle: objData.fontStyle || "normal",
+            fill: objData.fill || "#000000",
+            textAlign: objData.textAlign || "left",
           });
           break;
-          
-        case 'rect':
+
+        case "rect":
           fabricObj = new fabric.Rect({
             ...baseProps,
             width: objData.width || 100,
             height: objData.height || 100,
-            fill: objData.fill || '#000000',
+            fill: objData.fill || "#000000",
             stroke: objData.stroke,
-            strokeWidth: objData.strokeWidth || 1
+            strokeWidth: objData.strokeWidth || 1,
           });
           break;
-          
-        case 'circle':
+
+        case "circle":
           fabricObj = new fabric.Circle({
             ...baseProps,
             radius: objData.radius || 50,
-            fill: objData.fill || '#000000',
+            fill: objData.fill || "#000000",
             stroke: objData.stroke,
-            strokeWidth: objData.strokeWidth || 1
+            strokeWidth: objData.strokeWidth || 1,
           });
           break;
-          
-        case 'triangle':
+
+        case "triangle":
           fabricObj = new fabric.Triangle({
             ...baseProps,
             width: objData.width || 100,
             height: objData.height || 100,
-            fill: objData.fill || '#000000',
+            fill: objData.fill || "#000000",
             stroke: objData.stroke,
-            strokeWidth: objData.strokeWidth || 1
+            strokeWidth: objData.strokeWidth || 1,
           });
           break;
-          
-        case 'ellipse':
+
+        case "ellipse":
           fabricObj = new fabric.Ellipse({
             ...baseProps,
             rx: objData.rx || 50,
             ry: objData.ry || 30,
-            fill: objData.fill || '#000000',
+            fill: objData.fill || "#000000",
             stroke: objData.stroke,
-            strokeWidth: objData.strokeWidth || 1
-          });
-          break;
-          
-        case 'line':
-          fabricObj = new fabric.Line([objData.x1 || 0, objData.y1 || 0, objData.x2 || 100, objData.y2 || 0], {
-            ...baseProps,
-            stroke: objData.stroke || '#000000',
             strokeWidth: objData.strokeWidth || 1,
-            strokeDashArray: objData.strokeDashArray
           });
           break;
-          
-        case 'path':
+
+        case "line":
+          fabricObj = new fabric.Line(
+            [
+              objData.x1 || 0,
+              objData.y1 || 0,
+              objData.x2 || 100,
+              objData.y2 || 0,
+            ],
+            {
+              ...baseProps,
+              stroke: objData.stroke || "#000000",
+              strokeWidth: objData.strokeWidth || 1,
+              strokeDashArray: objData.strokeDashArray,
+            }
+          );
+          break;
+
+        case "path":
           fabricObj = new fabric.Path(objData.path, {
             ...baseProps,
-            fill: objData.fill || '#000000',
+            fill: objData.fill || "#000000",
             stroke: objData.stroke,
-            strokeWidth: objData.strokeWidth || 1
+            strokeWidth: objData.strokeWidth || 1,
           });
           break;
-          
-        case 'group':
+
+        case "group":
           // Handle groups by recreating individual objects and grouping them
           if (objData.objects && objData.objects.length > 0) {
-            const groupObjects = objData.objects.map((subObj: any) => {
-              return createFabricObject({
-                ...subObj,
-                left: subObj.left || 0,
-                top: subObj.top || 0
-              });
-            }).filter(Boolean);
-            
+            const groupObjects = objData.objects
+              .map((subObj: any) => {
+                return createFabricObject({
+                  ...subObj,
+                  left: subObj.left || 0,
+                  top: subObj.top || 0,
+                });
+              })
+              .filter(Boolean);
+
             if (groupObjects.length > 0) {
               fabricObj = new fabric.Group(groupObjects, baseProps);
             }
           }
           break;
-          
+
         default:
-          console.warn('Unknown object type for pasting:', objData.type);
+          console.warn("Unknown object type for pasting:", objData.type);
           // Fallback to rectangle
           fabricObj = new fabric.Rect({
             ...baseProps,
             width: 100,
             height: 100,
-            fill: '#cccccc'
+            fill: "#cccccc",
           });
       }
-      
+
       return fabricObj;
     };
-    
+
     try {
       // Check if it's a proper Fabric object with clone method
-      if (copiedObject.clone && typeof copiedObject.clone === 'function') {
+      if (copiedObject.clone && typeof copiedObject.clone === "function") {
         copiedObject.clone((clonedObj: any) => {
           canvas.discardActiveObject();
           clonedObj.set({
@@ -784,7 +853,7 @@ export default function CertificateGeneratorPage() {
       } else {
         // Use our safe copy data to recreate the object
         const fabricObj = createFabricObject(copiedObject);
-        
+
         if (fabricObj) {
           canvas.discardActiveObject();
           canvas.add(fabricObj);
@@ -794,17 +863,17 @@ export default function CertificateGeneratorPage() {
         }
       }
     } catch (error) {
-      console.error('Error pasting object:', error);
+      console.error("Error pasting object:", error);
       // Final fallback - create a simple text or rectangle
       try {
         let fallbackObj;
-        if (copiedObject.type === 'textbox' || copiedObject.type === 'text') {
-          fallbackObj = new fabric.Textbox(copiedObject.text || 'Copied Text', {
+        if (copiedObject.type === "textbox" || copiedObject.type === "text") {
+          fallbackObj = new fabric.Textbox(copiedObject.text || "Copied Text", {
             left: (copiedObject.left || 0) + 10,
             top: (copiedObject.top || 0) + 10,
             fontSize: 20,
-            fontFamily: 'Arial',
-            fill: '#000000'
+            fontFamily: "Arial",
+            fill: "#000000",
           });
         } else {
           fallbackObj = new fabric.Rect({
@@ -812,16 +881,16 @@ export default function CertificateGeneratorPage() {
             top: (copiedObject.top || 0) + 10,
             width: 100,
             height: 100,
-            fill: '#cccccc'
+            fill: "#cccccc",
           });
         }
-        
+
         canvas.add(fallbackObj);
         setSelectedObject(fallbackObj);
         canvas.setActiveObject(fallbackObj);
         canvas.requestRenderAll();
       } catch (fallbackError) {
-        console.error('All paste methods failed:', fallbackError);
+        console.error("All paste methods failed:", fallbackError);
       }
     }
   }, [copiedObject, canvas, fabric]);
