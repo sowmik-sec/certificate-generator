@@ -16,6 +16,7 @@ import ToolsPanel from "@/components/tools-pannel";
 import CanvasComponent from "@/components/canvas-component";
 import PropertiesPanel from "@/components/properties-pannel";
 import TextPanel from "@/components/text-pannel";
+import jsPDF from "jspdf";
 
 // Simplified types to `any` to prevent build-time type resolution errors on the server.
 export type FabricModule = any;
@@ -390,7 +391,9 @@ export default function CertificateGeneratorPage() {
   };
 
   // Frame functions
-  const addSimpleFrame = (options: { stroke?: string; strokeWidth?: number } = {}) => {
+  const addSimpleFrame = (
+    options: { stroke?: string; strokeWidth?: number } = {}
+  ) => {
     if (!canvas || !fabric) return;
     const rect = new fabric.Rect({
       left: 50,
@@ -406,7 +409,9 @@ export default function CertificateGeneratorPage() {
     canvas.renderAll();
   };
 
-  const addDoubleFrame = (options: { stroke?: string; strokeWidth?: number } = {}) => {
+  const addDoubleFrame = (
+    options: { stroke?: string; strokeWidth?: number } = {}
+  ) => {
     if (!canvas || !fabric) return;
     const outerRect = new fabric.Rect({
       left: 30,
@@ -426,13 +431,18 @@ export default function CertificateGeneratorPage() {
       stroke: options.stroke || "#8B4513",
       strokeWidth: (options.strokeWidth || 4) / 2,
     });
-    const group = new fabric.Group([outerRect, innerRect], { left: 100, top: 100 });
+    const group = new fabric.Group([outerRect, innerRect], {
+      left: 100,
+      top: 100,
+    });
     canvas.add(group);
     canvas.setActiveObject(group);
     canvas.renderAll();
   };
 
-  const addDecorativeFrame = (options: { stroke?: string; strokeWidth?: number } = {}) => {
+  const addDecorativeFrame = (
+    options: { stroke?: string; strokeWidth?: number } = {}
+  ) => {
     if (!canvas || !fabric) return;
     const outerRect = new fabric.Rect({
       left: 20,
@@ -482,20 +492,18 @@ export default function CertificateGeneratorPage() {
       height: cornerSize,
       fill: options.stroke || "#D4AF37",
     });
-    const group = new fabric.Group([
-      outerRect,
-      innerRect,
-      topLeft,
-      topRight,
-      bottomLeft,
-      bottomRight,
-    ], { left: 50, top: 50 });
+    const group = new fabric.Group(
+      [outerRect, innerRect, topLeft, topRight, bottomLeft, bottomRight],
+      { left: 50, top: 50 }
+    );
     canvas.add(group);
     canvas.setActiveObject(group);
     canvas.renderAll();
   };
 
-  const addRoundedFrame = (options: { stroke?: string; strokeWidth?: number } = {}) => {
+  const addRoundedFrame = (
+    options: { stroke?: string; strokeWidth?: number } = {}
+  ) => {
     if (!canvas || !fabric) return;
     const rect = new fabric.Rect({
       left: 50,
@@ -655,7 +663,6 @@ export default function CertificateGeneratorPage() {
     const group = new fabric.Group([noteBg, noteText], {
       left: 150,
       top: 150,
-      
     });
 
     canvas.add(group);
@@ -699,7 +706,6 @@ export default function CertificateGeneratorPage() {
     const group = new fabric.Group(tableObjects, {
       left: 150,
       top: 150,
-      
     });
 
     canvas.add(group);
@@ -1079,6 +1085,19 @@ export default function CertificateGeneratorPage() {
     document.body.removeChild(link);
   };
 
+  const exportAsPDF = () => {
+    if (!canvas) return;
+
+    const dataURL = canvas.toDataURL({ format: "png", quality: 1 });
+    const pdf = new jsPDF({ orientation: "landscape" });
+    const imgProps = pdf.getImageProperties(dataURL);
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+    pdf.addImage(dataURL, "PNG", 0, 0, pdfWidth, pdfHeight);
+    pdf.save("certificate.pdf");
+  };
+
   const loadTemplate = (templateJson: any) => {
     if (!canvas) return;
     canvas.loadFromJSON(templateJson, () => {
@@ -1143,7 +1162,7 @@ export default function CertificateGeneratorPage() {
         className="hidden text-gray-700"
         onChange={handleImageElementUpload}
       />
-      
+
       {/* Left Sidebar - Navigation */}
       <aside className="w-full md:w-20 bg-gray-800 text-white flex md:flex-col items-center p-2 md:py-4 flex-shrink-0">
         <div className="text-2xl font-bold mr-auto md:mr-0 md:mb-8">CG</div>
@@ -1270,7 +1289,14 @@ export default function CertificateGeneratorPage() {
             className="flex items-center space-x-2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
           >
             <Download size={20} />
-            <span>Export</span>
+            <span>Export PNG</span>
+          </button>
+          <button
+            onClick={exportAsPDF}
+            className="flex items-center space-x-2 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors"
+          >
+            <Download size={20} />
+            <span>Export PDF</span>
           </button>
         </header>
 
@@ -1284,7 +1310,7 @@ export default function CertificateGeneratorPage() {
               setSelectedObject={setSelectedObject}
             />
           </div>
-          
+
           {/* Right Properties Panel */}
           {selectedObject && (
             <aside className="w-80 bg-white border-l border-gray-200 p-4 overflow-y-auto shadow-lg flex-shrink-0">
