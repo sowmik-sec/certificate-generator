@@ -1,6 +1,5 @@
 "use client";
 import { classicTemplate } from "@/templates/classic-template";
-import { floralTemplate } from "@/templates/floral-template";
 import { modernTemplate } from "@/templates/modern-template";
 import { playfulTemplate } from "@/templates/playful-template";
 import { ImageIcon } from "lucide-react";
@@ -20,7 +19,6 @@ const TemplatesPanel: React.FC<TemplatesPanelProps> = ({
     { name: "Modern", json: modernTemplate },
     { name: "Classic", json: classicTemplate },
     { name: "Playful", json: playfulTemplate },
-    { name: "Floral", json: floralTemplate },
   ];
   return (
     <div>
