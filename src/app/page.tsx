@@ -1151,7 +1151,7 @@ export default function CertificateGeneratorPage() {
             />
           </div>
           {selectedObject && (
-            <aside className="hidden lg:block w-80 bg-gray-200 p-4 overflow-y-auto">
+            <aside className="w-80 bg-white border-l border-gray-200 p-4 overflow-y-auto shadow-lg">
               <PropertiesPanel
                 selectedObject={selectedObject}
                 canvas={canvas}

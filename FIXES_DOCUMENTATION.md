@@ -46,12 +46,36 @@
 **Files Modified**:
 - `src/components/canvas-component.tsx` - Enhanced click detection for multiple text objects in groups
 
-### 3. Enhanced User Experience
-**Improvements Made**:
+### 4. Contextual Properties Panel (Canva-like UX)
+**Problem**: Users had to navigate to specific panels (like text-panel) to control selected objects, which was not intuitive and provided poor user experience.
+
+**Solution**:
+- Created a comprehensive contextual properties panel that appears whenever an object is selected
+- The panel shows relevant controls based on the selected object type (text, shape, line, group, etc.)
+- Properties panel is always visible on the right side when an object is selected, regardless of which mode the user is in
+- Provides immediate access to all object properties without switching between different panels
+
+**Features Implemented**:
+- **Text Controls**: Font family, size, weight, style, alignment, color, content editing
+- **Shape Controls**: Fill color, border color, border width
+- **Line Controls**: Color, width
+- **Transform Controls**: Opacity, rotation
+- **Position & Size**: X/Y coordinates, width/height
+- **Interactive Elements**: Color pickers, sliders, buttons, text inputs
+- **Smart Detection**: Automatically detects object type and shows relevant controls
+- **Group Support**: Handles grouped objects (like tables and sticky notes) intelligently
+
+**Files Modified**:
+- `src/components/properties-pannel.tsx` - Completely redesigned with contextual controls
+- `src/app/page.tsx` - Made properties panel always visible when object is selected
+
+### 5. Enhanced User Experience
+**Additional Improvements Made**:
 - Better styling for table controls with proper focus states and transitions
 - Improved text alignment in both sticky notes and table cells (centered by default)
 - Added input validation to prevent invalid table dimensions
 - Enhanced visual feedback for interactive elements
+- Professional-grade contextual interface similar to Canva
 
 ## How It Works Now
 
@@ -98,9 +122,31 @@ const addTable = (rows: number, cols: number) => {
 
 ## Usage Instructions
 
+### Creating Elements
 1. **To create a sticky note**: Go to Tools → Click "Sticky Note"
-2. **To edit sticky note text**: Double-click on the sticky note
-3. **To create a custom table**: Go to Tools → Set rows/cols → Click "Add Table"
-4. **To edit table cell text**: Double-click on any cell
+2. **To create a custom table**: Go to Tools → Set rows/cols → Click "Add Table"
+3. **To add text**: Go to Text → Choose heading/subheading/body text
+4. **To add shapes**: Go to Elements → Choose from various shapes
+5. **To add lines**: Go to Elements → Choose from various line styles
 
-The interface now behaves like professional design tools such as Canva, providing intuitive text editing within grouped objects.
+### Editing Elements (Canva-like Experience)
+1. **Select any object** by clicking on it
+2. **Properties panel appears automatically** on the right side
+3. **Edit properties directly** without switching panels:
+   - **Text**: Change font, size, color, alignment, style (bold/italic/underline)
+   - **Shapes**: Modify fill color, border color, border width
+   - **Lines**: Adjust color and width
+   - **All objects**: Change opacity, rotation, position, size
+4. **Double-click text objects** to edit content directly
+5. **Double-click table cells** to edit individual cell text
+6. **Double-click sticky notes** to edit the note text
+
+### Key Features
+- ✅ **Contextual Controls**: Relevant properties appear based on selected object
+- ✅ **Always Available**: Properties panel visible whenever something is selected
+- ✅ **Real-time Updates**: Changes apply instantly as you adjust controls
+- ✅ **Professional Interface**: Clean, intuitive design similar to Canva
+- ✅ **Smart Object Detection**: Automatically recognizes text, shapes, lines, groups
+- ✅ **Group Editing**: Intelligently handles grouped objects like tables and sticky notes
+
+The interface now behaves like professional design tools such as Canva, providing immediate access to all object properties without the need to navigate between different panels.
