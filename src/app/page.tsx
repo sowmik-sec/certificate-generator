@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useRef } from "react";
 import CanvasComponent from "@/components/canvas-component";
 import PropertiesPanel from "@/components/properties-panel";
 import AlignmentToolbar from "@/components/alignment-toolbar";
@@ -21,17 +21,23 @@ import { useCanvasOperations } from "@/hooks/useCanvasOperations";
 import { useLayerManagement } from "@/hooks/useLayerManagement";
 import { useCanvasExport } from "@/hooks/useCanvasExport";
 import { useTemplateLoader } from "@/hooks/useTemplateLoader";
+import { useEditorShortcuts } from "@/hooks/useKeyboardShortcuts";
 
 // Import UI components
 import SidebarNavigation, { EditorMode } from "@/components/sidebar-navigation";
 import LeftPanel from "@/components/left-panel";
 import LayerControls from "@/components/layer-controls";
 import HeaderActions from "@/components/header-actions";
+import { ConfirmModal } from "@/components/confirm-modal";
 
 // Main App Component
 export default function CertificateGeneratorPage() {
   const [editorMode, setEditorMode] = useState<EditorMode>("templates");
   const [canvasSize, setCanvasSize] = useState<CanvasSize>(PRESET_SIZES.CUSTOM);
+  const [showCanvasSizeModal, setShowCanvasSizeModal] = useState(false);
+  const [pendingCanvasSize, setPendingCanvasSize] = useState<CanvasSize | null>(
+    null
+  );
   const imageInputRef = useRef<HTMLInputElement>(null);
 
   // Custom hooks
@@ -68,24 +74,11 @@ export default function CertificateGeneratorPage() {
     saveToHistory
   );
 
-  // Add keyboard shortcuts for undo/redo
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === "z" && !e.shiftKey) {
-        e.preventDefault();
-        undo();
-      }
-      if (
-        (e.ctrlKey || e.metaKey) &&
-        (e.key === "y" || (e.key === "z" && e.shiftKey))
-      ) {
-        e.preventDefault();
-        redo();
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [undo, redo]);
+  // Add keyboard shortcuts for undo/redo using our custom hook
+  useEditorShortcuts({
+    onUndo: undo,
+    onRedo: redo,
+  });
 
   const handleCanvasSizeChange = (newSize: CanvasSize) => {
     const previousSize = canvasSize;
@@ -102,33 +95,110 @@ export default function CertificateGeneratorPage() {
         Math.abs(scaleX - 1) > 0.1 || Math.abs(scaleY - 1) > 0.1;
 
       if (hasObjects && significantChange) {
-        const shouldScale = window.confirm(
-          "Changing canvas size will scale existing objects. Do you want to continue?"
-        );
-
-        if (!shouldScale) {
-          return; // User cancelled
-        }
-
-        // Scale all objects
-        objects.forEach((obj: any) => {
-          if (obj.type !== "grid-line" && obj.id !== "alignment-line") {
-            obj.scaleX = (obj.scaleX || 1) * scaleX;
-            obj.scaleY = (obj.scaleY || 1) * scaleY;
-            obj.left = obj.left * scaleX;
-            obj.top = obj.top * scaleY;
-            obj.setCoords();
-          }
-        });
+        // Show modal instead of window.confirm
+        setPendingCanvasSize(newSize);
+        setShowCanvasSizeModal(true);
+        return;
       }
 
+      // Apply canvas size change immediately if no objects or insignificant change
+      applyCanvasSizeChange(newSize);
+      setCanvasSize(newSize);
+    } else {
+      // No canvas, just update the size state
+      setCanvasSize(newSize);
+    }
+  };
+
+  const applyCanvasSizeChange = (newSize: CanvasSize) => {
+    if (!canvas) return;
+
+    console.log("Starting canvas size change...");
+    const previousSize = canvasSize;
+
+    // Calculate simple scale factors
+    const scaleX = newSize.width / previousSize.width;
+    const scaleY = newSize.height / previousSize.height;
+
+    console.log(`Scaling factors: ${scaleX}, ${scaleY}`);
+
+    // Get all objects before changing canvas size
+    const objects = canvas.getObjects();
+    console.log(`Found ${objects.length} objects to scale`);
+
+    objects.forEach((obj: any, index: number) => {
+      try {
+        if (obj.type !== "grid-line" && obj.id !== "alignment-line") {
+          // Simple scaling - just scale position and size
+          const newLeft = obj.left * scaleX;
+          const newTop = obj.top * scaleY;
+
+          obj.set({
+            left: newLeft,
+            top: newTop,
+          });
+
+          // Scale dimensions if they exist
+          if (obj.width) {
+            obj.set("width", obj.width * scaleX);
+          }
+          if (obj.height) {
+            obj.set("height", obj.height * scaleY);
+          }
+
+          // Scale font size for text objects
+          if (obj.fontSize) {
+            obj.set("fontSize", obj.fontSize * Math.min(scaleX, scaleY));
+          }
+
+          obj.setCoords();
+          console.log(`Scaled object ${index} successfully`);
+        }
+      } catch (error) {
+        console.error(`Error scaling object ${index}:`, error);
+      }
+    });
+
+    try {
       // Set new canvas dimensions
       canvas.setDimensions({ width: newSize.width, height: newSize.height });
       canvas.renderAll();
       saveToHistory();
+      console.log("Canvas resize completed successfully");
+    } catch (error) {
+      console.error("Error setting canvas dimensions:", error);
     }
+  };
 
-    setCanvasSize(newSize);
+  const handleConfirmCanvasSizeChange = () => {
+    console.log("CONFIRM BUTTON CLICKED - CLOSING MODAL FIRST");
+
+    // CLOSE MODAL IMMEDIATELY - NO MATTER WHAT
+    setShowCanvasSizeModal(false);
+
+    // Then try to apply scaling
+    try {
+      if (pendingCanvasSize) {
+        console.log("Applying canvas size change...");
+        applyCanvasSizeChange(pendingCanvasSize);
+        setCanvasSize(pendingCanvasSize);
+        setPendingCanvasSize(null);
+        console.log("Canvas size change applied successfully");
+      }
+    } catch (error) {
+      console.error("Error during canvas scaling:", error);
+      // Even if scaling fails, we already closed the modal
+    }
+  };
+
+  const handleCancelCanvasSizeChange = () => {
+    console.log("CANCEL BUTTON CLICKED - CLOSING MODAL IMMEDIATELY");
+
+    // CLOSE MODAL IMMEDIATELY
+    setShowCanvasSizeModal(false);
+    setPendingCanvasSize(null);
+
+    console.log("Modal closed and pending size cleared");
   };
 
   const handleImageElementUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -267,6 +337,31 @@ export default function CertificateGeneratorPage() {
           </aside>
         </div>
       </main>
+
+      {/* Canvas Size Change Confirmation Modal */}
+      <ConfirmModal
+        isOpen={showCanvasSizeModal}
+        title="Change Canvas Size"
+        message="Changing canvas size will scale existing objects. Do you want to continue?"
+        confirmText="Scale Objects"
+        cancelText="Cancel"
+        onConfirm={handleConfirmCanvasSizeChange}
+        onCancel={handleCancelCanvasSizeChange}
+      />
+
+      {/* Debug: Force close button */}
+      {showCanvasSizeModal && (
+        <button
+          onClick={() => {
+            console.log("FORCE CLOSING MODAL");
+            setShowCanvasSizeModal(false);
+            setPendingCanvasSize(null);
+          }}
+          className="fixed top-4 right-4 z-[60] bg-red-600 text-white px-4 py-2 rounded"
+        >
+          FORCE CLOSE MODAL
+        </button>
+      )}
     </div>
   );
 }

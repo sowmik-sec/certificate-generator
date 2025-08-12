@@ -1,6 +1,7 @@
 "use client";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState } from "react";
 import { RotateCcw, Settings } from "lucide-react";
+import { useClickOutside } from "@/hooks/useClickOutside";
 
 export interface CanvasSize {
   width: number;
@@ -128,37 +129,15 @@ const CanvasSizePanel: React.FC<CanvasSizePanelProps> = ({
   const [customWidth, setCustomWidth] = useState(currentSize.width);
   const [customHeight, setCustomHeight] = useState(currentSize.height);
   const [showSizePanel, setShowSizePanel] = useState(false);
-  const panelRef = useRef<HTMLDivElement>(null);
 
-  // Close panel when clicking outside or pressing Escape
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        panelRef.current &&
-        !panelRef.current.contains(event.target as Node)
-      ) {
-        setShowSizePanel(false);
-        setIsCustomMode(false);
-      }
-    };
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setShowSizePanel(false);
-        setIsCustomMode(false);
-      }
-    };
-
-    if (showSizePanel) {
-      document.addEventListener("mousedown", handleClickOutside);
-      document.addEventListener("keydown", handleKeyDown);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [showSizePanel]);
+  // Use click outside hook to close panel
+  const panelRef = useClickOutside<HTMLDivElement>({
+    enabled: showSizePanel,
+    onClickOutside: () => {
+      setShowSizePanel(false);
+      setIsCustomMode(false);
+    },
+  });
 
   const handlePresetSizeChange = (presetKey: string) => {
     const size = PRESET_SIZES[presetKey];

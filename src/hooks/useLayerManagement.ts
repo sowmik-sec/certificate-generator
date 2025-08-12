@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import { useCallback, useEffect } from "react";
+import { useCallback } from "react";
+import { useEditorShortcuts } from "./useKeyboardShortcuts";
 
 export const useLayerManagement = (
   canvas: any,
@@ -111,44 +112,14 @@ export const useLayerManagement = (
   }, [canvas]);
 
   // Add layer management keyboard shortcuts
-  useEffect(() => {
-    const handleLayerShortcuts = (e: KeyboardEvent) => {
-      // Layer management shortcuts
-      if ((e.ctrlKey || e.metaKey) && e.key === "g") {
-        e.preventDefault();
-        groupObjects();
-      }
-      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "G") {
-        e.preventDefault();
-        ungroupObjects();
-      }
-      if ((e.ctrlKey || e.metaKey) && e.key === "]") {
-        e.preventDefault();
-        bringForward();
-      }
-      if ((e.ctrlKey || e.metaKey) && e.key === "[") {
-        e.preventDefault();
-        sendBackward();
-      }
-      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "]") {
-        e.preventDefault();
-        bringToFront();
-      }
-      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "[") {
-        e.preventDefault();
-        sendToBack();
-      }
-    };
-    window.addEventListener("keydown", handleLayerShortcuts);
-    return () => window.removeEventListener("keydown", handleLayerShortcuts);
-  }, [
-    groupObjects,
-    ungroupObjects,
-    bringForward,
-    sendBackward,
-    bringToFront,
-    sendToBack,
-  ]);
+  useEditorShortcuts({
+    onGroup: groupObjects,
+    onUngroup: ungroupObjects,
+    onBringForward: bringForward,
+    onSendBackward: sendBackward,
+    onBringToFront: bringToFront,
+    onSendToBack: sendToBack,
+  });
 
   return {
     groupObjects,

@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
+import { useScript } from "./useScript";
 
 // Simplified types to prevent build-time type resolution errors on the server.
 export type FabricModule = any;
@@ -13,29 +14,18 @@ export const useFabricCanvas = () => {
   const [selectedObject, setSelectedObject] = useState<FabricObject>(null);
   const [selectedObjects, setSelectedObjects] = useState<any[]>([]);
 
-  // Dynamically load Fabric.js from a CDN
-  useEffect(() => {
-    const script = document.createElement("script");
-    script.src =
-      "https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js";
-    script.async = true;
-
-    script.onload = () => {
-      setFabric((window as any).fabric);
-    };
-
-    script.onerror = () => {
-      console.error("Failed to load fabric.js from CDN");
-    };
-
-    document.body.appendChild(script);
-
-    return () => {
-      if (document.body.contains(script)) {
-        document.body.removeChild(script);
-      }
-    };
-  }, []);
+  // Load Fabric.js script
+  useScript(
+    "https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js",
+    {
+      onLoad: () => {
+        setFabric((window as any).fabric);
+      },
+      onError: (error) => {
+        console.error("Failed to load fabric.js from CDN:", error);
+      },
+    }
+  );
 
   const handleSetCanvas = useCallback((canvasInstance: any) => {
     setCanvas(canvasInstance);

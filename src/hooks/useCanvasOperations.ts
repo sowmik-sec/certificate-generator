@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
+import { useEditorShortcuts } from "./useKeyboardShortcuts";
 
 export const useCanvasOperations = (
   canvas: any,
@@ -439,39 +440,42 @@ export const useCanvasOperations = (
     [canvas, fabric, saveToHistory]
   );
 
-  // Add keyboard event listener for copy, paste, and delete
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
+  // Add keyboard shortcuts with text editing check
+  useEditorShortcuts({
+    onCopy: () => {
       const activeObject = canvas?.getActiveObject();
       const isEditing =
         activeObject &&
         (activeObject.isEditing ||
           (activeObject.type === "textbox" && activeObject.isEditing));
 
-      if (isEditing) return; // Don't interfere with text input
-
-      if ((e.key === "Delete" || e.key === "Backspace") && selectedObject) {
-        e.preventDefault();
-        deleteSelected();
-      }
-
-      if ((e.ctrlKey || e.metaKey) && e.key === "c" && selectedObject) {
-        e.preventDefault();
+      if (!isEditing && selectedObject) {
         handleCopy();
       }
+    },
+    onPaste: () => {
+      const activeObject = canvas?.getActiveObject();
+      const isEditing =
+        activeObject &&
+        (activeObject.isEditing ||
+          (activeObject.type === "textbox" && activeObject.isEditing));
 
-      if ((e.ctrlKey || e.metaKey) && e.key === "v") {
-        e.preventDefault();
+      if (!isEditing) {
         handlePaste();
       }
-    };
+    },
+    onDelete: () => {
+      const activeObject = canvas?.getActiveObject();
+      const isEditing =
+        activeObject &&
+        (activeObject.isEditing ||
+          (activeObject.type === "textbox" && activeObject.isEditing));
 
-    window.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [selectedObject, deleteSelected, handleCopy, handlePaste, canvas]);
+      if (!isEditing && selectedObject) {
+        deleteSelected();
+      }
+    },
+  });
 
   return {
     deleteSelected,
