@@ -216,6 +216,14 @@ export default function CertificateGeneratorPage() {
     if (e.target) e.target.value = "";
   };
 
+  // Determine if canvas size panel should be shown
+  // Hide it if:
+  // 1. User has objects on canvas (started designing), OR
+  // 2. User has moved beyond templates mode (actively designing)
+  const hasCanvasObjects = canvas ? canvas.getObjects().length > 0 : false;
+  const isInDesignMode = editorMode !== "templates";
+  const shouldShowCanvasSize = !hasCanvasObjects && !isInDesignMode;
+
   if (!fabric) {
     return (
       <div className="flex h-screen w-screen items-center justify-center bg-gray-100">
@@ -273,7 +281,13 @@ export default function CertificateGeneratorPage() {
             <CanvasSizePanel
               currentSize={canvasSize}
               onSizeChange={handleCanvasSizeChange}
+              shouldShow={shouldShowCanvasSize}
             />
+            {!shouldShowCanvasSize && (
+              <div className="text-sm text-gray-500 px-3 py-2 bg-gray-100 rounded-md">
+                Canvas size locked while designing
+              </div>
+            )}
           </div>
 
           {/* Right side controls */}

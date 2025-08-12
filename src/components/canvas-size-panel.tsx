@@ -119,25 +119,32 @@ export const PRESET_SIZES: Record<string, CanvasSize> = {
 interface CanvasSizePanelProps {
   currentSize: CanvasSize;
   onSizeChange: (size: CanvasSize) => void;
+  shouldShow?: boolean; // Whether the panel should be visible
 }
 
 const CanvasSizePanel: React.FC<CanvasSizePanelProps> = ({
   currentSize,
   onSizeChange,
+  shouldShow = true, // Default to showing the panel
 }) => {
   const [isCustomMode, setIsCustomMode] = useState(false);
   const [customWidth, setCustomWidth] = useState(currentSize.width);
   const [customHeight, setCustomHeight] = useState(currentSize.height);
   const [showSizePanel, setShowSizePanel] = useState(false);
 
-  // Use click outside hook to close panel
+  // Use click outside hook to close panel (must be called before conditional return)
   const panelRef = useClickOutside<HTMLDivElement>({
-    enabled: showSizePanel,
+    enabled: showSizePanel && shouldShow,
     onClickOutside: () => {
       setShowSizePanel(false);
       setIsCustomMode(false);
     },
   });
+
+  // Hide the panel if shouldShow is false
+  if (!shouldShow) {
+    return null;
+  }
 
   const handlePresetSizeChange = (presetKey: string) => {
     const size = PRESET_SIZES[presetKey];
