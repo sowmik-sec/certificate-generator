@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef } from "react";
+import { useRef, useEffect } from "react";
 
 interface UseClickOutsideOptions {
   enabled?: boolean;
@@ -13,26 +13,32 @@ export const useClickOutside = <T extends HTMLElement = HTMLElement>(
   const ref = useRef<T>(null);
 
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled || !ref.current) return;
 
-    const handleClickOutside = (event: MouseEvent) => {
-      if (ref.current && !ref.current.contains(event.target as Node)) {
+    const element = ref.current;
+    const rootNode = element.getRootNode() as Document | ShadowRoot;
+
+    const handleClickOutside = (event: Event) => {
+      const target = event.target as Node;
+      if (element && !element.contains(target)) {
         onClickOutside();
       }
     };
 
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
+    const handleEscape = (event: Event) => {
+      const keyboardEvent = event as KeyboardEvent;
+      if (keyboardEvent.key === "Escape") {
         onClickOutside();
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
-    document.addEventListener("keydown", handleEscape);
+    // Use the root node instead of document directly
+    rootNode.addEventListener("mousedown", handleClickOutside);
+    rootNode.addEventListener("keydown", handleEscape);
 
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("keydown", handleEscape);
+      rootNode.removeEventListener("mousedown", handleClickOutside);
+      rootNode.removeEventListener("keydown", handleEscape);
     };
   }, [enabled, onClickOutside]);
 

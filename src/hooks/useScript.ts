@@ -11,8 +11,16 @@ export const useScript = (src: string, options: UseScriptOptions = {}) => {
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
+    // Check if we're in a browser environment
+    if (typeof globalThis === "undefined" || !globalThis.document) {
+      setLoading(false);
+      return;
+    }
+
     // Check if script is already loaded
-    const existingScript = document.querySelector(`script[src="${src}"]`);
+    const existingScript = globalThis.document.querySelector(
+      `script[src="${src}"]`
+    );
     if (existingScript) {
       setLoading(false);
       if (options.onLoad) {
@@ -21,7 +29,7 @@ export const useScript = (src: string, options: UseScriptOptions = {}) => {
       return;
     }
 
-    const script = document.createElement("script");
+    const script = globalThis.document.createElement("script");
     script.src = src;
     script.async = true;
 
@@ -45,13 +53,13 @@ export const useScript = (src: string, options: UseScriptOptions = {}) => {
     script.addEventListener("load", handleLoad);
     script.addEventListener("error", handleError);
 
-    document.body.appendChild(script);
+    globalThis.document.body.appendChild(script);
 
     return () => {
       script.removeEventListener("load", handleLoad);
       script.removeEventListener("error", handleError);
-      if (document.body.contains(script)) {
-        document.body.removeChild(script);
+      if (globalThis.document?.body?.contains(script)) {
+        globalThis.document.body.removeChild(script);
       }
     };
   }, [src, options]);

@@ -2,80 +2,17 @@
 "use client";
 import { useCallback } from "react";
 
-export const useFileDownload = () => {
+export const useFileDownloadPure = () => {
   const downloadFile = useCallback(
     async (dataUrl: string, filename: string) => {
       try {
-        // Modern approach: Use File System Access API if available
-        if ("showSaveFilePicker" in window) {
+        // Primary: Use File System Access API (modern browsers)
+        if ("showSaveFilePicker" in globalThis) {
           try {
             const response = await fetch(dataUrl);
             const blob = await response.blob();
 
-            const fileHandle = await (window as any).showSaveFilePicker({
-              suggestedName: filename,
-              types: [
-                {
-                  description: "Image files",
-                  accept: {
-                    "image/png": [".png"],
-                    "image/jpeg": [".jpg"],
-                    "application/pdf": [".pdf"],
-                  },
-                },
-              ],
-            });
-
-            const writableStream = await fileHandle.createWritable();
-            await writableStream.write(blob);
-            await writableStream.close();
-            return;
-          } catch {
-            // User cancelled or API not supported, fall back
-          }
-        }
-
-        // Fallback: Create link without DOM manipulation using Navigator API
-        if ("share" in navigator && navigator.canShare) {
-          try {
-            const response = await fetch(dataUrl);
-            const blob = await response.blob();
-            const file = new File([blob], filename, { type: blob.type });
-
-            if (navigator.canShare({ files: [file] })) {
-              await navigator.share({ files: [file] });
-              return;
-            }
-          } catch {
-            // Share API failed, continue to final fallback
-          }
-        }
-
-        // Final fallback: Use traditional download method
-        const link = globalThis.document?.createElement("a");
-        if (link) {
-          link.download = filename;
-          link.href = dataUrl;
-          link.style.display = "none";
-
-          globalThis.document?.body?.appendChild(link);
-          link.click();
-          globalThis.document?.body?.removeChild(link);
-        }
-      } catch (error) {
-        console.error("Download failed:", error);
-      }
-    },
-    []
-  );
-
-  const downloadBlob = useCallback(
-    async (blob: Blob, filename: string) => {
-      try {
-        // Modern approach: Use File System Access API if available
-        if ("showSaveFilePicker" in window) {
-          try {
-            const fileHandle = await (window as any).showSaveFilePicker({
+            const fileHandle = await (globalThis as any).showSaveFilePicker({
               suggestedName: filename,
               types: [
                 {
@@ -92,18 +29,89 @@ export const useFileDownload = () => {
             const writableStream = await fileHandle.createWritable();
             await writableStream.write(blob);
             await writableStream.close();
-            return;
-          } catch {
-            // User cancelled or API not supported, fall back
+            return true;
+          } catch (error) {
+            // User cancelled or API failed
+            console.warn("File System Access API failed:", error);
           }
         }
 
-        // Use object URL with our downloadFile method
+        // Secondary: Use Web Share API (mobile browsers)
+        if ("share" in navigator && "canShare" in navigator) {
+          try {
+            const response = await fetch(dataUrl);
+            const blob = await response.blob();
+            const file = new File([blob], filename, { type: blob.type });
+
+            if (navigator.canShare({ files: [file] })) {
+              await navigator.share({
+                files: [file],
+                title: "Download " + filename,
+              });
+              return true;
+            }
+          } catch (error) {
+            console.warn("Web Share API failed:", error);
+          }
+        }
+
+        // Fallback: Inform user to save manually
+        console.warn(
+          "No modern download API available. File download not supported without DOM manipulation."
+        );
+
+        // Could trigger a custom event that a parent component could listen to
+        const customEvent = new CustomEvent("manual-download-requested", {
+          detail: { dataUrl, filename },
+        });
+        globalThis.dispatchEvent?.(customEvent);
+
+        return false;
+      } catch (error) {
+        console.error("Download failed:", error);
+        return false;
+      }
+    },
+    []
+  );
+
+  const downloadBlob = useCallback(
+    async (blob: Blob, filename: string) => {
+      try {
+        // Use File System Access API if available
+        if ("showSaveFilePicker" in globalThis) {
+          try {
+            const fileHandle = await (globalThis as any).showSaveFilePicker({
+              suggestedName: filename,
+              types: [
+                {
+                  description: "Files",
+                  accept: {
+                    "image/png": [".png"],
+                    "image/jpeg": [".jpg"],
+                    "application/pdf": [".pdf"],
+                  },
+                },
+              ],
+            });
+
+            const writableStream = await fileHandle.createWritable();
+            await writableStream.write(blob);
+            await writableStream.close();
+            return true;
+          } catch (error) {
+            console.warn("File System Access API failed:", error);
+          }
+        }
+
+        // Fallback: Create object URL and use downloadFile
         const url = URL.createObjectURL(blob);
-        await downloadFile(url, filename);
+        const result = await downloadFile(url, filename);
         setTimeout(() => URL.revokeObjectURL(url), 100);
+        return result;
       } catch (error) {
         console.error("Blob download failed:", error);
+        return false;
       }
     },
     [downloadFile]

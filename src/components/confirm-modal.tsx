@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { AlertTriangle } from "lucide-react";
-import { useClickOutside } from "@/hooks/useClickOutside";
+import { useClickOutside } from "@/hooks/useClickOutside-react";
 
 interface ConfirmModalProps {
   isOpen: boolean;
@@ -22,8 +22,8 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
   confirmText = "Continue",
   cancelText = "Cancel",
 }) => {
-  // Use our custom hook for click outside and escape key handling
-  const modalRef = useClickOutside<HTMLDivElement>({
+  // Use React-based click outside detection
+  const { ref, eventHandlers } = useClickOutside<HTMLDivElement>({
     enabled: isOpen,
     onClickOutside: onCancel,
   });
@@ -45,8 +45,9 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div
-        ref={modalRef}
-        className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl"
+        ref={ref}
+        {...eventHandlers}
+        className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl focus:outline-none"
       >
         <div className="flex items-center gap-3 mb-4">
           <AlertTriangle className="h-6 w-6 text-amber-500" />
