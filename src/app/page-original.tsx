@@ -16,12 +16,12 @@ import {
   ChevronUp,
   ChevronDown,
 } from "lucide-react";
-import TemplatesPanel from "@/components/templates-pannel";
-import ElementsPanel from "@/components/elements-pannel";
-import ToolsPanel from "@/components/tools-pannel";
+import TemplatesPanel from "@/components/templates-panel";
+import ElementsPanel from "@/components/elements-panel";
+import ToolsPanel from "@/components/tools-panel";
 import CanvasComponent from "@/components/canvas-component";
-import PropertiesPanel from "@/components/properties-pannel";
-import TextPanel from "@/components/text-pannel";
+import PropertiesPanel from "@/components/properties-panel";
+import TextPanel from "@/components/text-panel";
 import AlignmentToolbar from "@/components/alignment-toolbar";
 import LayerPanel from "@/components/layer-panel";
 import jsPDF from "jspdf";

@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import React from "react";
-import TemplatesPanel from "@/components/templates-pannel";
-import ElementsPanel from "@/components/elements-pannel";
-import ToolsPanel from "@/components/tools-pannel";
-import TextPanel from "@/components/text-pannel";
+import TemplatesPanel from "@/components/templates-panel";
+import ElementsPanel from "@/components/elements-panel";
+import ToolsPanel from "@/components/tools-panel";
+import TextPanel from "@/components/text-panel";
 import { EditorMode } from "./sidebar-navigation";
 
 interface LeftPanelProps {

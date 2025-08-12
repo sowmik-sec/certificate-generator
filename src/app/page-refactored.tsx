@@ -2,7 +2,7 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
 import CanvasComponent from "@/components/canvas-component";
-import PropertiesPanel from "@/components/properties-pannel";
+import PropertiesPanel from "@/components/properties-panel";
 import AlignmentToolbar from "@/components/alignment-toolbar";
 import LayerPanel from "@/components/layer-panel";
 import CanvasSizePanel, {
