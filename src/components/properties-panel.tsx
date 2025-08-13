@@ -42,7 +42,8 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
   // Sync attributes when selected object changes
   useEffect(() => {
     syncFromFabricObject(selectedObject);
-  }, [selectedObject, syncFromFabricObject]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedObject]); // Removed syncFromFabricObject from deps to prevent infinite loop
 
   const handlePropertyChange = (prop: keyof typeof attributes, value: any) => {
     applyToFabricObject(selectedObject, canvas, prop, value);
@@ -51,7 +52,17 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
   const handleTextChange = (newText: string) => {
     if (!canvas || !selectedObject || selectedObject.type !== "textbox") return;
     (selectedObject as any).set("text", newText);
-    handlePropertyChange('text', newText);
+    handlePropertyChange("text", newText);
+  };
+
+  // Helper function to ensure color inputs receive valid hex values
+  const getValidColorForInput = (
+    color: string,
+    fallback: string = "#000000"
+  ): string => {
+    if (!color || color === "transparent" || color === "") return fallback;
+    if (color.startsWith("#") && /^#[0-9A-Fa-f]{6}$/.test(color)) return color;
+    return fallback;
   };
 
   if (!selectedObject) return null;
@@ -256,7 +267,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
             <div className="flex items-center gap-2">
               <input
                 type="color"
-                value={attributes.fill}
+                value={getValidColorForInput(attributes.fill)}
                 onChange={(e) => handlePropertyChange("fill", e.target.value)}
                 className="w-12 h-8 rounded border border-gray-300 cursor-pointer"
               />
@@ -287,7 +298,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
             <div className="flex items-center gap-2">
               <input
                 type="color"
-                value={attributes.fill}
+                value={getValidColorForInput(attributes.fill)}
                 onChange={(e) => handlePropertyChange("fill", e.target.value)}
                 className="w-12 h-8 rounded border border-gray-300 cursor-pointer"
               />
@@ -309,7 +320,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
             <div className="flex items-center gap-2">
               <input
                 type="color"
-                value={attributes.stroke}
+                value={getValidColorForInput(attributes.stroke, "#333333")}
                 onChange={(e) => handlePropertyChange("stroke", e.target.value)}
                 className="w-12 h-8 rounded border border-gray-300 cursor-pointer"
               />
@@ -355,7 +366,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
             <div className="flex items-center gap-2">
               <input
                 type="color"
-                value={attributes.stroke}
+                value={getValidColorForInput(attributes.stroke, "#333333")}
                 onChange={(e) => handlePropertyChange("stroke", e.target.value)}
                 className="w-12 h-8 rounded border border-gray-300 cursor-pointer"
               />

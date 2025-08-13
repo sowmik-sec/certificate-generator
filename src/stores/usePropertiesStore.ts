@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { create } from 'zustand';
-import { subscribeWithSelector } from 'zustand/middleware';
+import { create } from "zustand";
+import { subscribeWithSelector } from "zustand/middleware";
 
 interface ObjectAttributes {
   // Text properties
@@ -52,7 +52,12 @@ interface PropertiesState {
 
   // Helper functions
   syncFromFabricObject: (fabricObject: any) => void;
-  applyToFabricObject: (fabricObject: any, canvas: any, property: keyof ObjectAttributes, value: any) => void;
+  applyToFabricObject: (
+    fabricObject: any,
+    canvas: any,
+    property: keyof ObjectAttributes,
+    value: any
+  ) => void;
   resetAttributes: () => void;
 
   // Object type helpers
@@ -65,19 +70,19 @@ interface PropertiesState {
 }
 
 const defaultAttributes: ObjectAttributes = {
-  text: '',
-  fontFamily: 'Arial',
+  text: "",
+  fontFamily: "Arial",
   fontSize: 40,
-  fontWeight: 'normal',
-  fontStyle: 'normal',
+  fontWeight: "normal",
+  fontStyle: "normal",
   underline: false,
-  textAlign: 'left',
+  textAlign: "left",
   lineHeight: 1.16,
   charSpacing: 0,
-  fill: '#000000',
-  stroke: '#333333',
+  fill: "#000000",
+  stroke: "#333333",
   strokeWidth: 4,
-  backgroundColor: 'transparent',
+  backgroundColor: "#ffffff",
   opacity: 1,
   angle: 0,
   left: 0,
@@ -119,23 +124,35 @@ export const usePropertiesStore = create<PropertiesState>()(
         return;
       }
 
+      // Helper function to convert transparent values to valid hex colors for color inputs
+      const normalizeColorForInput = (color: any, fallback: string): string => {
+        if (typeof color !== "string") return fallback;
+        if (color === "transparent" || color === "") return fallback;
+        if (color.startsWith("#")) return color;
+        // Handle other color formats if needed
+        return color;
+      };
+
       const newAttributes: Partial<ObjectAttributes> = {
         // Text properties
-        text: fabricObject.text || '',
-        fontFamily: fabricObject.fontFamily || 'Arial',
+        text: fabricObject.text || "",
+        fontFamily: fabricObject.fontFamily || "Arial",
         fontSize: fabricObject.fontSize || 40,
-        fontWeight: fabricObject.fontWeight || 'normal',
-        fontStyle: fabricObject.fontStyle || 'normal',
+        fontWeight: fabricObject.fontWeight || "normal",
+        fontStyle: fabricObject.fontStyle || "normal",
         underline: fabricObject.underline || false,
-        textAlign: fabricObject.textAlign || 'left',
+        textAlign: fabricObject.textAlign || "left",
         lineHeight: fabricObject.lineHeight || 1.16,
         charSpacing: fabricObject.charSpacing || 0,
 
-        // Color properties
-        fill: typeof fabricObject.fill === 'string' ? fabricObject.fill : '#000000',
-        stroke: typeof fabricObject.stroke === 'string' ? fabricObject.stroke : '#333333',
+        // Color properties - normalize transparent values for color inputs
+        fill: normalizeColorForInput(fabricObject.fill, "#000000"),
+        stroke: normalizeColorForInput(fabricObject.stroke, "#333333"),
         strokeWidth: fabricObject.strokeWidth || 4,
-        backgroundColor: fabricObject.backgroundColor || 'transparent',
+        backgroundColor: normalizeColorForInput(
+          fabricObject.backgroundColor,
+          "#ffffff"
+        ),
 
         // General properties
         opacity: fabricObject.opacity ?? 1,
@@ -160,92 +177,115 @@ export const usePropertiesStore = create<PropertiesState>()(
     },
 
     // Apply property change to fabric object
-    applyToFabricObject: (fabricObject: any, canvas: any, property: keyof ObjectAttributes, value: any) => {
+    applyToFabricObject: (
+      fabricObject: any,
+      canvas: any,
+      property: keyof ObjectAttributes,
+      value: any
+    ) => {
       if (!canvas || !fabricObject) return;
 
       // Update local state
       get().updateAttribute(property, value);
 
-      if (fabricObject.type === 'group') {
+      // Handle special cases for color properties
+      let fabricValue = value;
+      if (["fill", "stroke", "backgroundColor"].includes(property as string)) {
+        // Allow transparent for fabric objects but ensure it's properly handled
+        if (value === "transparent" || value === "") {
+          fabricValue = "transparent";
+        }
+      }
+
+      if (fabricObject.type === "group") {
         // Handle grouped objects
         const applyToGroupObjects = (obj: any) => {
-          if (property === 'stroke') {
-            obj.set('stroke', value);
-            if (obj.type === 'triangle') obj.set('fill', value);
-          } else if (property === 'fill' && obj.type === 'textbox') {
-            obj.set('fill', value);
-          } else if (property === 'fontFamily' && obj.type === 'textbox') {
-            obj.set('fontFamily', value);
-          } else if (property === 'fontSize' && obj.type === 'textbox') {
-            obj.set('fontSize', value);
-          } else if (property === 'fontWeight' && obj.type === 'textbox') {
-            obj.set('fontWeight', value);
-          } else if (property === 'fontStyle' && obj.type === 'textbox') {
-            obj.set('fontStyle', value);
-          } else if (property === 'underline' && obj.type === 'textbox') {
-            obj.set('underline', value);
-          } else if (property === 'textAlign' && obj.type === 'textbox') {
-            obj.set('textAlign', value);
-          } else if (['opacity', 'angle'].includes(property as string)) {
-            obj.set(property, value);
+          if (property === "stroke") {
+            obj.set("stroke", fabricValue);
+            if (obj.type === "triangle") obj.set("fill", fabricValue);
+          } else if (property === "fill" && obj.type === "textbox") {
+            obj.set("fill", fabricValue);
+          } else if (property === "fontFamily" && obj.type === "textbox") {
+            obj.set("fontFamily", fabricValue);
+          } else if (property === "fontSize" && obj.type === "textbox") {
+            obj.set("fontSize", fabricValue);
+          } else if (property === "fontWeight" && obj.type === "textbox") {
+            obj.set("fontWeight", fabricValue);
+          } else if (property === "fontStyle" && obj.type === "textbox") {
+            obj.set("fontStyle", fabricValue);
+          } else if (property === "underline" && obj.type === "textbox") {
+            obj.set("underline", fabricValue);
+          } else if (property === "textAlign" && obj.type === "textbox") {
+            obj.set("textAlign", fabricValue);
+          } else if (["opacity", "angle"].includes(property as string)) {
+            obj.set(property, fabricValue);
           }
         };
 
         if (
-          'forEachObject' in fabricObject &&
-          typeof (fabricObject as any).forEachObject === 'function'
+          "forEachObject" in fabricObject &&
+          typeof (fabricObject as any).forEachObject === "function"
         ) {
           (fabricObject as any).forEachObject(applyToGroupObjects);
         } else if (Array.isArray((fabricObject as any)._objects)) {
           (fabricObject as any)._objects.forEach(applyToGroupObjects);
         }
       } else {
-        fabricObject.set(property, value);
+        fabricObject.set(property, fabricValue);
       }
 
       canvas.renderAll();
     },
 
     // Reset to defaults
-    resetAttributes: () => set({ attributes: defaultAttributes, selectedObjectType: null }),
+    resetAttributes: () =>
+      set({ attributes: defaultAttributes, selectedObjectType: null }),
 
     // Helper functions
     getObjectTypeName: () => {
       const type = get().selectedObjectType;
-      if (!type) return 'Object';
-      
-      const isText = type === 'textbox' || type === 'text';
-      const isShape = ['rect', 'circle', 'triangle', 'ellipse', 'path'].includes(type);
-      const isLine = type === 'line';
-      const isGroup = type === 'group';
-      const isImage = type === 'image';
+      if (!type) return "Object";
 
-      if (isText) return 'Text';
-      if (isImage) return 'Image';
-      if (isLine) return 'Line';
-      if (isGroup) return 'Group';
-      if (type === 'circle') return 'Circle';
-      if (type === 'rect') return 'Rectangle';
-      if (type === 'triangle') return 'Triangle';
-      if (type === 'ellipse') return 'Ellipse';
-      if (type === 'path') return 'Shape';
-      return 'Object';
+      const isText = type === "textbox" || type === "text";
+      const isShape = [
+        "rect",
+        "circle",
+        "triangle",
+        "ellipse",
+        "path",
+      ].includes(type);
+      const isLine = type === "line";
+      const isGroup = type === "group";
+      const isImage = type === "image";
+
+      if (isText) return "Text";
+      if (isImage) return "Image";
+      if (isLine) return "Line";
+      if (isGroup) return "Group";
+      if (type === "circle") return "Circle";
+      if (type === "rect") return "Rectangle";
+      if (type === "triangle") return "Triangle";
+      if (type === "ellipse") return "Ellipse";
+      if (type === "path") return "Shape";
+      return "Object";
     },
 
     isTextObject: () => {
       const type = get().selectedObjectType;
-      return type === 'textbox' || type === 'text';
+      return type === "textbox" || type === "text";
     },
 
     isShapeObject: () => {
       const type = get().selectedObjectType;
-      return ['rect', 'circle', 'triangle', 'ellipse', 'path'].includes(type || '');
+      return ["rect", "circle", "triangle", "ellipse", "path"].includes(
+        type || ""
+      );
     },
 
-    isLineObject: () => get().selectedObjectType === 'line',
+    isLineObject: () => get().selectedObjectType === "line",
 
-    isGroupObject: () => get().selectedObjectType === 'group',
+    isGroupObject: () => get().selectedObjectType === "group",
 
-    isImageObject: () => get().selectedObjectType === 'image',
+    isImageObject: () => get().selectedObjectType === "image",
   }))
 );
