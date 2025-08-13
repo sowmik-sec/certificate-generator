@@ -12,9 +12,7 @@ import {
   AlignRight,
   Type,
   Palette,
-  Circle,
   Square,
-  Triangle,
   Minus,
 } from "lucide-react";
 

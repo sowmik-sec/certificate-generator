@@ -1,14 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import React, { useState, useRef } from "react";
+import React, { useRef } from "react";
 import CanvasComponent from "@/components/canvas-component";
 import PropertiesPanel from "@/components/properties-panel";
 import AlignmentToolbar from "@/components/alignment-toolbar";
 import LayerPanel from "@/components/layer-panel";
 import CanvasSizePanel, {
   CanvasSize,
-  PRESET_SIZES,
 } from "@/components/canvas-size-panel";
+import { useEditorStore } from "@/stores/useEditorStore";
+import { useCanvasStore } from "@/stores/useCanvasStore";
 
 // Import custom hooks
 import { useFabricCanvas } from "@/hooks/useFabricCanvas";
@@ -24,7 +25,7 @@ import { useTemplateLoader } from "@/hooks/useTemplateLoader";
 import { useEditorShortcuts } from "@/hooks/useKeyboardShortcuts";
 
 // Import UI components
-import SidebarNavigation, { EditorMode } from "@/components/sidebar-navigation";
+import SidebarNavigation from "@/components/sidebar-navigation";
 import LeftPanel from "@/components/left-panel";
 import LayerControls from "@/components/layer-controls";
 import HeaderActions from "@/components/header-actions";
@@ -32,23 +33,32 @@ import { ConfirmModal } from "@/components/confirm-modal";
 
 // Main App Component
 export default function CertificateGeneratorPage() {
-  const [editorMode, setEditorMode] = useState<EditorMode>("templates");
-  const [canvasSize, setCanvasSize] = useState<CanvasSize>(PRESET_SIZES.CUSTOM);
-  const [showCanvasSizeModal, setShowCanvasSizeModal] = useState(false);
-  const [pendingCanvasSize, setPendingCanvasSize] = useState<CanvasSize | null>(
-    null
-  );
-  const imageInputRef = useRef<HTMLInputElement>(null);
+  // Zustand stores
+  const {
+    editorMode,
+    setEditorMode,
+    canvasSize,
+    setCanvasSize,
+    showCanvasSizeModal,
+    setShowCanvasSizeModal,
+    pendingCanvasSize,
+    setPendingCanvasSize,
+    getShouldShowCanvasSize,
+    setHasCanvasObjects,
+  } = useEditorStore();
 
-  // Custom hooks
   const {
     fabric,
     canvas,
     selectedObject,
     selectedObjects,
     setSelectedObject,
-    handleSetCanvas,
-  } = useFabricCanvas();
+  } = useCanvasStore();
+
+  const imageInputRef = useRef<HTMLInputElement>(null);
+
+  // Custom hooks
+  const { handleSetCanvas } = useFabricCanvas();
 
   const { saveToHistory, undo, redo } = useCanvasHistory(canvas);
 
@@ -216,13 +226,41 @@ export default function CertificateGeneratorPage() {
     if (e.target) e.target.value = "";
   };
 
-  // Determine if canvas size panel should be shown
-  // Hide it if:
-  // 1. User has objects on canvas (started designing), OR
-  // 2. User has moved beyond templates mode (actively designing)
-  const hasCanvasObjects = canvas ? canvas.getObjects().length > 0 : false;
-  const isInDesignMode = editorMode !== "templates";
-  const shouldShowCanvasSize = !hasCanvasObjects && !isInDesignMode;
+  // Update hasCanvasObjects in store when canvas changes
+  React.useEffect(() => {
+    if (!canvas) {
+      setHasCanvasObjects(false);
+      return;
+    }
+
+    const updateObjectCount = () => {
+      const objects = canvas.getObjects().filter(
+        (obj: any) => obj.id !== "grid-line" && obj.id !== "alignment-line"
+      );
+      const hasObjects = objects.length > 0;
+      setHasCanvasObjects(hasObjects);
+    };
+
+    // Initial check
+    updateObjectCount();
+
+    // Listen for canvas changes
+    const handleObjectChange = () => {
+      // Use setTimeout to debounce rapid changes
+      setTimeout(updateObjectCount, 50);
+    };
+
+    canvas.on("object:added", handleObjectChange);
+    canvas.on("object:removed", handleObjectChange);
+
+    return () => {
+      canvas.off("object:added", handleObjectChange);
+      canvas.off("object:removed", handleObjectChange);
+    };
+  }, [canvas, setHasCanvasObjects]);
+
+  // Get shouldShowCanvasSize from store
+  const shouldShowCanvasSize = getShouldShowCanvasSize();
 
   if (!fabric) {
     return (

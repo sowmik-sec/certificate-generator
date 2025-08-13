@@ -15,7 +15,8 @@ import {
   Image as ImageIcon,
   Shapes,
 } from "lucide-react";
-import { useState, useEffect, useCallback } from "react";
+import { useEffect, useCallback } from "react";
+import { useLayerStore } from "@/stores/useLayerStore";
 
 interface LayerPanelProps {
   canvas: FabricCanvas;
@@ -35,13 +36,20 @@ interface LayerInfo {
 
 const LayerPanel: React.FC<LayerPanelProps> = ({
   canvas,
-  selectedObjects = [],
   onSelectionChange,
 }) => {
-  const [layers, setLayers] = useState<LayerInfo[]>([]);
-  const [draggedLayer, setDraggedLayer] = useState<string | null>(null);
-  const [editingLayer, setEditingLayer] = useState<string | null>(null);
-  const [editingName, setEditingName] = useState<string>("");
+  // Zustand store
+  const {
+    layers,
+    setLayers,
+    draggedLayer,
+    setDraggedLayer,
+    editingLayer,
+    setEditingLayer,
+    editingName,
+    setEditingName,
+    generateLayerName,
+  } = useLayerStore();
 
   // Get icon for layer type
   const getLayerIcon = (type: string) => {
@@ -64,29 +72,6 @@ const LayerPanel: React.FC<LayerPanelProps> = ({
     }
   };
 
-  // Generate layer name based on type and content
-  const generateLayerName = (obj: any, index: number) => {
-    const type = obj.type || "Object";
-
-    switch (type.toLowerCase()) {
-      case "textbox":
-      case "text":
-        const text = obj.text || "Text";
-        return text.length > 20 ? `${text.substring(0, 20)}...` : text;
-      case "rect":
-      case "rectangle":
-        return `Rectangle ${index + 1}`;
-      case "circle":
-      case "ellipse":
-        return `Circle ${index + 1}`;
-      case "image":
-        return `Image ${index + 1}`;
-      case "group":
-        return `Group ${index + 1}`;
-      default:
-        return `${type} ${index + 1}`;
-    }
-  };
 
   // Update layers list when canvas changes
   const updateLayers = useCallback(() => {
@@ -118,7 +103,7 @@ const LayerPanel: React.FC<LayerPanelProps> = ({
     // Sort by z-index (top to bottom in layer panel)
     layerInfos.sort((a, b) => b.zIndex - a.zIndex);
     setLayers(layerInfos);
-  }, [canvas]);
+  }, [canvas, generateLayerName, setLayers]);
 
   // Update layers when canvas objects change
   useEffect(() => {
@@ -145,7 +130,7 @@ const LayerPanel: React.FC<LayerPanelProps> = ({
       canvas.off("selection:updated", handleObjectChange);
       canvas.off("selection:cleared", handleObjectChange);
     };
-  }, [canvas]);
+  }, [canvas, updateLayers]);
 
   // Select layer
   const selectLayer = (layer: LayerInfo, multiSelect = false) => {

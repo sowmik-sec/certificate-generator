@@ -25,6 +25,9 @@ const CanvasComponent: React.FC<CanvasComponentProps> = ({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const alignmentLinesRef = useRef<any[]>([]);
+  
+  // Note: This component could use setHasCanvasObjects from useEditorStore for tracking
+  // canvas objects, but it's handled in the main page component instead
 
   const resizeCanvas = useCallback(
     (canvasInstance: FabricCanvas) => {
