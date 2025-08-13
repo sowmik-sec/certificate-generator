@@ -2,7 +2,8 @@
 "use client";
 import { FabricCanvas } from "@/types/fabric";
 import { FabricObject } from "fabric";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { usePropertiesStore } from "@/stores/usePropertiesStore";
 import {
   Bold,
   Italic,
@@ -25,120 +26,32 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
   selectedObject,
   canvas,
 }) => {
-  const [attributes, setAttributes] = useState({
-    // Text properties
-    text: "",
-    fontFamily: "Arial",
-    fontSize: 40,
-    fontWeight: "normal",
-    fontStyle: "normal",
-    underline: false,
-    textAlign: "left",
-    lineHeight: 1.16,
-    charSpacing: 0,
+  // Use zustand store for properties state
+  const {
+    attributes,
+    syncFromFabricObject,
+    applyToFabricObject,
+    getObjectTypeName,
+    isTextObject,
+    isShapeObject,
+    isLineObject,
+    isGroupObject,
+    isImageObject,
+  } = usePropertiesStore();
 
-    // Color properties
-    fill: "#000000",
-    stroke: "#333333",
-    strokeWidth: 4,
-    backgroundColor: "transparent",
-
-    // General properties
-    opacity: 1,
-    angle: 0,
-
-    // Shape properties
-    width: 100,
-    height: 100,
-    radius: 50,
-    rx: 50,
-    ry: 30,
-  });
-
+  // Sync attributes when selected object changes
   useEffect(() => {
-    if (selectedObject) {
-      const obj = selectedObject as any;
-      setAttributes({
-        // Text properties
-        text: obj.text || "",
-        fontFamily: obj.fontFamily || "Arial",
-        fontSize: obj.fontSize || 40,
-        fontWeight: obj.fontWeight || "normal",
-        fontStyle: obj.fontStyle || "normal",
-        underline: obj.underline || false,
-        textAlign: obj.textAlign || "left",
-        lineHeight: obj.lineHeight || 1.16,
-        charSpacing: obj.charSpacing || 0,
+    syncFromFabricObject(selectedObject);
+  }, [selectedObject, syncFromFabricObject]);
 
-        // Color properties
-        fill: typeof obj.fill === "string" ? obj.fill : "#000000",
-        stroke: typeof obj.stroke === "string" ? obj.stroke : "#333333",
-        strokeWidth: obj.strokeWidth || 4,
-        backgroundColor: obj.backgroundColor || "transparent",
-
-        // General properties
-        opacity: obj.opacity ?? 1,
-        angle: obj.angle || 0,
-
-        // Shape properties
-        width: obj.width || 100,
-        height: obj.height || 100,
-        radius: obj.radius || 50,
-        rx: obj.rx || 50,
-        ry: obj.ry || 30,
-      });
-    }
-  }, [selectedObject]);
-
-  const handlePropertyChange = (prop: string, value: any) => {
-    if (!canvas || !selectedObject) return;
-    setAttributes((prev) => ({ ...prev, [prop]: value }));
-
-    if (selectedObject.type === "group") {
-      // Handle grouped objects
-      const applyToGroupObjects = (obj: any) => {
-        if (prop === "stroke") {
-          obj.set("stroke", value);
-          if (obj.type === "triangle") obj.set("fill", value);
-        } else if (prop === "fill" && obj.type === "textbox") {
-          obj.set("fill", value);
-        } else if (prop === "fontFamily" && obj.type === "textbox") {
-          obj.set("fontFamily", value);
-        } else if (prop === "fontSize" && obj.type === "textbox") {
-          obj.set("fontSize", value);
-        } else if (prop === "fontWeight" && obj.type === "textbox") {
-          obj.set("fontWeight", value);
-        } else if (prop === "fontStyle" && obj.type === "textbox") {
-          obj.set("fontStyle", value);
-        } else if (prop === "underline" && obj.type === "textbox") {
-          obj.set("underline", value);
-        } else if (prop === "textAlign" && obj.type === "textbox") {
-          obj.set("textAlign", value);
-        } else if (["opacity", "angle"].includes(prop)) {
-          obj.set(prop, value);
-        }
-      };
-
-      if (
-        "forEachObject" in selectedObject &&
-        typeof (selectedObject as any).forEachObject === "function"
-      ) {
-        (selectedObject as any).forEachObject(applyToGroupObjects);
-      } else if (Array.isArray((selectedObject as any)._objects)) {
-        (selectedObject as any)._objects.forEach(applyToGroupObjects);
-      }
-    } else {
-      selectedObject.set(prop, value);
-    }
-
-    canvas.renderAll();
+  const handlePropertyChange = (prop: keyof typeof attributes, value: any) => {
+    applyToFabricObject(selectedObject, canvas, prop, value);
   };
 
   const handleTextChange = (newText: string) => {
     if (!canvas || !selectedObject || selectedObject.type !== "textbox") return;
     (selectedObject as any).set("text", newText);
-    setAttributes((prev) => ({ ...prev, text: newText }));
-    canvas.renderAll();
+    handlePropertyChange('text', newText);
   };
 
   if (!selectedObject) return null;
@@ -159,22 +72,6 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
     (selectedObject as any)._objects?.some(
       (obj: any) => obj.type === "textbox"
     );
-
-  const getObjectTypeName = () => {
-    if (isText) return "Text";
-    if (isImage) return "Image";
-    if (isLine) return "Line";
-    if (isGroup) {
-      if (hasTextInGroup) return "Group with Text";
-      return "Group";
-    }
-    if (selectedObject.type === "circle") return "Circle";
-    if (selectedObject.type === "rect") return "Rectangle";
-    if (selectedObject.type === "triangle") return "Triangle";
-    if (selectedObject.type === "ellipse") return "Ellipse";
-    if (selectedObject.type === "path") return "Shape";
-    return "Object";
-  };
 
   return (
     <div className="space-y-6 max-h-full overflow-y-auto">

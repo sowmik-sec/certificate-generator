@@ -3,7 +3,8 @@ import { classicTemplate } from "@/templates/classic-template";
 import { modernTemplate } from "@/templates/modern-template";
 import { playfulTemplate } from "@/templates/playful-template";
 import { ImageIcon, Palette } from "lucide-react";
-import { useRef, useState } from "react";
+import { useRef } from "react";
+import { useTemplatesStore } from "@/stores/useTemplatesStore";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 interface TemplatesPanelProps {
@@ -17,7 +18,14 @@ const TemplatesPanel: React.FC<TemplatesPanelProps> = ({
   canvas,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [backgroundColor, setBackgroundColor] = useState("#ffffff");
+  
+  // Use zustand store for templates state
+  const {
+    backgroundColor,
+    setBackgroundColor,
+    backgroundColorPresets,
+    applyBackgroundToCanvas,
+  } = useTemplatesStore();
 
   const templates = [
     {

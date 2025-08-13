@@ -1,45 +1,48 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import { useState, useCallback } from "react";
+import { useCallback } from "react";
+import { useHistoryStore } from "@/stores/useHistoryStore";
 
 export const useCanvasHistory = (canvas: any) => {
-  const [history, setHistory] = useState<any[]>([]);
-  const [historyIndex, setHistoryIndex] = useState(-1);
+  const {
+    saveToHistory: saveToHistoryStore,
+    undo: undoStore,
+    redo: redoStore,
+    canUndo: canUndoStore,
+    canRedo: canRedoStore,
+  } = useHistoryStore();
 
   const saveToHistory = useCallback(() => {
-    if (!canvas) return;
-    const state = JSON.stringify(canvas.toJSON());
-    const newHistory = history.slice(0, historyIndex + 1);
-    newHistory.push(state);
-    setHistory(newHistory);
-    setHistoryIndex(newHistory.length - 1);
-  }, [canvas, history, historyIndex]);
+    // Add defensive check to ensure canvas is ready
+    if (canvas && typeof canvas.toJSON === 'function') {
+      // Use setTimeout to handle the async nature and prevent blocking
+      setTimeout(async () => {
+        try {
+          await saveToHistoryStore(canvas);
+        } catch (error) {
+          console.warn('History save failed:', error);
+        }
+      }, 20); // Increased delay to allow canvas to stabilize after template loading
+    }
+  }, [canvas, saveToHistoryStore]);
 
   const undo = useCallback(() => {
-    if (historyIndex > 0) {
-      const newIndex = historyIndex - 1;
-      canvas.loadFromJSON(JSON.parse(history[newIndex]), () => {
-        canvas.renderAll();
-        setHistoryIndex(newIndex);
-      });
+    if (canvas && typeof canvas.loadFromJSON === 'function') {
+      undoStore(canvas);
     }
-  }, [canvas, history, historyIndex]);
+  }, [canvas, undoStore]);
 
   const redo = useCallback(() => {
-    if (historyIndex < history.length - 1) {
-      const newIndex = historyIndex + 1;
-      canvas.loadFromJSON(JSON.parse(history[newIndex]), () => {
-        canvas.renderAll();
-        setHistoryIndex(newIndex);
-      });
+    if (canvas && typeof canvas.loadFromJSON === 'function') {
+      redoStore(canvas);
     }
-  }, [canvas, history, historyIndex]);
+  }, [canvas, redoStore]);
 
   return {
     saveToHistory,
     undo,
     redo,
-    canUndo: historyIndex > 0,
-    canRedo: historyIndex < history.length - 1,
+    canUndo: canUndoStore(),
+    canRedo: canRedoStore(),
   };
 };

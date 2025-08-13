@@ -11,7 +11,8 @@ import {
   Grid3x3,
   Move,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
+import { useGridAlignmentStore } from "@/stores/useGridAlignmentStore";
 
 interface AlignmentToolbarProps {
   canvas: FabricCanvas;
@@ -22,237 +23,44 @@ const AlignmentToolbar: React.FC<AlignmentToolbarProps> = ({
   canvas,
   selectedObjects = [],
 }) => {
-  const [showGrid, setShowGrid] = useState(false);
-  const [snapToGrid, setSnapToGrid] = useState(false);
-  const [gridSize, setGridSize] = useState(20);
+  // Use zustand store for grid and alignment state
+  const {
+    showGrid,
+    snapToGrid,
+    gridSize,
+    toggleGrid,
+    toggleSnapToGrid,
+    setGridSize,
+    applyGridToCanvas,
+    setupCanvasSnapping,
+    removeCanvasSnapping,
+    alignObjects,
+    distributeObjects,
+  } = useGridAlignmentStore();
 
   const hasSelection = selectedObjects.length > 0;
 
-  // Grid functionality
-  const toggleGrid = () => {
-    if (!canvas) return;
+  // Grid and alignment functionality using zustand store
+  const handleToggleGrid = () => {
+    toggleGrid();
+    applyGridToCanvas(canvas);
+  };
 
-    const newShowGrid = !showGrid;
-    setShowGrid(newShowGrid);
-
-    if (newShowGrid) {
-      drawGrid();
+  const handleToggleSnapToGrid = () => {
+    toggleSnapToGrid();
+    if (snapToGrid) {
+      removeCanvasSnapping(canvas);
     } else {
-      removeGrid();
+      setupCanvasSnapping(canvas);
     }
-    canvas.renderAll();
   };
 
-  const drawGrid = () => {
-    if (!canvas) return;
-
-    removeGrid(); // Remove existing grid first
-
-    const canvasWidth = canvas.getWidth() / canvas.getZoom();
-    const canvasHeight = canvas.getHeight() / canvas.getZoom();
-
-    const gridGroup = [];
-
-    // Get fabric from global window object since we're in the browser
-    const fabric = (window as any).fabric;
-    if (!fabric) return;
-
-    // Vertical lines
-    for (let i = 0; i <= canvasWidth; i += gridSize) {
-      const line = new fabric.Line([i, 0, i, canvasHeight], {
-        stroke: "#ddd",
-        strokeWidth: 0.5,
-        selectable: false,
-        evented: false,
-        excludeFromExport: true,
-        id: "grid-line",
-      });
-      gridGroup.push(line);
+  const handleGridSizeChange = (newSize: number) => {
+    setGridSize(newSize);
+    if (showGrid) {
+      // Redraw grid with new size
+      setTimeout(() => applyGridToCanvas(canvas), 0);
     }
-
-    // Horizontal lines
-    for (let i = 0; i <= canvasHeight; i += gridSize) {
-      const line = new fabric.Line([0, i, canvasWidth, i], {
-        stroke: "#ddd",
-        strokeWidth: 0.5,
-        selectable: false,
-        evented: false,
-        excludeFromExport: true,
-        id: "grid-line",
-      });
-      gridGroup.push(line);
-    }
-
-    gridGroup.forEach((line) => {
-      canvas.add(line);
-      canvas.sendToBack(line);
-    });
-  };
-
-  const removeGrid = () => {
-    if (!canvas) return;
-    const objects = canvas
-      .getObjects()
-      .filter((obj: any) => obj.id === "grid-line");
-    objects.forEach((obj: any) => canvas.remove(obj));
-  };
-
-  // Snap to grid functionality
-  const toggleSnapToGrid = () => {
-    setSnapToGrid(!snapToGrid);
-  };
-
-  // Alignment functions
-  const alignLeft = () => {
-    if (!canvas || !hasSelection) return;
-    const activeObjects = canvas.getActiveObjects();
-    if (activeObjects.length === 0) return;
-
-    const leftmost = Math.min(
-      ...activeObjects.map(
-        (obj: any) => obj.left - (obj.width * obj.scaleX) / 2
-      )
-    );
-
-    activeObjects.forEach((obj: any) => {
-      obj.set({ left: leftmost + (obj.width * obj.scaleX) / 2 });
-      obj.setCoords();
-    });
-
-    canvas.renderAll();
-  };
-
-  const alignCenterHorizontal = () => {
-    if (!canvas || !hasSelection) return;
-    const activeObjects = canvas.getActiveObjects();
-    if (activeObjects.length === 0) return;
-
-    const canvasCenter = canvas.getWidth() / canvas.getZoom() / 2;
-
-    activeObjects.forEach((obj: any) => {
-      obj.set({ left: canvasCenter });
-      obj.setCoords();
-    });
-
-    canvas.renderAll();
-  };
-
-  const alignRight = () => {
-    if (!canvas || !hasSelection) return;
-    const activeObjects = canvas.getActiveObjects();
-    if (activeObjects.length === 0) return;
-
-    const rightmost = Math.max(
-      ...activeObjects.map(
-        (obj: any) => obj.left + (obj.width * obj.scaleX) / 2
-      )
-    );
-
-    activeObjects.forEach((obj: any) => {
-      obj.set({ left: rightmost - (obj.width * obj.scaleX) / 2 });
-      obj.setCoords();
-    });
-
-    canvas.renderAll();
-  };
-
-  const alignTop = () => {
-    if (!canvas || !hasSelection) return;
-    const activeObjects = canvas.getActiveObjects();
-    if (activeObjects.length === 0) return;
-
-    const topmost = Math.min(
-      ...activeObjects.map(
-        (obj: any) => obj.top - (obj.height * obj.scaleY) / 2
-      )
-    );
-
-    activeObjects.forEach((obj: any) => {
-      obj.set({ top: topmost + (obj.height * obj.scaleY) / 2 });
-      obj.setCoords();
-    });
-
-    canvas.renderAll();
-  };
-
-  const alignCenterVertical = () => {
-    if (!canvas || !hasSelection) return;
-    const activeObjects = canvas.getActiveObjects();
-    if (activeObjects.length === 0) return;
-
-    const canvasMiddle = canvas.getHeight() / canvas.getZoom() / 2;
-
-    activeObjects.forEach((obj: any) => {
-      obj.set({ top: canvasMiddle });
-      obj.setCoords();
-    });
-
-    canvas.renderAll();
-  };
-
-  const alignBottom = () => {
-    if (!canvas || !hasSelection) return;
-    const activeObjects = canvas.getActiveObjects();
-    if (activeObjects.length === 0) return;
-
-    const bottommost = Math.max(
-      ...activeObjects.map(
-        (obj: any) => obj.top + (obj.height * obj.scaleY) / 2
-      )
-    );
-
-    activeObjects.forEach((obj: any) => {
-      obj.set({ top: bottommost - (obj.height * obj.scaleY) / 2 });
-      obj.setCoords();
-    });
-
-    canvas.renderAll();
-  };
-
-  const distributeHorizontal = () => {
-    if (!canvas || selectedObjects.length < 3) return;
-    const activeObjects = canvas.getActiveObjects();
-    if (activeObjects.length < 3) return;
-
-    const sortedObjects = [...activeObjects].sort(
-      (a: any, b: any) => a.left - b.left
-    );
-    const leftmost = sortedObjects[0].left;
-    const rightmost = sortedObjects[sortedObjects.length - 1].left;
-    const totalWidth = rightmost - leftmost;
-    const spacing = totalWidth / (sortedObjects.length - 1);
-
-    sortedObjects.forEach((obj: any, index: number) => {
-      if (index > 0 && index < sortedObjects.length - 1) {
-        obj.set({ left: leftmost + spacing * index });
-        obj.setCoords();
-      }
-    });
-
-    canvas.renderAll();
-  };
-
-  const distributeVertical = () => {
-    if (!canvas || selectedObjects.length < 3) return;
-    const activeObjects = canvas.getActiveObjects();
-    if (activeObjects.length < 3) return;
-
-    const sortedObjects = [...activeObjects].sort(
-      (a: any, b: any) => a.top - b.top
-    );
-    const topmost = sortedObjects[0].top;
-    const bottommost = sortedObjects[sortedObjects.length - 1].top;
-    const totalHeight = bottommost - topmost;
-    const spacing = totalHeight / (sortedObjects.length - 1);
-
-    sortedObjects.forEach((obj: any, index: number) => {
-      if (index > 0 && index < sortedObjects.length - 1) {
-        obj.set({ top: topmost + spacing * index });
-        obj.setCoords();
-      }
-    });
-
-    canvas.renderAll();
   };
 
   // Layering functions
@@ -323,7 +131,7 @@ const AlignmentToolbar: React.FC<AlignmentToolbarProps> = ({
         {/* Grid and Snap Controls */}
         <div className="flex items-center space-x-1 pr-2 border-r border-gray-300">
           <button
-            onClick={toggleGrid}
+            onClick={handleToggleGrid}
             className={`p-2 rounded transition-colors ${
               showGrid
                 ? "bg-blue-100 text-blue-600"
@@ -335,7 +143,7 @@ const AlignmentToolbar: React.FC<AlignmentToolbarProps> = ({
           </button>
 
           <button
-            onClick={toggleSnapToGrid}
+            onClick={handleToggleSnapToGrid}
             className={`p-2 rounded transition-colors ${
               snapToGrid
                 ? "bg-blue-100 text-blue-600"
@@ -352,10 +160,7 @@ const AlignmentToolbar: React.FC<AlignmentToolbarProps> = ({
             max="50"
             value={gridSize}
             onChange={(e) => {
-              setGridSize(parseInt(e.target.value));
-              if (showGrid) {
-                setTimeout(drawGrid, 0);
-              }
+              handleGridSizeChange(parseInt(e.target.value));
             }}
             className="w-16"
             title={`Grid Size: ${gridSize}px`}
@@ -365,7 +170,7 @@ const AlignmentToolbar: React.FC<AlignmentToolbarProps> = ({
         {/* Horizontal Alignment */}
         <div className="flex items-center space-x-1 pr-2 border-r border-gray-300">
           <button
-            onClick={alignLeft}
+            onClick={() => alignObjects(canvas, 'left')}
             disabled={!hasSelection}
             className="p-2 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
             title="Align Left"
@@ -374,7 +179,7 @@ const AlignmentToolbar: React.FC<AlignmentToolbarProps> = ({
           </button>
 
           <button
-            onClick={alignCenterHorizontal}
+            onClick={() => alignObjects(canvas, 'center')}
             disabled={!hasSelection}
             className="p-2 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
             title="Center Horizontally"
@@ -383,7 +188,7 @@ const AlignmentToolbar: React.FC<AlignmentToolbarProps> = ({
           </button>
 
           <button
-            onClick={alignRight}
+            onClick={() => alignObjects(canvas, 'right')}
             disabled={!hasSelection}
             className="p-2 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
             title="Align Right"
@@ -395,7 +200,7 @@ const AlignmentToolbar: React.FC<AlignmentToolbarProps> = ({
         {/* Vertical Alignment */}
         <div className="flex items-center space-x-1 pr-2 border-r border-gray-300">
           <button
-            onClick={alignTop}
+            onClick={() => alignObjects(canvas, 'top')}
             disabled={!hasSelection}
             className="p-2 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
             title="Align Top"
@@ -404,7 +209,7 @@ const AlignmentToolbar: React.FC<AlignmentToolbarProps> = ({
           </button>
 
           <button
-            onClick={alignCenterVertical}
+            onClick={() => alignObjects(canvas, 'middle')}
             disabled={!hasSelection}
             className="p-2 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
             title="Center Vertically"
@@ -413,7 +218,7 @@ const AlignmentToolbar: React.FC<AlignmentToolbarProps> = ({
           </button>
 
           <button
-            onClick={alignBottom}
+            onClick={() => alignObjects(canvas, 'bottom')}
             disabled={!hasSelection}
             className="p-2 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
             title="Align Bottom"
@@ -425,7 +230,7 @@ const AlignmentToolbar: React.FC<AlignmentToolbarProps> = ({
         {/* Distribution */}
         <div className="flex items-center space-x-1 pr-2 border-r border-gray-300">
           <button
-            onClick={distributeHorizontal}
+            onClick={() => distributeObjects(canvas, 'horizontal')}
             disabled={selectedObjects.length < 3}
             className="px-3 py-2 text-xs rounded text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
             title="Distribute Horizontally"
@@ -434,7 +239,7 @@ const AlignmentToolbar: React.FC<AlignmentToolbarProps> = ({
           </button>
 
           <button
-            onClick={distributeVertical}
+            onClick={() => distributeObjects(canvas, 'vertical')}
             disabled={selectedObjects.length < 3}
             className="px-3 py-2 text-xs rounded text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
             title="Distribute Vertically"

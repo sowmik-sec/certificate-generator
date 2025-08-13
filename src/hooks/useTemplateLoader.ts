@@ -3,6 +3,28 @@
 import { useCallback } from "react";
 import { CanvasSize } from "@/components/canvas-size-panel";
 
+// Function to sanitize template data and fix invalid properties
+const sanitizeTemplateData = (templateJson: any) => {
+  if (!templateJson || !templateJson.objects) return templateJson;
+
+  return {
+    ...templateJson,
+    objects: templateJson.objects.map((obj: any) => {
+      const sanitizedObj = { ...obj };
+      
+      // Fix invalid textBaseline values
+      if (sanitizedObj.textBaseline === 'alphabetical') {
+        sanitizedObj.textBaseline = 'alphabetic';
+      }
+      
+      // Remove any other invalid or problematic properties
+      // Add more sanitization rules here as needed
+      
+      return sanitizedObj;
+    })
+  };
+};
+
 export const useTemplateLoader = (
   canvas: any,
   canvasSize: CanvasSize,
@@ -11,6 +33,9 @@ export const useTemplateLoader = (
   const loadTemplate = useCallback(
     (templateJson: any) => {
       if (!canvas) return;
+      
+      // Sanitize template data to fix invalid properties
+      const sanitizedTemplate = sanitizeTemplateData(templateJson);
 
       // Template original dimensions (what templates were designed for)
       const originalWidth = 800;
@@ -26,7 +51,7 @@ export const useTemplateLoader = (
 
       if (isSameDimensions) {
         // Load template as-is if dimensions match
-        canvas.loadFromJSON(templateJson, () => {
+        canvas.loadFromJSON(sanitizedTemplate, () => {
           canvas.renderAll();
           saveToHistory();
         });
@@ -44,10 +69,10 @@ export const useTemplateLoader = (
       const useUniformScaling = aspectRatioChange > 0.3; // If aspect ratio changes significantly
       const uniformScale = Math.min(scaleX, scaleY);
 
-      // Create a scaled copy of the template
+      // Create a scaled copy of the sanitized template
       const scaledTemplate = {
-        ...templateJson,
-        objects: templateJson.objects.map((obj: any) => {
+        ...sanitizedTemplate,
+        objects: sanitizedTemplate.objects.map((obj: any) => {
           const scaledObj = { ...obj };
 
           // Choose scaling strategy

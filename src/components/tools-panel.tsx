@@ -1,7 +1,8 @@
 "use client";
 import { FabricCanvas } from "@/types/fabric";
 import { Pencil, StickyNote, Table } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useToolsStore } from "@/stores/useToolsStore";
 
 interface ToolsPanelProps {
   canvas: FabricCanvas;
@@ -27,23 +28,28 @@ const ToolsPanel: React.FC<ToolsPanelProps> = ({
   addDecorativeFrame,
   addRoundedFrame,
 }) => {
-  const [isDrawing, setIsDrawing] = useState(false);
-  const [brushColor, setBrushColor] = useState("#000000");
-  const [brushSize, setBrushSize] = useState(5);
-  const [frameColor, setFrameColor] = useState("#8B4513");
-  const [frameWidth, setFrameWidth] = useState(4);
+  // Use zustand store for tools state
+  const {
+    isDrawing,
+    toggleDrawing,
+    brushColor,
+    setBrushColor,
+    brushSize,
+    setBrushSize,
+    frameColor,
+    setFrameColor,
+    frameWidth,
+    setFrameWidth,
+    tableRows,
+    setTableRows,
+    tableCols,
+    setTableCols,
+    applyDrawingSettings,
+  } = useToolsStore();
 
   useEffect(() => {
-    if (!canvas) return;
-    canvas.isDrawingMode = isDrawing;
-    canvas.freeDrawingBrush.color = brushColor;
-    canvas.freeDrawingBrush.width = brushSize;
-  }, [isDrawing, brushColor, brushSize, canvas]);
-
-  const toggleDrawing = () => setIsDrawing(!isDrawing);
-
-  const [rows, setRows] = useState(2);
-  const [cols, setCols] = useState(2);
+    applyDrawingSettings(canvas);
+  }, [isDrawing, brushColor, brushSize, canvas, applyDrawingSettings]);
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold mb-4">Tools</h3>
@@ -74,8 +80,8 @@ const ToolsPanel: React.FC<ToolsPanelProps> = ({
               <label className="text-sm text-gray-600">Rows:</label>
               <input
                 type="number"
-                value={rows}
-                onChange={(e) => setRows(parseInt(e.target.value) || 1)}
+                value={tableRows}
+                onChange={(e) => setTableRows(parseInt(e.target.value) || 1)}
                 className="w-16 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                 min="1"
                 max="10"
@@ -85,8 +91,8 @@ const ToolsPanel: React.FC<ToolsPanelProps> = ({
               <label className="text-sm text-gray-600">Cols:</label>
               <input
                 type="number"
-                value={cols}
-                onChange={(e) => setCols(parseInt(e.target.value) || 1)}
+                value={tableCols}
+                onChange={(e) => setTableCols(parseInt(e.target.value) || 1)}
                 className="w-16 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                 min="1"
                 max="10"
@@ -94,7 +100,7 @@ const ToolsPanel: React.FC<ToolsPanelProps> = ({
             </div>
           </div>
           <button
-            onClick={() => addTable(rows, cols)}
+            onClick={() => addTable(tableRows, tableCols)}
             className="w-full mt-3 px-4 py-2 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             Add Table
