@@ -7,6 +7,8 @@ import CanvasStability from "@/components/canvas-stability";
 import PrecisionSelection from "@/components/precision-selection";
 import ContextMenu from "@/components/context-menu";
 import LineVisibilityEnhancer from "@/components/line-visibility-enhancer";
+import SelectionTooltip from "@/components/selection-tooltip";
+import CanvaContextMenu from "@/components/canva-context-menu";
 import PropertiesPanel from "@/components/properties-panel";
 import AlignmentToolbar from "@/components/alignment-toolbar";
 import LayerPanel from "@/components/layer-panel";
@@ -357,23 +359,33 @@ export default function CertificateGeneratorPage() {
               backgroundColor: "#e5e5e5",
             }}
           >
-            <CanvasComponent
-              fabric={fabric}
-              setCanvas={handleSetCanvas}
-              setSelectedObject={setSelectedObject}
-              canvasWidth={canvasSize.width}
-              canvasHeight={canvasSize.height}
-            />
-            {/* Add alignment guides component */}
-            <AlignmentGuides canvas={canvas} fabric={fabric} />
-            {/* Add canvas stability component */}
-            <CanvasStability canvas={canvas} fabric={fabric} />
-            {/* Add precision selection component */}
-            <PrecisionSelection canvas={canvas} fabric={fabric} />
-            {/* Add context menu for better object selection */}
-            <ContextMenu canvas={canvas} fabric={fabric} />
-            {/* Add line visibility enhancer */}
-            <LineVisibilityEnhancer canvas={canvas} fabric={fabric} />
+            <CanvaContextMenu canvas={canvas} selectedObject={selectedObject}>
+              <div className="w-full h-full relative">
+                <CanvasComponent
+                  fabric={fabric}
+                  setCanvas={handleSetCanvas}
+                  setSelectedObject={setSelectedObject}
+                  canvasWidth={canvasSize.width}
+                  canvasHeight={canvasSize.height}
+                />
+                {/* Add alignment guides component */}
+                <AlignmentGuides canvas={canvas} fabric={fabric} />
+                {/* Add canvas stability component */}
+                <CanvasStability canvas={canvas} fabric={fabric} />
+                {/* Add precision selection component */}
+                <PrecisionSelection canvas={canvas} fabric={fabric} />
+                {/* Add context menu for better object selection */}
+                <ContextMenu canvas={canvas} fabric={fabric} />
+                {/* Add line visibility enhancer */}
+                <LineVisibilityEnhancer canvas={canvas} fabric={fabric} />
+                {/* Add selection tooltip */}
+                <SelectionTooltip
+                  canvas={canvas}
+                  fabric={fabric}
+                  selectedObject={selectedObject}
+                />
+              </div>
+            </CanvaContextMenu>
           </div>
 
           {/* Right Panels */}
