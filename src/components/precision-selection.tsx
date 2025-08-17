@@ -21,7 +21,6 @@ const PrecisionSelection: React.FC<PrecisionSelectionProps> = ({
 
       canvas.findTarget = function (e: any, skipGroup?: boolean) {
         const pointer = this.getPointer(e, true);
-        const activeObject = this.getActiveObject();
 
         // First, try to find thin lines or small objects with higher tolerance
         const objects = this.getObjects();
@@ -61,7 +60,6 @@ const PrecisionSelection: React.FC<PrecisionSelectionProps> = ({
             obj.isType &&
             (obj.isType("path") || obj.isType("polygon"))
           ) {
-            const tolerance = 15; // Higher tolerance for paths
             if (obj.containsPoint && obj.containsPoint(pointer, null, true)) {
               const objCenter = obj.getCenterPoint();
               const distance = Math.sqrt(

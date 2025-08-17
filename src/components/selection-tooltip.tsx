@@ -1,4 +1,19 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-dconsconst SelectionTooltip: React.FC<SelectionTooltipProps> = ({ 
+  canvas, 
+  fabric, 
+  selectedObject
+}) => {
+  const [tooltipState, setTooltipState] = useState({
+    visible: false,
+    x: 0,
+    y: 0,
+    object: null as any,
+  });ooltip: React.FC<SelectionTooltipProps> = ({ 
+  canvas, 
+  fabric, 
+  selectedObject
+}) => { @typescript-eslint/no-explicit-any */
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import { Lock, Unlock, Copy, Trash2, MoreHorizontal } from "lucide-react";
@@ -7,14 +22,12 @@ interface SelectionTooltipProps {
   canvas: any;
   fabric: any;
   selectedObject: any;
-  onShowContextMenu?: (x: number, y: number) => void;
 }
 
 const SelectionTooltip: React.FC<SelectionTooltipProps> = ({
   canvas,
   fabric,
   selectedObject,
-  onShowContextMenu,
 }) => {
   const [tooltipState, setTooltipState] = useState({
     visible: false,
@@ -147,23 +160,30 @@ const SelectionTooltip: React.FC<SelectionTooltipProps> = ({
     e.preventDefault();
     e.stopPropagation();
 
-    if (!tooltipState.object) return;
+    if (!tooltipState.object || !canvas) return;
 
-    // Use callback if provided, otherwise trigger context menu programmatically
-    if (onShowContextMenu) {
-      const rect = (e.target as HTMLElement).getBoundingClientRect();
-      onShowContextMenu(rect.left + rect.width / 2, rect.bottom + 5);
-    } else {
-      // Fallback: create synthetic right-click event
-      const rect = (e.target as HTMLElement).getBoundingClientRect();
-      const syntheticEvent = new MouseEvent("contextmenu", {
-        bubbles: true,
-        cancelable: true,
-        clientX: rect.left + rect.width / 2,
-        clientY: rect.bottom + 5,
-      });
-      document.dispatchEvent(syntheticEvent);
-    }
+    // Find the CanvaContextMenu trigger element by looking for the canvas wrapper
+    const canvasContainer = canvas.getElement().parentNode;
+    if (!canvasContainer) return;
+
+    // Find the ContextMenuTrigger element (should be the parent of the canvas container)
+    const contextMenuTrigger = canvasContainer.parentNode;
+    if (!contextMenuTrigger) return;
+
+    // Calculate position for the context menu
+    const targetRect = (e.target as HTMLElement).getBoundingClientRect();
+
+    // Create synthetic right-click event on the ContextMenuTrigger
+    const syntheticEvent = new MouseEvent("contextmenu", {
+      bubbles: true,
+      cancelable: true,
+      clientX: targetRect.left + targetRect.width / 2,
+      clientY: targetRect.bottom + 5,
+      button: 2, // Right mouse button
+    });
+
+    // Dispatch to the ContextMenuTrigger element
+    contextMenuTrigger.dispatchEvent(syntheticEvent);
 
     // Hide the tooltip
     hideTooltip();

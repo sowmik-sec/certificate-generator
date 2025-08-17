@@ -3,7 +3,6 @@
 import { FabricCanvas, FabricModule } from "@/types/fabric";
 import { FabricObject } from "fabric";
 import { useCallback, useEffect, useRef } from "react";
-import { useGridAlignmentStore } from "@/stores/useGridAlignmentStore";
 
 interface CanvasComponentProps {
   fabric: FabricModule;

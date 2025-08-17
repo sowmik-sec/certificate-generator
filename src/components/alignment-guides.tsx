@@ -249,6 +249,8 @@ const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
     snapToObjects,
     snapTolerance,
     alignmentGuideColor,
+    drawAlignmentGuides,
+    clearAlignmentLines,
   ]);
 
   // This component doesn't render anything visible itself
