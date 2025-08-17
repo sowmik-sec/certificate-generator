@@ -1,33 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import { useState, useEffect, useCallback } from "react";
+import { useEffect, useCallback } from "react";
 
 interface ContextMenuProps {
   canvas: any;
   fabric: any;
 }
 
-interface ContextMenuState {
-  visible: boolean;
-  x: number;
-  y: number;
-  objects: any[];
-  clickedPoint: { x: number; y: number };
-}
-
 const ContextMenu: React.FC<ContextMenuProps> = ({ canvas, fabric }) => {
-  const [menuState, setMenuState] = useState<ContextMenuState>({
-    visible: false,
-    x: 0,
-    y: 0,
-    objects: [],
-    clickedPoint: { x: 0, y: 0 },
-  });
-
-  const hideMenu = useCallback(() => {
-    setMenuState((prev) => ({ ...prev, visible: false }));
-  }, []);
-
   const findAllObjectsAtPoint = useCallback(
     (pointer: { x: number; y: number }) => {
       if (!canvas) return [];
@@ -51,7 +31,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ canvas, fabric }) => {
             foundObjects.push({
               object: obj,
               type: "line",
-              description: `Line (${Math.round(obj.strokeWidth)}px thick)`,
+              description: "Line (" + Math.round(obj.strokeWidth) + "px thick)",
               distance,
             });
           }
@@ -103,9 +83,11 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ canvas, fabric }) => {
             foundObjects.push({
               object: obj,
               type: "group",
-              description: `Group (${groupObjects.length} items)${
-                hasLineInGroup ? " - contains lines" : ""
-              }`,
+              description:
+                "Group (" +
+                groupObjects.length +
+                " items)" +
+                (hasLineInGroup ? " - contains lines" : ""),
               distance,
               hasLines: hasLineInGroup,
             });
@@ -125,7 +107,8 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ canvas, fabric }) => {
             if (obj.isType("rect")) description = "Rectangle";
             else if (obj.isType("circle")) description = "Circle";
             else if (obj.isType("textbox"))
-              description = `Text: "${obj.text?.substring(0, 20)}..."`;
+              description =
+                "Text: " + (obj.text?.substring(0, 20) || "") + "...";
             else if (obj.isType("path")) description = "Path/Shape";
             else description = obj.type || "Object";
           }
@@ -161,107 +144,23 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ canvas, fabric }) => {
       const pointer = canvas.getPointer(e.e);
       const objectsAtPoint = findAllObjectsAtPoint(pointer);
 
-      // Only show context menu if there are multiple objects or if there's a line
-      if (
-        objectsAtPoint.length > 1 ||
-        objectsAtPoint.some((obj) => obj.type === "line")
-      ) {
-        setMenuState({
-          visible: true,
-          x: e.e.clientX,
-          y: e.e.clientY,
-          objects: objectsAtPoint,
-          clickedPoint: pointer,
-        });
-      } else {
-        // Normal selection for single non-line objects
-        if (objectsAtPoint.length === 1) {
-          canvas.setActiveObject(objectsAtPoint[0].object);
-          canvas.renderAll();
-        }
-      }
-    };
-
-    const handleClick = () => {
-      hideMenu();
-    };
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        hideMenu();
+      // For multiple objects, select the closest one (prioritizing lines)
+      if (objectsAtPoint.length > 0) {
+        const closestObject = objectsAtPoint[0]; // Already sorted by priority and distance
+        canvas.setActiveObject(closestObject.object);
+        canvas.renderAll();
       }
     };
 
     canvas.on("mouse:down:before", handleRightClick);
-    document.addEventListener("click", handleClick);
-    document.addEventListener("keydown", handleKeyDown);
 
     return () => {
       canvas.off("mouse:down:before", handleRightClick);
-      document.removeEventListener("click", handleClick);
-      document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [canvas, findAllObjectsAtPoint, hideMenu]);
+  }, [canvas, findAllObjectsAtPoint]);
 
-  const selectObject = (objectData: any) => {
-    if (!canvas) return;
-
-    canvas.setActiveObject(objectData.object);
-    canvas.renderAll();
-    hideMenu();
-  };
-
-  if (!menuState.visible) return null;
-
-  return (
-    <div
-      className="fixed bg-white border border-gray-300 rounded-lg shadow-lg py-2 z-50 min-w-48"
-      style={{
-        left: menuState.x,
-        top: menuState.y,
-        maxHeight: "300px",
-        overflowY: "auto",
-      }}
-      onClick={(e) => e.stopPropagation()}
-    >
-      <div className="px-3 py-1 text-xs font-semibold text-gray-500 border-b border-gray-200">
-        Select Object ({menuState.objects.length} found)
-      </div>
-
-      {menuState.objects.map((objData, index) => (
-        <button
-          key={index}
-          className="w-full px-3 py-2 text-left text-sm hover:bg-blue-50 hover:text-blue-700 flex items-center justify-between"
-          onClick={() => selectObject(objData)}
-        >
-          <span className="flex items-center">
-            <span
-              className={`inline-block w-2 h-2 rounded-full mr-2 ${
-                objData.type === "line"
-                  ? "bg-red-500"
-                  : objData.type === "group" && objData.hasLines
-                  ? "bg-orange-500"
-                  : objData.type === "group"
-                  ? "bg-purple-500"
-                  : objData.type === "textbox"
-                  ? "bg-green-500"
-                  : "bg-blue-500"
-              }`}
-            ></span>
-            {objData.description}
-          </span>
-
-          {objData.type === "line" && (
-            <span className="text-xs text-red-600 font-medium">LINE</span>
-          )}
-        </button>
-      ))}
-
-      <div className="px-3 py-1 text-xs text-gray-400 border-t border-gray-200 mt-1">
-        Right-click to select from overlapping objects
-      </div>
-    </div>
-  );
+  // This component doesn't render anything visible
+  return null;
 };
 
 export default ContextMenu;

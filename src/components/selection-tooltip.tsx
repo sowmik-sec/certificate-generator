@@ -7,12 +7,14 @@ interface SelectionTooltipProps {
   canvas: any;
   fabric: any;
   selectedObject: any;
+  onShowContextMenu?: (x: number, y: number) => void;
 }
 
 const SelectionTooltip: React.FC<SelectionTooltipProps> = ({
   canvas,
   fabric,
   selectedObject,
+  onShowContextMenu,
 }) => {
   const [tooltipState, setTooltipState] = useState({
     visible: false,
@@ -99,7 +101,7 @@ const SelectionTooltip: React.FC<SelectionTooltipProps> = ({
   }, [canvas, fabric, selectedObject, updateTooltipPosition, hideTooltip]);
 
   const handleLockToggle = () => {
-    if (!tooltipState.object) return;
+    if (!tooltipState.object || !canvas) return;
 
     const isLocked =
       tooltipState.object.lockMovementX || tooltipState.object.lockMovementY;
@@ -110,10 +112,13 @@ const SelectionTooltip: React.FC<SelectionTooltipProps> = ({
       lockScalingX: !isLocked,
       lockScalingY: !isLocked,
       lockRotation: !isLocked,
-      selectable: isLocked, // If locking, make it unselectable; if unlocking, make it selectable
+      selectable: true, // Keep selectable so user can still unlock it
     });
 
     canvas.renderAll();
+
+    // Update tooltip position in case object state changed
+    setTimeout(() => updateTooltipPosition(tooltipState.object), 100);
   };
 
   const handleDuplicate = () => {
@@ -142,24 +147,27 @@ const SelectionTooltip: React.FC<SelectionTooltipProps> = ({
     e.preventDefault();
     e.stopPropagation();
 
-    if (!tooltipState.object || !canvas) return;
+    if (!tooltipState.object) return;
 
-    // Create a synthetic right-click event at the cursor position
-    const rect = (e.target as HTMLElement).getBoundingClientRect();
-    const syntheticEvent = new MouseEvent("contextmenu", {
-      bubbles: true,
-      cancelable: true,
-      clientX: rect.left + rect.width / 2,
-      clientY: rect.bottom + 5,
-    });
-
-    // Dispatch to the document to trigger the context menu
-    document.dispatchEvent(syntheticEvent);
+    // Use callback if provided, otherwise trigger context menu programmatically
+    if (onShowContextMenu) {
+      const rect = (e.target as HTMLElement).getBoundingClientRect();
+      onShowContextMenu(rect.left + rect.width / 2, rect.bottom + 5);
+    } else {
+      // Fallback: create synthetic right-click event
+      const rect = (e.target as HTMLElement).getBoundingClientRect();
+      const syntheticEvent = new MouseEvent("contextmenu", {
+        bubbles: true,
+        cancelable: true,
+        clientX: rect.left + rect.width / 2,
+        clientY: rect.bottom + 5,
+      });
+      document.dispatchEvent(syntheticEvent);
+    }
 
     // Hide the tooltip
     hideTooltip();
   };
-
   if (!tooltipState.visible || !tooltipState.object) return null;
 
   const isLocked =
