@@ -2,12 +2,15 @@
 "use client";
 import React, { useRef } from "react";
 import CanvasComponent from "@/components/canvas-component";
+import AlignmentGuides from "@/components/alignment-guides";
+import CanvasStability from "@/components/canvas-stability";
+import PrecisionSelection from "@/components/precision-selection";
+import ContextMenu from "@/components/context-menu";
+import LineVisibilityEnhancer from "@/components/line-visibility-enhancer";
 import PropertiesPanel from "@/components/properties-panel";
 import AlignmentToolbar from "@/components/alignment-toolbar";
 import LayerPanel from "@/components/layer-panel";
-import CanvasSizePanel, {
-  CanvasSize,
-} from "@/components/canvas-size-panel";
+import CanvasSizePanel, { CanvasSize } from "@/components/canvas-size-panel";
 import { useEditorStore } from "@/stores/useEditorStore";
 import { useCanvasStore } from "@/stores/useCanvasStore";
 
@@ -47,13 +50,8 @@ export default function CertificateGeneratorPage() {
     setHasCanvasObjects,
   } = useEditorStore();
 
-  const {
-    fabric,
-    canvas,
-    selectedObject,
-    selectedObjects,
-    setSelectedObject,
-  } = useCanvasStore();
+  const { fabric, canvas, selectedObject, selectedObjects, setSelectedObject } =
+    useCanvasStore();
 
   const imageInputRef = useRef<HTMLInputElement>(null);
 
@@ -234,9 +232,11 @@ export default function CertificateGeneratorPage() {
     }
 
     const updateObjectCount = () => {
-      const objects = canvas.getObjects().filter(
-        (obj: any) => obj.id !== "grid-line" && obj.id !== "alignment-line"
-      );
+      const objects = canvas
+        .getObjects()
+        .filter(
+          (obj: any) => obj.id !== "grid-line" && obj.id !== "alignment-line"
+        );
       const hasObjects = objects.length > 0;
       setHasCanvasObjects(hasObjects);
     };
@@ -364,6 +364,16 @@ export default function CertificateGeneratorPage() {
               canvasWidth={canvasSize.width}
               canvasHeight={canvasSize.height}
             />
+            {/* Add alignment guides component */}
+            <AlignmentGuides canvas={canvas} fabric={fabric} />
+            {/* Add canvas stability component */}
+            <CanvasStability canvas={canvas} fabric={fabric} />
+            {/* Add precision selection component */}
+            <PrecisionSelection canvas={canvas} fabric={fabric} />
+            {/* Add context menu for better object selection */}
+            <ContextMenu canvas={canvas} fabric={fabric} />
+            {/* Add line visibility enhancer */}
+            <LineVisibilityEnhancer canvas={canvas} fabric={fabric} />
           </div>
 
           {/* Right Panels */}

@@ -17,9 +17,19 @@ export const useCanvasShapes = (
         width: 150,
         height: 150,
         id: `rect-${Date.now()}`,
+        // Enhanced properties for better stability
+        cornerStyle: "circle",
+        cornerSize: 8,
+        transparentCorners: false,
+        borderColor: "#1976d2",
+        cornerColor: "#1976d2",
+        hasRotatingPoint: true,
+        centeredRotation: true,
       });
+
       canvas.add(rect);
       canvas.setActiveObject(rect);
+      rect.setCoords();
       canvas.renderAll();
       saveToHistory();
     },
@@ -35,9 +45,19 @@ export const useCanvasShapes = (
         fill: options.fill || "#E91E63",
         radius: 75,
         id: `circle-${Date.now()}`,
+        // Enhanced properties for better stability
+        cornerStyle: "circle",
+        cornerSize: 8,
+        transparentCorners: false,
+        borderColor: "#1976d2",
+        cornerColor: "#1976d2",
+        hasRotatingPoint: true,
+        centeredRotation: true,
       });
+
       canvas.add(circle);
       canvas.setActiveObject(circle);
+      circle.setCoords();
       canvas.renderAll();
       saveToHistory();
     },
@@ -53,9 +73,19 @@ export const useCanvasShapes = (
         fill: options.fill || "#FFC107",
         width: 150,
         height: 150,
+        // Enhanced properties for better stability
+        cornerStyle: "circle",
+        cornerSize: 8,
+        transparentCorners: false,
+        borderColor: "#1976d2",
+        cornerColor: "#1976d2",
+        hasRotatingPoint: true,
+        centeredRotation: true,
       });
+
       canvas.add(triangle);
       canvas.setActiveObject(triangle);
+      triangle.setCoords();
       canvas.renderAll();
       saveToHistory();
     },
@@ -71,9 +101,19 @@ export const useCanvasShapes = (
         fill: options.fill || "#8E24AA",
         width: 200,
         height: 100,
+        // Enhanced properties for better stability
+        cornerStyle: "circle",
+        cornerSize: 8,
+        transparentCorners: false,
+        borderColor: "#1976d2",
+        cornerColor: "#1976d2",
+        hasRotatingPoint: true,
+        centeredRotation: true,
       });
+
       canvas.add(rect);
       canvas.setActiveObject(rect);
+      rect.setCoords();
       canvas.renderAll();
       saveToHistory();
     },
@@ -89,9 +129,19 @@ export const useCanvasShapes = (
         fill: options.fill || "#FF7043",
         rx: 100,
         ry: 60,
+        // Enhanced properties for better stability
+        cornerStyle: "circle",
+        cornerSize: 8,
+        transparentCorners: false,
+        borderColor: "#1976d2",
+        cornerColor: "#1976d2",
+        hasRotatingPoint: true,
+        centeredRotation: true,
       });
+
       canvas.add(ellipse);
       canvas.setActiveObject(ellipse);
+      ellipse.setCoords();
       canvas.renderAll();
       saveToHistory();
     },

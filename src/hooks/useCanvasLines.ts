@@ -15,10 +15,25 @@ export const useCanvasLines = (
         top: 200,
         stroke: "#333333",
         strokeWidth: 4,
+        // Enhanced properties for better stability and targeting
+        cornerStyle: "circle",
+        cornerSize: 8,
+        transparentCorners: false,
+        borderColor: "#1976d2",
+        cornerColor: "#1976d2",
+        hasRotatingPoint: true,
+        centeredRotation: true,
+        // Better line targeting
+        perPixelTargetFind: true,
+        targetFindTolerance: 15, // Larger click area
+        hoverCursor: "move",
+        moveCursor: "move",
         ...options,
       });
+
       canvas.add(line);
       canvas.setActiveObject(line);
+      line.setCoords();
       canvas.renderAll();
       saveToHistory();
     },
@@ -39,7 +54,14 @@ export const useCanvasLines = (
       const line = new fabric.Line([50, 50, 250, 50], {
         stroke: strokeColor,
         strokeWidth: 4,
+        // Enhanced properties for better stability
+        cornerStyle: "circle",
+        cornerSize: 8,
+        transparentCorners: false,
+        borderColor: "#1976d2",
+        cornerColor: "#1976d2",
       });
+
       const arrowhead = new fabric.Triangle({
         width: 15,
         height: 20,
@@ -50,12 +72,23 @@ export const useCanvasLines = (
         originY: "center",
         angle: 90,
       });
+
       const group = new fabric.Group([line, arrowhead], {
         left: 200,
         top: 200,
+        // Enhanced group properties
+        cornerStyle: "circle",
+        cornerSize: 8,
+        transparentCorners: false,
+        borderColor: "#1976d2",
+        cornerColor: "#1976d2",
+        hasRotatingPoint: true,
+        centeredRotation: true,
       });
+
       canvas.add(group);
       canvas.setActiveObject(group);
+      group.setCoords();
       canvas.renderAll();
       saveToHistory();
     },
@@ -76,9 +109,20 @@ export const useCanvasLines = (
         stroke: strokeColor,
         strokeWidth: 4,
         fill: "",
+        // Enhanced targeting for paths
+        perPixelTargetFind: true,
+        targetFindTolerance: 15,
+        hoverCursor: "move",
+        moveCursor: "move",
+        cornerStyle: "circle",
+        cornerSize: 8,
+        transparentCorners: false,
+        borderColor: "#1976d2",
+        cornerColor: "#1976d2",
       });
       canvas.add(zigzag);
       canvas.setActiveObject(zigzag);
+      zigzag.setCoords();
       canvas.renderAll();
       saveToHistory();
     },
@@ -98,9 +142,20 @@ export const useCanvasLines = (
         stroke: strokeColor,
         strokeWidth: 4,
         fill: "",
+        // Enhanced targeting for paths
+        perPixelTargetFind: true,
+        targetFindTolerance: 15,
+        hoverCursor: "move",
+        moveCursor: "move",
+        cornerStyle: "circle",
+        cornerSize: 8,
+        transparentCorners: false,
+        borderColor: "#1976d2",
+        cornerColor: "#1976d2",
       });
       canvas.add(wavy);
       canvas.setActiveObject(wavy);
+      wavy.setCoords();
       canvas.renderAll();
       saveToHistory();
     },

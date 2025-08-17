@@ -55,20 +55,33 @@ export const useCanvasText = (
         fabricOptions.backgroundColor = fabricOptions.backgroundColor;
       }
 
-      const textObject = new fabric.Textbox(processedText, {
-        left: 150,
-        top: 200,
-        width: 400,
+      const textbox = new fabric.Textbox(processedText, {
+        left: 200,
+        top: 150,
+        width: 300,
+        fontSize: 20,
+        fill: "#333",
         fontFamily: "Arial",
-        fill: "#000000",
-        lineHeight: 1.2,
-        id: `text-${Date.now()}`, // Add unique ID
+        editable: true,
+        splitByGrapheme: false,
+        // Enhanced properties for better stability
+        cornerStyle: "circle",
+        cornerSize: 8,
+        transparentCorners: false,
+        borderColor: "#1976d2",
+        cornerColor: "#1976d2",
+        hasRotatingPoint: true,
+        centeredRotation: true,
         ...fabricOptions,
       });
-      canvas.add(textObject);
-      canvas.setActiveObject(textObject);
+
+      canvas.add(textbox);
+      canvas.setActiveObject(textbox);
+      textbox.setCoords();
       canvas.renderAll();
-      saveToHistory(); // Save state after adding text
+      saveToHistory();
+
+      return textbox;
     },
     [canvas, fabric, saveToHistory]
   );

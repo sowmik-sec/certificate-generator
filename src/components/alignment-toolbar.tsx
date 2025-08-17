@@ -10,6 +10,8 @@ import {
   AlignEndVertical,
   Grid3x3,
   Move,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { useEffect } from "react";
 import { useGridAlignmentStore } from "@/stores/useGridAlignmentStore";
@@ -28,9 +30,13 @@ const AlignmentToolbar: React.FC<AlignmentToolbarProps> = ({
     showGrid,
     snapToGrid,
     gridSize,
+    showAlignmentGuides,
+    snapToObjects,
     toggleGrid,
-    toggleSnapToGrid,
     setGridSize,
+    setShowAlignmentGuides,
+    setSnapToObjects,
+    setSnapToGrid,
     applyGridToCanvas,
     setupCanvasSnapping,
     removeCanvasSnapping,
@@ -44,15 +50,6 @@ const AlignmentToolbar: React.FC<AlignmentToolbarProps> = ({
   const handleToggleGrid = () => {
     toggleGrid();
     applyGridToCanvas(canvas);
-  };
-
-  const handleToggleSnapToGrid = () => {
-    toggleSnapToGrid();
-    if (snapToGrid) {
-      removeCanvasSnapping(canvas);
-    } else {
-      setupCanvasSnapping(canvas);
-    }
   };
 
   const handleGridSizeChange = (newSize: number) => {
@@ -104,26 +101,16 @@ const AlignmentToolbar: React.FC<AlignmentToolbarProps> = ({
   useEffect(() => {
     if (!canvas) return;
 
-    const handleObjectMoving = (e: any) => {
-      if (!snapToGrid) return;
-
-      const obj = e.target;
-      const snapValue = gridSize;
-
-      obj.set({
-        left: Math.round(obj.left / snapValue) * snapValue,
-        top: Math.round(obj.top / snapValue) * snapValue,
-      });
-    };
-
     if (snapToGrid) {
-      canvas.on("object:moving", handleObjectMoving);
+      setupCanvasSnapping(canvas);
+    } else {
+      removeCanvasSnapping(canvas);
     }
 
     return () => {
-      canvas.off("object:moving", handleObjectMoving);
+      removeCanvasSnapping(canvas);
     };
-  }, [canvas, snapToGrid, gridSize]);
+  }, [canvas, snapToGrid, setupCanvasSnapping, removeCanvasSnapping]);
 
   return (
     <div className="bg-white border-b border-gray-200 px-4 py-2">
@@ -143,7 +130,14 @@ const AlignmentToolbar: React.FC<AlignmentToolbarProps> = ({
           </button>
 
           <button
-            onClick={handleToggleSnapToGrid}
+            onClick={() => {
+              setSnapToGrid(!snapToGrid);
+              if (!snapToGrid) {
+                setupCanvasSnapping(canvas);
+              } else {
+                removeCanvasSnapping(canvas);
+              }
+            }}
             className={`p-2 rounded transition-colors ${
               snapToGrid
                 ? "bg-blue-100 text-blue-600"
@@ -152,6 +146,30 @@ const AlignmentToolbar: React.FC<AlignmentToolbarProps> = ({
             title="Snap to Grid"
           >
             <Move size={16} />
+          </button>
+
+          <button
+            onClick={() => setSnapToObjects(!snapToObjects)}
+            className={`p-2 rounded transition-colors ${
+              snapToObjects
+                ? "bg-blue-100 text-blue-600"
+                : "text-gray-600 hover:bg-gray-100"
+            }`}
+            title="Snap to Objects"
+          >
+            <Move size={16} />
+          </button>
+
+          <button
+            onClick={() => setShowAlignmentGuides(!showAlignmentGuides)}
+            className={`p-2 rounded transition-colors ${
+              showAlignmentGuides
+                ? "bg-blue-100 text-blue-600"
+                : "text-gray-600 hover:bg-gray-100"
+            }`}
+            title="Show Alignment Guides"
+          >
+            {showAlignmentGuides ? <Eye size={16} /> : <EyeOff size={16} />}
           </button>
 
           <input
@@ -170,7 +188,7 @@ const AlignmentToolbar: React.FC<AlignmentToolbarProps> = ({
         {/* Horizontal Alignment */}
         <div className="flex items-center space-x-1 pr-2 border-r border-gray-300">
           <button
-            onClick={() => alignObjects(canvas, 'left')}
+            onClick={() => alignObjects(canvas, "left")}
             disabled={!hasSelection}
             className="p-2 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
             title="Align Left"
@@ -179,7 +197,7 @@ const AlignmentToolbar: React.FC<AlignmentToolbarProps> = ({
           </button>
 
           <button
-            onClick={() => alignObjects(canvas, 'center')}
+            onClick={() => alignObjects(canvas, "center")}
             disabled={!hasSelection}
             className="p-2 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
             title="Center Horizontally"
@@ -188,7 +206,7 @@ const AlignmentToolbar: React.FC<AlignmentToolbarProps> = ({
           </button>
 
           <button
-            onClick={() => alignObjects(canvas, 'right')}
+            onClick={() => alignObjects(canvas, "right")}
             disabled={!hasSelection}
             className="p-2 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
             title="Align Right"
@@ -200,7 +218,7 @@ const AlignmentToolbar: React.FC<AlignmentToolbarProps> = ({
         {/* Vertical Alignment */}
         <div className="flex items-center space-x-1 pr-2 border-r border-gray-300">
           <button
-            onClick={() => alignObjects(canvas, 'top')}
+            onClick={() => alignObjects(canvas, "top")}
             disabled={!hasSelection}
             className="p-2 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
             title="Align Top"
@@ -209,7 +227,7 @@ const AlignmentToolbar: React.FC<AlignmentToolbarProps> = ({
           </button>
 
           <button
-            onClick={() => alignObjects(canvas, 'middle')}
+            onClick={() => alignObjects(canvas, "middle")}
             disabled={!hasSelection}
             className="p-2 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
             title="Center Vertically"
@@ -218,7 +236,7 @@ const AlignmentToolbar: React.FC<AlignmentToolbarProps> = ({
           </button>
 
           <button
-            onClick={() => alignObjects(canvas, 'bottom')}
+            onClick={() => alignObjects(canvas, "bottom")}
             disabled={!hasSelection}
             className="p-2 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
             title="Align Bottom"
@@ -230,7 +248,7 @@ const AlignmentToolbar: React.FC<AlignmentToolbarProps> = ({
         {/* Distribution */}
         <div className="flex items-center space-x-1 pr-2 border-r border-gray-300">
           <button
-            onClick={() => distributeObjects(canvas, 'horizontal')}
+            onClick={() => distributeObjects(canvas, "horizontal")}
             disabled={selectedObjects.length < 3}
             className="px-3 py-2 text-xs rounded text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
             title="Distribute Horizontally"
@@ -239,7 +257,7 @@ const AlignmentToolbar: React.FC<AlignmentToolbarProps> = ({
           </button>
 
           <button
-            onClick={() => distributeObjects(canvas, 'vertical')}
+            onClick={() => distributeObjects(canvas, "vertical")}
             disabled={selectedObjects.length < 3}
             className="px-3 py-2 text-xs rounded text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
             title="Distribute Vertically"

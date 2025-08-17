@@ -11,17 +11,17 @@ const sanitizeTemplateData = (templateJson: any) => {
     ...templateJson,
     objects: templateJson.objects.map((obj: any) => {
       const sanitizedObj = { ...obj };
-      
+
       // Fix invalid textBaseline values
-      if (sanitizedObj.textBaseline === 'alphabetical') {
-        sanitizedObj.textBaseline = 'alphabetic';
+      if (sanitizedObj.textBaseline === "alphabetical") {
+        sanitizedObj.textBaseline = "alphabetic";
       }
-      
+
       // Remove any other invalid or problematic properties
       // Add more sanitization rules here as needed
-      
+
       return sanitizedObj;
-    })
+    }),
   };
 };
 
@@ -33,7 +33,7 @@ export const useTemplateLoader = (
   const loadTemplate = useCallback(
     (templateJson: any) => {
       if (!canvas) return;
-      
+
       // Sanitize template data to fix invalid properties
       const sanitizedTemplate = sanitizeTemplateData(templateJson);
 
@@ -52,6 +52,17 @@ export const useTemplateLoader = (
       if (isSameDimensions) {
         // Load template as-is if dimensions match
         canvas.loadFromJSON(sanitizedTemplate, () => {
+          // Enhance line objects for better targeting after loading
+          canvas.getObjects().forEach((obj: any) => {
+            if (obj.isType && obj.isType("line")) {
+              obj.set({
+                perPixelTargetFind: true,
+                targetFindTolerance: Math.max(obj.strokeWidth * 3, 10),
+                hoverCursor: "move",
+                moveCursor: "move",
+              });
+            }
+          });
           canvas.renderAll();
           saveToHistory();
         });
@@ -120,6 +131,17 @@ export const useTemplateLoader = (
       };
 
       canvas.loadFromJSON(scaledTemplate, () => {
+        // Enhance line objects for better targeting after loading
+        canvas.getObjects().forEach((obj: any) => {
+          if (obj.isType && obj.isType("line")) {
+            obj.set({
+              perPixelTargetFind: true,
+              targetFindTolerance: Math.max(obj.strokeWidth * 3, 10),
+              hoverCursor: "move",
+              moveCursor: "move",
+            });
+          }
+        });
         canvas.renderAll();
         saveToHistory();
       });
