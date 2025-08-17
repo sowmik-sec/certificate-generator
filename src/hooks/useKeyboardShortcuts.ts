@@ -22,7 +22,21 @@ export const useKeyboardShortcuts = (
       if (
         target.tagName === "INPUT" ||
         target.tagName === "TEXTAREA" ||
-        target.contentEditable === "true"
+        target.contentEditable === "true" ||
+        target.classList.contains("text-cursor") || // Fabric.js text editing cursor
+        target.classList.contains("cursor") // Additional Fabric.js class
+      ) {
+        return;
+      }
+
+      // Skip if any text object is currently being edited
+      // This is a more robust check for Fabric.js text editing
+      const activeElement = document.activeElement;
+      if (
+        activeElement &&
+        (activeElement.tagName === "INPUT" ||
+          activeElement.tagName === "TEXTAREA" ||
+          activeElement.getAttribute("contenteditable") === "true")
       ) {
         return;
       }
@@ -39,7 +53,15 @@ export const useKeyboardShortcuts = (
 
       // Try to find and execute the matching shortcut
       if (shortcuts[keyCombo]) {
+        console.log("Keyboard shortcut matched:", keyCombo);
         shortcuts[keyCombo](e);
+      } else {
+        console.log(
+          "No shortcut found for:",
+          keyCombo,
+          "Available shortcuts:",
+          Object.keys(shortcuts)
+        );
       }
     };
 
@@ -82,6 +104,7 @@ export const useEditorShortcuts = (
     shortcuts["ctrl+z"] = shortcuts["meta+z"] = (e) => {
       if (!e.shiftKey) {
         e.preventDefault();
+        e.stopPropagation();
         callbacks.onUndo!();
       }
     };
@@ -90,10 +113,12 @@ export const useEditorShortcuts = (
   if (callbacks.onRedo) {
     shortcuts["ctrl+y"] = shortcuts["meta+y"] = (e) => {
       e.preventDefault();
+      e.stopPropagation();
       callbacks.onRedo!();
     };
     shortcuts["ctrl+shift+z"] = shortcuts["meta+shift+z"] = (e) => {
       e.preventDefault();
+      e.stopPropagation();
       callbacks.onRedo!();
     };
   }
@@ -101,6 +126,7 @@ export const useEditorShortcuts = (
   if (callbacks.onCopy) {
     shortcuts["ctrl+c"] = shortcuts["meta+c"] = (e) => {
       e.preventDefault();
+      e.stopPropagation();
       callbacks.onCopy!();
     };
   }
@@ -108,6 +134,7 @@ export const useEditorShortcuts = (
   if (callbacks.onPaste) {
     shortcuts["ctrl+v"] = shortcuts["meta+v"] = (e) => {
       e.preventDefault();
+      e.stopPropagation();
       callbacks.onPaste!();
     };
   }
@@ -115,6 +142,7 @@ export const useEditorShortcuts = (
   if (callbacks.onDelete) {
     shortcuts["delete"] = shortcuts["backspace"] = (e) => {
       e.preventDefault();
+      e.stopPropagation();
       callbacks.onDelete!();
     };
   }
@@ -122,6 +150,7 @@ export const useEditorShortcuts = (
   if (callbacks.onGroup) {
     shortcuts["ctrl+g"] = shortcuts["meta+g"] = (e) => {
       e.preventDefault();
+      e.stopPropagation();
       callbacks.onGroup!();
     };
   }
@@ -129,6 +158,7 @@ export const useEditorShortcuts = (
   if (callbacks.onUngroup) {
     shortcuts["ctrl+shift+g"] = shortcuts["meta+shift+g"] = (e) => {
       e.preventDefault();
+      e.stopPropagation();
       callbacks.onUngroup!();
     };
   }

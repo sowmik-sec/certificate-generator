@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import { useState, useCallback } from "react";
-import { useEditorShortcuts } from "./useKeyboardShortcuts";
+import { useCallback, useState } from "react";
 
 export const useCanvasOperations = (
   canvas: any,
@@ -439,43 +438,6 @@ export const useCanvasOperations = (
     },
     [canvas, fabric, saveToHistory]
   );
-
-  // Add keyboard shortcuts with text editing check
-  useEditorShortcuts({
-    onCopy: () => {
-      const activeObject = canvas?.getActiveObject();
-      const isEditing =
-        activeObject &&
-        (activeObject.isEditing ||
-          (activeObject.type === "textbox" && activeObject.isEditing));
-
-      if (!isEditing && selectedObject) {
-        handleCopy();
-      }
-    },
-    onPaste: () => {
-      const activeObject = canvas?.getActiveObject();
-      const isEditing =
-        activeObject &&
-        (activeObject.isEditing ||
-          (activeObject.type === "textbox" && activeObject.isEditing));
-
-      if (!isEditing) {
-        handlePaste();
-      }
-    },
-    onDelete: () => {
-      const activeObject = canvas?.getActiveObject();
-      const isEditing =
-        activeObject &&
-        (activeObject.isEditing ||
-          (activeObject.type === "textbox" && activeObject.isEditing));
-
-      if (!isEditing && selectedObject) {
-        deleteSelected();
-      }
-    },
-  });
 
   return {
     deleteSelected,

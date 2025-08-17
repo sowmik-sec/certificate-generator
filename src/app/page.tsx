@@ -9,6 +9,7 @@ import ContextMenu from "@/components/context-menu";
 import LineVisibilityEnhancer from "@/components/line-visibility-enhancer";
 import SelectionTooltip from "@/components/selection-tooltip";
 import CanvaContextMenu from "@/components/canva-context-menu";
+import TextEditingEnhancer from "@/components/text-editing-enhancer";
 import PropertiesPanel from "@/components/properties-panel";
 import AlignmentToolbar from "@/components/alignment-toolbar";
 import LayerPanel from "@/components/layer-panel";
@@ -60,21 +61,28 @@ export default function CertificateGeneratorPage() {
   // Custom hooks
   const { handleSetCanvas } = useFabricCanvas();
 
-  const { saveToHistory, undo, redo } = useCanvasHistory(canvas);
+  const { saveToHistory, undo, redo, canUndo, canRedo } =
+    useCanvasHistory(canvas);
 
   const shapeHooks = useCanvasShapes(canvas, fabric, saveToHistory);
   const lineHooks = useCanvasLines(canvas, fabric, saveToHistory);
   const textHooks = useCanvasText(canvas, fabric, saveToHistory);
   const frameHooks = useCanvasFrames(canvas, fabric, saveToHistory);
 
-  const { deleteSelected, addImageFromURL, addStickyNote, addTable } =
-    useCanvasOperations(
-      canvas,
-      fabric,
-      selectedObject,
-      setSelectedObject,
-      saveToHistory
-    );
+  const {
+    deleteSelected,
+    addImageFromURL,
+    addStickyNote,
+    addTable,
+    handleCopy,
+    handlePaste,
+  } = useCanvasOperations(
+    canvas,
+    fabric,
+    selectedObject,
+    setSelectedObject,
+    saveToHistory
+  );
 
   const layerManagement = useLayerManagement(canvas, fabric, saveToHistory);
   const { exportAsPNG, exportAsPDF } = useCanvasExport(canvas, canvasSize);
@@ -84,10 +92,70 @@ export default function CertificateGeneratorPage() {
     saveToHistory
   );
 
-  // Add keyboard shortcuts for undo/redo using our custom hook
+  // Helper function to check if text is being edited
+  const isTextBeingEdited = () => {
+    if (!canvas) return false;
+
+    const activeObject = canvas.getActiveObject();
+    if (!activeObject) return false;
+
+    // Check multiple properties to determine text editing state
+    return (
+      activeObject.isEditing === true ||
+      activeObject.__isEditing === true ||
+      activeObject.editing === true ||
+      (activeObject.hiddenTextarea &&
+        activeObject.hiddenTextarea.style.display !== "none") ||
+      ((activeObject.type === "textbox" || activeObject.type === "i-text") &&
+        document.activeElement &&
+        (document.activeElement.tagName === "TEXTAREA" ||
+          document.activeElement.getAttribute("contenteditable") === "true"))
+    );
+  };
+
+  // Consolidated keyboard shortcuts for all canvas operations with improved text editing detection
   useEditorShortcuts({
-    onUndo: undo,
-    onRedo: redo,
+    onUndo: () => {
+      console.log(
+        "Undo shortcut triggered, text editing:",
+        isTextBeingEdited()
+      );
+      if (!isTextBeingEdited()) {
+        console.log("Calling undo function");
+        undo();
+      }
+    },
+    onRedo: () => {
+      console.log(
+        "Redo shortcut triggered, text editing:",
+        isTextBeingEdited()
+      );
+      if (!isTextBeingEdited()) {
+        console.log("Calling redo function");
+        redo();
+      }
+    },
+    onCopy: () => {
+      if (!isTextBeingEdited() && selectedObject) {
+        handleCopy();
+      }
+    },
+    onPaste: () => {
+      if (!isTextBeingEdited()) {
+        handlePaste();
+      }
+    },
+    onDelete: () => {
+      if (!isTextBeingEdited() && selectedObject) {
+        deleteSelected();
+      }
+    },
+    onGroup: layerManagement.groupObjects,
+    onUngroup: layerManagement.ungroupObjects,
+    onBringForward: layerManagement.bringForward,
+    onSendBackward: layerManagement.sendBackward,
+    onBringToFront: layerManagement.bringToFront,
+    onSendToBack: layerManagement.sendToBack,
   });
 
   const handleCanvasSizeChange = (newSize: CanvasSize) => {
@@ -378,6 +446,8 @@ export default function CertificateGeneratorPage() {
                 <ContextMenu canvas={canvas} fabric={fabric} />
                 {/* Add line visibility enhancer */}
                 <LineVisibilityEnhancer canvas={canvas} fabric={fabric} />
+                {/* Add text editing enhancer to fix typing delays */}
+                <TextEditingEnhancer canvas={canvas} fabric={fabric} />
                 {/* Add selection tooltip */}
                 <SelectionTooltip
                   canvas={canvas}

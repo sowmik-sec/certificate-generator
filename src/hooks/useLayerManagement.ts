@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { useCallback } from "react";
-import { useEditorShortcuts } from "./useKeyboardShortcuts";
 
 export const useLayerManagement = (
   canvas: any,
@@ -110,16 +109,6 @@ export const useLayerManagement = (
     });
     canvas.renderAll();
   }, [canvas]);
-
-  // Add layer management keyboard shortcuts
-  useEditorShortcuts({
-    onGroup: groupObjects,
-    onUngroup: ungroupObjects,
-    onBringForward: bringForward,
-    onSendBackward: sendBackward,
-    onBringToFront: bringToFront,
-    onSendToBack: sendToBack,
-  });
 
   return {
     groupObjects,
