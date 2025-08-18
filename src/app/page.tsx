@@ -43,6 +43,8 @@ export default function CertificateGeneratorPage() {
   const {
     editorMode,
     setEditorMode,
+    hoveredMode,
+    setHoveredMode,
     canvasSize,
     setCanvasSize,
     showCanvasSizeModal,
@@ -343,7 +345,19 @@ export default function CertificateGeneratorPage() {
   }
 
   return (
-    <div className="flex flex-col md:flex-row h-screen w-screen bg-gray-100 font-sans overflow-hidden">
+    <div
+      className="flex flex-col md:flex-row h-screen w-screen bg-gray-100 font-sans overflow-hidden relative"
+      onClick={(e) => {
+        // Close hover panel if clicking outside and it's not pinned
+        if (
+          !editorMode &&
+          hoveredMode &&
+          !(e.target as Element).closest("aside")
+        ) {
+          setHoveredMode(null);
+        }
+      }}
+    >
       <input
         type="file"
         accept="image/*"
@@ -356,12 +370,16 @@ export default function CertificateGeneratorPage() {
       <SidebarNavigation
         editorMode={editorMode}
         setEditorMode={setEditorMode}
+        hoveredMode={hoveredMode}
+        setHoveredMode={setHoveredMode}
         onImageUpload={() => imageInputRef.current?.click()}
       />
 
       {/* Left Panel - Tools */}
       <LeftPanel
         editorMode={editorMode}
+        hoveredMode={hoveredMode}
+        setHoveredMode={setHoveredMode}
         canvas={canvas}
         selectedObject={selectedObject}
         onSelectTemplate={loadTemplate}

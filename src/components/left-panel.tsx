@@ -9,6 +9,8 @@ import { EditorMode } from "./sidebar-navigation";
 
 interface LeftPanelProps {
   editorMode: EditorMode;
+  hoveredMode: EditorMode;
+  setHoveredMode: (mode: EditorMode) => void;
   canvas: any;
   selectedObject: any;
   onSelectTemplate: (template: any) => void;
@@ -58,6 +60,8 @@ interface LeftPanelProps {
 
 const LeftPanel: React.FC<LeftPanelProps> = ({
   editorMode,
+  hoveredMode,
+  setHoveredMode,
   canvas,
   selectedObject,
   onSelectTemplate,
@@ -94,63 +98,119 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
   addDecorativeFrame,
   addRoundedFrame,
 }) => {
+  // Timeout ref to manage closing delays
+  const closeTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+
+  // Determine which mode to show - prioritize editorMode, then hoveredMode
+  const activeMode = editorMode || hoveredMode;
+
+  // Don't render if no active mode
+  if (!activeMode) {
+    return null;
+  }
+
+  const handleMouseEnter = () => {
+    // Clear any pending close timeout when entering the panel
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = null;
+    }
+  };
+
+  const handleMouseLeave = () => {
+    // Only close if it's a hovered mode (not clicked/pinned)
+    if (!editorMode && hoveredMode) {
+      // Clear existing timeout
+      if (closeTimeoutRef.current) {
+        clearTimeout(closeTimeoutRef.current);
+      }
+
+      // Set new timeout with longer delay
+      closeTimeoutRef.current = setTimeout(() => {
+        if (!editorMode && hoveredMode) {
+          setHoveredMode(null);
+        }
+        closeTimeoutRef.current = null;
+      }, 300);
+    }
+  };
+
   return (
-    <aside className="w-full md:w-80 bg-gray-200 p-4 overflow-y-auto h-64 md:h-screen flex-shrink-0">
-      {editorMode === "templates" && (
-        <TemplatesPanel
-          onSelectTemplate={onSelectTemplate}
-          onImageUpload={onImageUpload}
-          canvas={canvas}
+    <>
+      {/* Bridge area to help with hover transition */}
+      {activeMode && !editorMode && (
+        <div
+          className="absolute left-16 top-0 w-8 h-full z-15"
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
         />
       )}
 
-      {editorMode === "elements" && (
-        <ElementsPanel
-          addSquare={addSquare}
-          addCircle={addCircle}
-          addTriangle={addTriangle}
-          addRectangle={addRectangle}
-          addEllipse={addEllipse}
-          addStar={addStar}
-          addHeart={addHeart}
-          addHexagon={addHexagon}
-          addPentagon={addPentagon}
-          addDiamond={addDiamond}
-          addArrowShape={addArrowShape}
-          addLine={addLine}
-          addDashedLine={addDashedLine}
-          addArrowLine={addArrowLine}
-          addZigzagLine={addZigzagLine}
-          addWavyLine={addWavyLine}
-          addDottedLine={addDottedLine}
-          addDoubleLine={addDoubleLine}
-          addCurvedLine={addCurvedLine}
-          addStepsLine={addStepsLine}
-          addThickLine={addThickLine}
-          addDashDotLine={addDashDotLine}
-        />
-      )}
-      {editorMode === "text" && (
-        <TextPanel
-          addHeading={addHeading}
-          addSubheading={addSubheading}
-          addBodyText={addBodyText}
-          selectedObject={selectedObject}
-          canvas={canvas}
-        />
-      )}
-      {editorMode === "tools" && (
-        <ToolsPanel
-          canvas={canvas}
-          addStickyNote={addStickyNote}
-          addTable={addTable}
-          addSimpleFrame={addSimpleFrame}
-          addDoubleFrame={addDoubleFrame}
-          addDecorativeFrame={addDecorativeFrame}
-          addRoundedFrame={addRoundedFrame}
-        />
-      )}
-    </aside>
+      <aside
+        className={`absolute left-20 top-0 w-80 bg-white border-r border-gray-300 p-4 overflow-y-auto h-full flex-shrink-0 z-20 shadow-xl transition-all duration-300 ease-out ${
+          activeMode
+            ? "translate-x-0 opacity-100"
+            : "-translate-x-full opacity-0"
+        }`}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
+        {activeMode === "templates" && (
+          <TemplatesPanel
+            onSelectTemplate={onSelectTemplate}
+            onImageUpload={onImageUpload}
+            canvas={canvas}
+          />
+        )}
+
+        {activeMode === "elements" && (
+          <ElementsPanel
+            addSquare={addSquare}
+            addCircle={addCircle}
+            addTriangle={addTriangle}
+            addRectangle={addRectangle}
+            addEllipse={addEllipse}
+            addStar={addStar}
+            addHeart={addHeart}
+            addHexagon={addHexagon}
+            addPentagon={addPentagon}
+            addDiamond={addDiamond}
+            addArrowShape={addArrowShape}
+            addLine={addLine}
+            addDashedLine={addDashedLine}
+            addArrowLine={addArrowLine}
+            addZigzagLine={addZigzagLine}
+            addWavyLine={addWavyLine}
+            addDottedLine={addDottedLine}
+            addDoubleLine={addDoubleLine}
+            addCurvedLine={addCurvedLine}
+            addStepsLine={addStepsLine}
+            addThickLine={addThickLine}
+            addDashDotLine={addDashDotLine}
+          />
+        )}
+        {activeMode === "text" && (
+          <TextPanel
+            addHeading={addHeading}
+            addSubheading={addSubheading}
+            addBodyText={addBodyText}
+            selectedObject={selectedObject}
+            canvas={canvas}
+          />
+        )}
+        {activeMode === "tools" && (
+          <ToolsPanel
+            canvas={canvas}
+            addStickyNote={addStickyNote}
+            addTable={addTable}
+            addSimpleFrame={addSimpleFrame}
+            addDoubleFrame={addDoubleFrame}
+            addDecorativeFrame={addDecorativeFrame}
+            addRoundedFrame={addRoundedFrame}
+          />
+        )}
+      </aside>
+    </>
   );
 };
 
