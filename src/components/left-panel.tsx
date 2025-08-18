@@ -40,6 +40,7 @@ interface LeftPanelProps {
   addThickLine: (options?: { stroke?: string }) => void;
   addDashDotLine: (options?: { stroke?: string }) => void;
   // Text functions
+  addText: (text: string, options?: any) => void;
   addHeading: (options?: any) => void;
   addSubheading: (options?: any) => void;
   addBodyText: (options?: any) => void;
@@ -88,6 +89,7 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
   addStepsLine,
   addThickLine,
   addDashDotLine,
+  addText,
   addHeading,
   addSubheading,
   addBodyText,
@@ -191,10 +193,10 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
         )}
         {activeMode === "text" && (
           <TextPanel
+            addText={addText}
             addHeading={addHeading}
             addSubheading={addSubheading}
             addBodyText={addBodyText}
-            selectedObject={selectedObject}
             canvas={canvas}
           />
         )}
