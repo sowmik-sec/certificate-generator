@@ -39,14 +39,14 @@ const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
   };
 
   return (
-    <aside className="w-full md:w-20 bg-gray-800 text-white flex md:flex-col items-center p-2 md:py-4 flex-shrink-0 relative z-30 border-r border-gray-700">
+    <aside className="w-full md:w-20 flex md:flex-col items-center p-2 md:py-4 flex-shrink-0 relative z-30">
       <div className="text-2xl font-bold mr-auto md:mr-0 md:mb-8">CG</div>
       <nav className="flex flex-row md:flex-col space-x-2 md:space-x-0 md:space-y-6">
         <div className="flex items-center justify-center flex-col">
           <button
             onClick={() => handleClick("templates")}
             onMouseEnter={() => handleMouseEnter("templates")}
-            className={`p-2 rounded-lg transition-all duration-200 ${
+            className={`p-2 rounded-lg hover:cursor-pointer transition-all duration-200 ${
               editorMode === "templates"
                 ? "bg-blue-500 shadow-md"
                 : hoveredMode === "templates"
@@ -63,7 +63,7 @@ const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
           <button
             onClick={() => handleClick("elements")}
             onMouseEnter={() => handleMouseEnter("elements")}
-            className={`p-2 rounded-lg transition-all duration-200 ${
+            className={`p-2 rounded-lg hover:cursor-pointer transition-all duration-200 ${
               editorMode === "elements"
                 ? "bg-green-500 shadow-md"
                 : hoveredMode === "elements"
@@ -81,7 +81,7 @@ const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
           <button
             onClick={() => handleClick("text")}
             onMouseEnter={() => handleMouseEnter("text")}
-            className={`p-2 rounded-lg transition-all duration-200 ${
+            className={`p-2 rounded-lg hover:cursor-pointer transition-all duration-200 ${
               editorMode === "text"
                 ? "bg-yellow-500 shadow-md"
                 : hoveredMode === "text"
@@ -98,7 +98,7 @@ const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
           <button
             onClick={() => handleClick("tools")}
             onMouseEnter={() => handleMouseEnter("tools")}
-            className={`p-2 rounded-lg transition-all duration-200 ${
+            className={`p-2 rounded-lg hover:cursor-pointer transition-all duration-200 ${
               editorMode === "tools"
                 ? "bg-indigo-500 shadow-md"
                 : hoveredMode === "tools"
@@ -114,7 +114,7 @@ const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
         <div className="flex items-center justify-center flex-col">
           <button
             onClick={onImageUpload}
-            className={`p-2 rounded-lg hover:bg-gray-700 transition-all duration-200`}
+            className={`p-2 rounded-lg hover:cursor-pointer hover:bg-gray-700 transition-all duration-200`}
             title="Add Image"
           >
             <ImageIcon size={24} />
