@@ -10,7 +10,7 @@ import LineVisibilityEnhancer from "@/components/line-visibility-enhancer";
 import SelectionTooltip from "@/components/selection-tooltip";
 import CanvaContextMenu from "@/components/canva-context-menu";
 import TextEditingEnhancer from "@/components/text-editing-enhancer";
-import PropertiesPanel from "@/components/properties-panel";
+import TopPropertyPanel from "@/components/top-property-panel";
 import AlignmentToolbar from "@/components/alignment-toolbar";
 import LayerPanel from "@/components/layer-panel";
 import CanvasSizePanel, { CanvasSize } from "@/components/canvas-size-panel";
@@ -426,7 +426,7 @@ export default function CertificateGeneratorPage() {
         </header>
 
         {/* Alignment Toolbar */}
-        <AlignmentToolbar canvas={canvas} selectedObjects={selectedObjects} />
+        {/* <AlignmentToolbar canvas={canvas} selectedObjects={selectedObjects} /> */}
 
         {/* Canvas and Properties Panel Container */}
         <div className="flex-1 flex overflow-hidden">
@@ -447,6 +447,14 @@ export default function CertificateGeneratorPage() {
           >
             <CanvaContextMenu canvas={canvas} selectedObject={selectedObject}>
               <div className="w-full h-full relative">
+                {/* Top Property Panel - Appears above canvas when object is selected */}
+                {selectedObject && (
+                  <TopPropertyPanel
+                    selectedObject={selectedObject}
+                    canvas={canvas}
+                  />
+                )}
+
                 <CanvasComponent
                   fabric={fabric}
                   setCanvas={handleSetCanvas}
@@ -476,7 +484,7 @@ export default function CertificateGeneratorPage() {
             </CanvaContextMenu>
           </div>
 
-          {/* Right Panels */}
+          {/* Right Panel - Layer Panel Only */}
           <aside className="w-80 bg-white border-l border-gray-200 overflow-hidden shadow-lg flex-shrink-0 flex flex-col">
             {/* Layer Panel */}
             <div className="flex-1 overflow-hidden">
@@ -486,16 +494,6 @@ export default function CertificateGeneratorPage() {
                 onSelectionChange={() => {}} // This is handled by the canvas itself
               />
             </div>
-
-            {/* Properties Panel - Only show when object is selected */}
-            {selectedObject && (
-              <div className="border-t border-gray-200 max-h-96 overflow-y-auto p-4">
-                <PropertiesPanel
-                  selectedObject={selectedObject}
-                  canvas={canvas}
-                />
-              </div>
-            )}
           </aside>
         </div>
       </main>

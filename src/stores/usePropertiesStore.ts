@@ -10,6 +10,7 @@ interface ObjectAttributes {
   fontWeight: string;
   fontStyle: string;
   underline: boolean;
+  linethrough: boolean;
   textAlign: string;
   lineHeight: number;
   charSpacing: number;
@@ -76,6 +77,7 @@ const defaultAttributes: ObjectAttributes = {
   fontWeight: "normal",
   fontStyle: "normal",
   underline: false,
+  linethrough: false,
   textAlign: "left",
   lineHeight: 1.16,
   charSpacing: 0,
@@ -141,6 +143,7 @@ export const usePropertiesStore = create<PropertiesState>()(
         fontWeight: fabricObject.fontWeight || "normal",
         fontStyle: fabricObject.fontStyle || "normal",
         underline: fabricObject.underline || false,
+        linethrough: fabricObject.linethrough || false,
         textAlign: fabricObject.textAlign || "left",
         lineHeight: fabricObject.lineHeight || 1.16,
         charSpacing: fabricObject.charSpacing || 0,
@@ -215,6 +218,8 @@ export const usePropertiesStore = create<PropertiesState>()(
             obj.set("fontStyle", fabricValue);
           } else if (property === "underline" && obj.type === "textbox") {
             obj.set("underline", fabricValue);
+          } else if (property === "linethrough" && obj.type === "textbox") {
+            obj.set("linethrough", fabricValue);
           } else if (property === "textAlign" && obj.type === "textbox") {
             obj.set("textAlign", fabricValue);
           } else if (["opacity", "angle"].includes(property as string)) {
