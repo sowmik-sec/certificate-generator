@@ -14,6 +14,7 @@ interface ObjectAttributes {
   textAlign: string;
   lineHeight: number;
   charSpacing: number;
+  listType: "none" | "bullet" | "number";
 
   // Color properties
   fill: string;
@@ -81,6 +82,7 @@ const defaultAttributes: ObjectAttributes = {
   textAlign: "left",
   lineHeight: 1.16,
   charSpacing: 0,
+  listType: "none",
   fill: "#000000",
   stroke: "#333333",
   strokeWidth: 4,
@@ -147,6 +149,7 @@ export const usePropertiesStore = create<PropertiesState>()(
         textAlign: fabricObject.textAlign || "left",
         lineHeight: fabricObject.lineHeight || 1.16,
         charSpacing: fabricObject.charSpacing || 0,
+        listType: fabricObject.listType || "none",
 
         // Color properties - normalize transparent values for color inputs
         fill: normalizeColorForInput(fabricObject.fill, "#000000"),
@@ -252,13 +255,6 @@ export const usePropertiesStore = create<PropertiesState>()(
       if (!type) return "Object";
 
       const isText = type === "textbox" || type === "text";
-      const isShape = [
-        "rect",
-        "circle",
-        "triangle",
-        "ellipse",
-        "path",
-      ].includes(type);
       const isLine = type === "line";
       const isGroup = type === "group";
       const isImage = type === "image";
