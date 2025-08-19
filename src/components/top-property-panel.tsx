@@ -384,6 +384,25 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
       >
         {getListIcon()}
       </button>
+
+      {/* Advanced Settings - Only for Text */}
+      <div className="relative">
+        <button
+          onClick={() => {
+            setShowAdvancedSettings(!showAdvancedSettings);
+          }}
+          className="w-10 h-10 flex flex-col items-center justify-center hover:cursor-pointer rounded-md transition-colors hover:bg-gray-100 text-gray-800 border border-transparent"
+          title="Advanced Settings"
+        >
+          <Type className="w-4 h-3" />
+          <MoveHorizontal className="w-6 h-3" />
+        </button>
+        {showAdvancedSettings && (
+          <AdvancedSettingsPanel
+            onClose={() => setShowAdvancedSettings(false)}
+          />
+        )}
+      </div>
     </>
   );
 
@@ -517,25 +536,6 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
 
   const renderCommonControls = () => (
     <>
-      {/* Advanced Settings */}
-      <div className="relative">
-        <button
-          onClick={() => {
-            setShowAdvancedSettings(!showAdvancedSettings);
-          }}
-          className="w-10 h-10 flex flex-col items-center justify-center hover:cursor-pointer rounded-md transition-colors hover:bg-gray-100 text-gray-800 border border-transparent"
-          title="Advanced Settings"
-        >
-          <Type className="w-4 h-3" />
-          <MoveHorizontal className="w-6 h-3" />
-        </button>
-        {showAdvancedSettings && (
-          <AdvancedSettingsPanel
-            onClose={() => setShowAdvancedSettings(false)}
-          />
-        )}
-      </div>
-
       {/* Separator */}
       <div className="w-px h-7 bg-gray-300 mx-1" />
 
