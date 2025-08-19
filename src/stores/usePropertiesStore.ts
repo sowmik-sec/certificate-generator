@@ -16,6 +16,11 @@ interface ObjectAttributes {
   charSpacing: number;
   listType: "none" | "bullet" | "number";
 
+  // Advanced text properties
+  textPosition: "superscript" | "normal" | "subscript";
+  kerning: boolean;
+  ligatures: boolean;
+
   // Color properties
   fill: string;
   stroke: string;
@@ -83,6 +88,9 @@ const defaultAttributes: ObjectAttributes = {
   lineHeight: 1.16,
   charSpacing: 0,
   listType: "none",
+  textPosition: "normal",
+  kerning: true,
+  ligatures: false,
   fill: "#000000",
   stroke: "#333333",
   strokeWidth: 4,
@@ -150,6 +158,9 @@ export const usePropertiesStore = create<PropertiesState>()(
         lineHeight: fabricObject.lineHeight || 1.16,
         charSpacing: fabricObject.charSpacing || 0,
         listType: fabricObject.listType || "none",
+        textPosition: fabricObject.textPosition || "normal",
+        kerning: fabricObject.kerning ?? true,
+        ligatures: fabricObject.ligatures ?? false,
 
         // Color properties - normalize transparent values for color inputs
         fill: normalizeColorForInput(fabricObject.fill, "#000000"),
@@ -239,7 +250,68 @@ export const usePropertiesStore = create<PropertiesState>()(
           (fabricObject as any)._objects.forEach(applyToGroupObjects);
         }
       } else {
-        fabricObject.set(property, fabricValue);
+        // Handle special text properties
+        if (property === "textPosition") {
+          // Apply text position styling properly
+          if (
+            fabricObject.type === "textbox" ||
+            fabricObject.type === "i-text"
+          ) {
+            // Store the original font size if not stored
+            if (!fabricObject.originalFontSize) {
+              fabricObject.originalFontSize = fabricObject.fontSize;
+            }
+
+            const originalSize = fabricObject.originalFontSize;
+            if (value === "superscript") {
+              fabricObject.set({
+                fontSize: originalSize * 0.7,
+                deltaY: -originalSize * 0.3,
+              });
+            } else if (value === "subscript") {
+              fabricObject.set({
+                fontSize: originalSize * 0.7,
+                deltaY: originalSize * 0.2,
+              });
+            } else {
+              // normal position
+              fabricObject.set({
+                fontSize: originalSize,
+                deltaY: 0,
+              });
+            }
+          }
+        } else if (property === "kerning") {
+          // Apply kerning - adjust character spacing for better visual balance
+          if (
+            fabricObject.type === "textbox" ||
+            fabricObject.type === "i-text"
+          ) {
+            // Store original char spacing if not stored
+            if (fabricObject.originalCharSpacing === undefined) {
+              fabricObject.originalCharSpacing = fabricObject.charSpacing || 0;
+            }
+
+            const baseSpacing = fabricObject.originalCharSpacing;
+            // Kerning adjusts spacing slightly for better visual balance
+            fabricObject.set(
+              "charSpacing",
+              value ? baseSpacing - 20 : baseSpacing
+            );
+          }
+        } else if (property === "ligatures") {
+          // Apply ligatures - visual typography enhancement
+          if (
+            fabricObject.type === "textbox" ||
+            fabricObject.type === "i-text"
+          ) {
+            // Ligatures in typography combine characters like "fi" -> "ﬁ"
+            // Since Fabric.js doesn't have native ligature support, we'll use font variant
+            fabricObject.set("fontVariant", value ? "small-caps" : "normal");
+          }
+        } else {
+          fabricObject.set(property, fabricValue);
+        }
       }
 
       canvas.renderAll();

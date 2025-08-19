@@ -6,6 +6,9 @@ import {
   AlignStartVertical,
   AlignCenterVertical,
   AlignEndVertical,
+  ArrowDown,
+  Minus,
+  ArrowLeft,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -22,14 +25,15 @@ const AdvancedSettingsLeftPanel = () => {
   const { attributes, applyToFabricObject, syncFromFabricObject } =
     usePropertiesStore();
   const { setEditorMode } = useEditorStore();
-  const { charSpacing, lineHeight, textAlign } = attributes;
+  const {
+    charSpacing,
+    lineHeight,
+    textAlign,
+    textPosition,
+    kerning,
+    ligatures,
+  } = attributes;
   const [activeObject, setActiveObject] = useState<FabricObject | null>(null);
-
-  // Advanced settings state
-  const [textPosition, setTextPosition] = useState<
-    "superscript" | "normal" | "subscript"
-  >("normal");
-  const [ligatures, setLigatures] = useState(false);
 
   useEffect(() => {
     if (canvas) {
@@ -76,9 +80,21 @@ const AdvancedSettingsLeftPanel = () => {
   const handleTextPositionChange = (
     position: "superscript" | "normal" | "subscript"
   ) => {
-    setTextPosition(position);
-    // In a real implementation, you'd apply this to the fabric object
-    // For now, we'll just update the state
+    if (canvas && activeObject) {
+      applyToFabricObject(activeObject, canvas, "textPosition", position);
+    }
+  };
+
+  const handleKerningChange = (enabled: boolean) => {
+    if (canvas && activeObject) {
+      applyToFabricObject(activeObject, canvas, "kerning", enabled);
+    }
+  };
+
+  const handleLigaturesChange = (enabled: boolean) => {
+    if (canvas && activeObject) {
+      applyToFabricObject(activeObject, canvas, "ligatures", enabled);
+    }
   };
 
   const handleClose = () => {
@@ -86,9 +102,9 @@ const AdvancedSettingsLeftPanel = () => {
   };
 
   return (
-    <div className="w-80 h-full bg-white border-r border-gray-200 flex flex-col">
+    <div className="w-full h-full bg-white flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200">
+      <div className="flex items-center justify-between p-4 border-b border-gray-200 flex-shrink-0">
         <h2 className="text-lg font-semibold text-gray-900">
           Advanced settings
         </h2>
@@ -102,14 +118,14 @@ const AdvancedSettingsLeftPanel = () => {
         </Button>
       </div>
 
-      {/* Content */}
+      {/* Content - Scrollable */}
       <div className="flex-1 overflow-y-auto p-4 space-y-6">
         {/* Spacing Section */}
         <div className="space-y-4">
           <h3 className="text-base font-medium text-gray-900">Spacing</h3>
 
           {/* Letter spacing */}
-          <div className="space-y-3">
+          <div className="space-y-2">
             <Label className="text-sm font-medium text-gray-700">
               Letter spacing
             </Label>
@@ -132,13 +148,13 @@ const AdvancedSettingsLeftPanel = () => {
                 onChange={(e) =>
                   handlePropertyChange("charSpacing", Number(e.target.value))
                 }
-                className="w-16 h-8"
+                className="w-12 h-8 text-xs"
               />
             </div>
           </div>
 
           {/* Line spacing */}
-          <div className="space-y-3">
+          <div className="space-y-2">
             <Label className="text-sm font-medium text-gray-700">
               Line spacing
             </Label>
@@ -162,7 +178,7 @@ const AdvancedSettingsLeftPanel = () => {
                 onChange={(e) =>
                   handlePropertyChange("lineHeight", Number(e.target.value))
                 }
-                className="w-16 h-8"
+                className="w-12 h-8 text-xs"
               />
             </div>
           </div>
@@ -177,26 +193,26 @@ const AdvancedSettingsLeftPanel = () => {
             <Button
               variant={textAlign === "left" ? "secondary" : "outline"}
               size="sm"
-              className="h-12 flex flex-col items-center justify-center gap-1"
+              className="h-10 flex items-center justify-center"
               onClick={() => handlePropertyChange("textAlign", "left")}
             >
-              <AlignStartVertical className="h-5 w-5" />
+              <AlignStartVertical className="h-4 w-4" />
             </Button>
             <Button
               variant={textAlign === "center" ? "secondary" : "outline"}
               size="sm"
-              className="h-12 flex flex-col items-center justify-center gap-1"
+              className="h-10 flex items-center justify-center"
               onClick={() => handlePropertyChange("textAlign", "center")}
             >
-              <AlignCenterVertical className="h-5 w-5" />
+              <AlignCenterVertical className="h-4 w-4" />
             </Button>
             <Button
               variant={textAlign === "right" ? "secondary" : "outline"}
               size="sm"
-              className="h-12 flex flex-col items-center justify-center gap-1"
+              className="h-10 flex items-center justify-center"
               onClick={() => handlePropertyChange("textAlign", "right")}
             >
-              <AlignEndVertical className="h-5 w-5" />
+              <AlignEndVertical className="h-4 w-4" />
             </Button>
           </div>
         </div>
@@ -212,34 +228,40 @@ const AdvancedSettingsLeftPanel = () => {
             </Label>
             <div className="grid grid-cols-3 gap-1">
               <Button
-                variant={
-                  textPosition === "superscript" ? "secondary" : "outline"
-                }
+                variant={textPosition === "superscript" ? "default" : "outline"}
                 size="sm"
-                className="h-12 flex items-center justify-center"
+                className={`h-10 flex items-center justify-center text-base font-semibold ${
+                  textPosition === "superscript"
+                    ? "bg-purple-200 text-black border-purple-300 hover:bg-purple-300 hover:text-black"
+                    : "hover:bg-gray-50"
+                }`}
                 onClick={() => handleTextPositionChange("superscript")}
               >
-                <span className="text-sm font-medium">A</span>
-                <span className="text-xs font-medium align-super">2</span>
+                A²
               </Button>
               <Button
-                variant={textPosition === "normal" ? "secondary" : "outline"}
+                variant={textPosition === "normal" ? "default" : "outline"}
                 size="sm"
-                className="h-12 flex items-center justify-center"
+                className={`h-10 flex items-center justify-center text-base font-semibold ${
+                  textPosition === "normal"
+                    ? "bg-purple-200 text-black border-purple-300 hover:bg-purple-300 hover:text-black"
+                    : "hover:bg-gray-50"
+                }`}
                 onClick={() => handleTextPositionChange("normal")}
               >
-                <span className="text-sm font-medium relative">
-                  A<span className="absolute -top-1 -right-1 text-xs">°</span>
-                </span>
+                A°
               </Button>
               <Button
-                variant={textPosition === "subscript" ? "secondary" : "outline"}
+                variant={textPosition === "subscript" ? "default" : "outline"}
                 size="sm"
-                className="h-12 flex items-center justify-center"
+                className={`h-10 flex items-center justify-center text-base font-semibold ${
+                  textPosition === "subscript"
+                    ? "bg-purple-200 text-black border-purple-300 hover:bg-purple-300 hover:text-black"
+                    : "hover:bg-gray-50"
+                }`}
                 onClick={() => handleTextPositionChange("subscript")}
               >
-                <span className="text-sm font-medium">A</span>
-                <span className="text-xs font-medium align-sub">2</span>
+                A₂
               </Button>
             </div>
           </div>
@@ -259,17 +281,21 @@ const AdvancedSettingsLeftPanel = () => {
                 Refine letter spacing for visual balance
               </p>
             </div>
-            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+            <div
+              className={`flex items-center justify-between p-3 rounded-lg cursor-pointer transition-colors ${
+                kerning ? "bg-purple-200" : "bg-gray-100"
+              } hover:bg-purple-100`}
+              onClick={() => handleKerningChange(!kerning)}
+            >
               <div className="flex items-center gap-3">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-10 px-8 bg-purple-100 border-purple-200"
-                >
-                  <span className="text-sm">-</span>
-                </Button>
-                <div className="text-right">
-                  <span className="text-sm font-medium">VA</span>
+                <div className="text-sm font-medium text-gray-700">
+                  <Minus className="h-4 w-4" />
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="text-sm font-medium text-gray-700 flex flex-col items-center">
+                  <span>VA</span>
+                  <ArrowLeft className="h-3 w-3" />
                 </div>
               </div>
             </div>
@@ -285,24 +311,17 @@ const AdvancedSettingsLeftPanel = () => {
                 Combine specific characters elegantly
               </p>
             </div>
-            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+            <div
+              className={`flex items-center justify-between p-3 rounded-lg cursor-pointer transition-colors ${
+                ligatures ? "bg-purple-200" : "bg-gray-100"
+              } hover:bg-purple-100`}
+              onClick={() => handleLigaturesChange(!ligatures)}
+            >
               <div className="flex items-center gap-3">
-                <Button
-                  variant={ligatures ? "secondary" : "outline"}
-                  size="sm"
-                  className="h-10 px-8 bg-purple-100 border-purple-200"
-                  onClick={() => setLigatures(!ligatures)}
-                >
-                  <span className="text-sm italic">fi</span>
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-10 px-8"
-                  onClick={() => setLigatures(!ligatures)}
-                >
-                  <span className="text-sm">fi</span>
-                </Button>
+                <div className="text-sm font-medium text-gray-700">fi</div>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="text-sm font-medium text-gray-700">fi</div>
               </div>
             </div>
           </div>
