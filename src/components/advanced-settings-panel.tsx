@@ -1,7 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AlignCenter, AlignLeft, AlignRight } from "lucide-react";
+import {
+  AlignStartVertical,
+  AlignCenterVertical,
+  AlignEndVertical,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,13 +20,29 @@ import {
 import { useCanvasStore } from "@/stores/useCanvasStore";
 import { usePropertiesStore } from "@/stores/usePropertiesStore";
 import { FabricObject } from "@/types/fabric";
+import { useClickOutside } from "@/hooks/useClickOutside";
 
-const AdvancedSettingsPanel = () => {
+interface AdvancedSettingsPanelProps {
+  onClose?: () => void;
+}
+
+const AdvancedSettingsPanel: React.FC<AdvancedSettingsPanelProps> = ({
+  onClose,
+}) => {
   const canvas = useCanvasStore((state) => state.canvas);
   const { attributes, applyToFabricObject, syncFromFabricObject } =
     usePropertiesStore();
   const { charSpacing, lineHeight, textAlign } = attributes;
   const [activeObject, setActiveObject] = useState<FabricObject | null>(null);
+
+  // Click outside handler
+  const panelRef = useClickOutside<HTMLDivElement>({
+    onClickOutside: () => {
+      if (onClose) {
+        onClose();
+      }
+    },
+  });
 
   useEffect(() => {
     if (canvas) {
@@ -74,13 +94,19 @@ const AdvancedSettingsPanel = () => {
   }
 
   return (
-    <div className="absolute top-full -left-24 mt-3 w-72 rounded-lg border bg-card p-4 text-card-foreground shadow-sm">
+    <div
+      ref={panelRef}
+      className="absolute top-full -left-24 mt-3 w-72 rounded-lg border bg-white p-4 shadow-lg z-50"
+    >
       <div className="space-y-4">
         <div className="">
-          <Label htmlFor="letter-spacing" className="col-span-1">
+          <Label
+            htmlFor="letter-spacing"
+            className="text-sm font-medium text-gray-700"
+          >
             Letter spacing
           </Label>
-          <div className="flex">
+          <div className="flex items-center gap-3 mt-2">
             <Slider
               id="letter-spacing"
               min={-200}
@@ -90,7 +116,7 @@ const AdvancedSettingsPanel = () => {
               onValueChange={(val) =>
                 handlePropertyChange("charSpacing", val[0])
               }
-              className=""
+              className="flex-1"
             />
             <Input
               type="number"
@@ -100,15 +126,18 @@ const AdvancedSettingsPanel = () => {
               onChange={(e) =>
                 handlePropertyChange("charSpacing", Number(e.target.value))
               }
-              className="ml-3 max-w-20 h-8"
+              className="w-16 h-8"
             />
           </div>
         </div>
         <div className="">
-          <Label htmlFor="line-spacing" className="col-span-1">
+          <Label
+            htmlFor="line-spacing"
+            className="text-sm font-medium text-gray-700"
+          >
             Line spacing
           </Label>
-          <div className="flex">
+          <div className="flex items-center gap-3 mt-2">
             <Slider
               id="line-spacing"
               min={0.5}
@@ -118,6 +147,7 @@ const AdvancedSettingsPanel = () => {
               onValueChange={(val) =>
                 handlePropertyChange("lineHeight", val[0])
               }
+              className="flex-1"
             />
             <Input
               type="number"
@@ -128,61 +158,79 @@ const AdvancedSettingsPanel = () => {
               onChange={(e) =>
                 handlePropertyChange("lineHeight", Number(e.target.value))
               }
-              className="ml-3 max-w-20 h-8"
+              className="w-16 h-8"
             />
           </div>
         </div>
-        <div className="grid grid-cols-3 items-center gap-2">
-          <Label className="col-span-1">Anchor text box</Label>
-          <div className="col-span-2 flex items-center justify-start gap-2">
+        <div className="">
+          <Label className="text-sm font-medium text-gray-700 mb-2 block">
+            Anchor text box
+          </Label>
+          <div className="flex items-center gap-1">
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
                     variant={textAlign === "left" ? "secondary" : "ghost"}
-                    size="icon"
+                    size="sm"
+                    className="px-2 py-1 h-8"
                     onClick={() => handlePropertyChange("textAlign", "left")}
                   >
-                    <AlignLeft className="h-4 w-4" />
+                    <AlignStartVertical className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>
-                  <p>Align Left</p>
+                <TooltipContent
+                  side="bottom"
+                  className="bg-gray-900 text-white px-2 py-1 text-xs"
+                >
+                  <p>Anchor start</p>
                 </TooltipContent>
               </Tooltip>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
                     variant={textAlign === "center" ? "secondary" : "ghost"}
-                    size="icon"
+                    size="sm"
+                    className="px-2 py-1 h-8"
                     onClick={() => handlePropertyChange("textAlign", "center")}
                   >
-                    <AlignCenter className="h-4 w-4" />
+                    <AlignCenterVertical className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>
-                  <p>Align Center</p>
+                <TooltipContent
+                  side="bottom"
+                  className="bg-gray-900 text-white px-2 py-1 text-xs"
+                >
+                  <p>Anchor middle</p>
                 </TooltipContent>
               </Tooltip>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
                     variant={textAlign === "right" ? "secondary" : "ghost"}
-                    size="icon"
+                    size="sm"
+                    className="px-2 py-1 h-8"
                     onClick={() => handlePropertyChange("textAlign", "right")}
                   >
-                    <AlignRight className="h-4 w-4" />
+                    <AlignEndVertical className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>
-                  <p>Align Right</p>
+                <TooltipContent
+                  side="bottom"
+                  className="bg-gray-900 text-white px-2 py-1 text-xs"
+                >
+                  <p>Anchor end</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
           </div>
         </div>
       </div>
-      <Button className="w-full mt-2 hover:cursor-pointer" variant="secondary">
+      <Button
+        className="w-full mt-4 hover:cursor-pointer"
+        variant="secondary"
+        onClick={() => onClose && onClose()}
+      >
         More Settings
       </Button>
     </div>

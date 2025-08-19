@@ -529,7 +529,11 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
           <Type className="w-4 h-3" />
           <MoveHorizontal className="w-6 h-3" />
         </button>
-        {showAdvancedSettings && <AdvancedSettingsPanel />}
+        {showAdvancedSettings && (
+          <AdvancedSettingsPanel
+            onClose={() => setShowAdvancedSettings(false)}
+          />
+        )}
       </div>
 
       {/* Separator */}
