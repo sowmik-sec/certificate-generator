@@ -181,9 +181,10 @@ const AdvancedSettingsPanel: React.FC<AdvancedSettingsPanelProps> = ({
                 </TooltipTrigger>
                 <TooltipContent
                   side="bottom"
-                  className="bg-gray-900 text-white px-2 py-1 text-xs"
+                  className="!bg-slate-900 !text-white !border-slate-700 shadow-lg [&>*]:!text-white"
+                  style={{ backgroundColor: "rgb(15, 23, 42)", color: "white" }}
                 >
-                  <p>Anchor start</p>
+                  <p style={{ color: "white" }}>Anchor start</p>
                 </TooltipContent>
               </Tooltip>
               <Tooltip>
@@ -199,9 +200,10 @@ const AdvancedSettingsPanel: React.FC<AdvancedSettingsPanelProps> = ({
                 </TooltipTrigger>
                 <TooltipContent
                   side="bottom"
-                  className="bg-gray-900 text-white px-2 py-1 text-xs"
+                  className="!bg-slate-900 !text-white !border-slate-700 shadow-lg [&>*]:!text-white"
+                  style={{ backgroundColor: "rgb(15, 23, 42)", color: "white" }}
                 >
-                  <p>Anchor middle</p>
+                  <p style={{ color: "white" }}>Anchor middle</p>
                 </TooltipContent>
               </Tooltip>
               <Tooltip>
@@ -217,9 +219,10 @@ const AdvancedSettingsPanel: React.FC<AdvancedSettingsPanelProps> = ({
                 </TooltipTrigger>
                 <TooltipContent
                   side="bottom"
-                  className="bg-gray-900 text-white px-2 py-1 text-xs"
+                  className="!bg-slate-900 !text-white !border-slate-700 shadow-lg [&>*]:!text-white"
+                  style={{ backgroundColor: "rgb(15, 23, 42)", color: "white" }}
                 >
-                  <p>Anchor end</p>
+                  <p style={{ color: "white" }}>Anchor end</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -227,7 +230,7 @@ const AdvancedSettingsPanel: React.FC<AdvancedSettingsPanelProps> = ({
         </div>
       </div>
       <Button
-        className="w-full mt-4 hover:cursor-pointer"
+        className="w-full mt-4 hover:cursor-pointer font-semibold"
         variant="secondary"
         onClick={() => onClose && onClose()}
       >

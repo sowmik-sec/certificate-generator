@@ -25,6 +25,17 @@ body {
   color: #3b82f6 !important;
 }
 
+/* Tooltip text should be white when on dark backgrounds */
+[data-radix-tooltip-content],
+[data-slot="tooltip-content"] {
+  background: rgb(15 23 42) !important; /* slate-900 */
+}
+
+[data-radix-tooltip-content] *,
+[data-slot="tooltip-content"] * {
+  color: white !important;
+}
+
 /* Sidebar icons should be light colored */
 aside.bg-gray-800 svg {
   color: #e5e7eb !important;
