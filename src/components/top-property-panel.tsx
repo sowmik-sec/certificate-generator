@@ -591,7 +591,7 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
           // TODO: Open position panel
           console.log("Position clicked");
         }}
-        className="w-10 h-10 flex items-center justify-center hover:cursor-pointer rounded-md transition-colors hover:bg-gray-100 text-gray-800 border border-transparent"
+        className="px-2 h-10 flex items-center justify-center hover:cursor-pointer rounded-md transition-colors hover:bg-gray-100 text-gray-800 border border-transparent"
         title="Position"
       >
         {/* <Move className="w-5 h-5" /> */}
