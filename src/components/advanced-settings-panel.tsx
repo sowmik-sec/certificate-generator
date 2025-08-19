@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/tooltip";
 import { useCanvasStore } from "@/stores/useCanvasStore";
 import { usePropertiesStore } from "@/stores/usePropertiesStore";
+import { useEditorStore } from "@/stores/useEditorStore";
 import { FabricObject } from "@/types/fabric";
 import { useClickOutside } from "@/hooks/useClickOutside";
 
@@ -30,6 +31,7 @@ const AdvancedSettingsPanel: React.FC<AdvancedSettingsPanelProps> = ({
   onClose,
 }) => {
   const canvas = useCanvasStore((state) => state.canvas);
+  const { setEditorMode } = useEditorStore();
   const { attributes, applyToFabricObject, syncFromFabricObject } =
     usePropertiesStore();
   const { charSpacing, lineHeight, textAlign } = attributes;
@@ -232,7 +234,12 @@ const AdvancedSettingsPanel: React.FC<AdvancedSettingsPanelProps> = ({
       <Button
         className="w-full mt-4 hover:cursor-pointer font-semibold"
         variant="secondary"
-        onClick={() => onClose && onClose()}
+        onClick={() => {
+          setEditorMode("advanced-settings");
+          if (onClose) {
+            onClose();
+          }
+        }}
       >
         More Settings
       </Button>

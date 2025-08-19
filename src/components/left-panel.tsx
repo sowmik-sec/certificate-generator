@@ -5,6 +5,7 @@ import TemplatesPanel from "@/components/templates-panel";
 import ElementsPanel from "@/components/elements-panel";
 import ToolsPanel from "@/components/tools-panel";
 import TextPanel from "@/components/text-panel";
+import AdvancedSettingsLeftPanel from "@/components/advanced-settings-left-panel";
 import { EditorMode } from "./sidebar-navigation";
 
 interface LeftPanelProps {
@@ -211,6 +212,7 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
             addRoundedFrame={addRoundedFrame}
           />
         )}
+        {activeMode === "advanced-settings" && <AdvancedSettingsLeftPanel />}
       </aside>
     </>
   );

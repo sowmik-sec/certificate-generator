@@ -8,7 +8,13 @@ import {
   LayoutTemplate,
 } from "lucide-react";
 
-export type EditorMode = "templates" | "elements" | "text" | "tools" | null;
+export type EditorMode =
+  | "templates"
+  | "elements"
+  | "text"
+  | "tools"
+  | "advanced-settings"
+  | null;
 
 interface SidebarNavigationProps {
   editorMode: EditorMode;
