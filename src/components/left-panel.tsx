@@ -143,76 +143,88 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
       {/* Bridge area to help with hover transition */}
       {activeMode && !editorMode && (
         <div
-          className="absolute left-16 top-0 w-8 h-full z-15"
+          className="absolute left-16 w-8 z-15"
+          style={{
+            top: "64px",
+            height: "calc(100vh - 100px)",
+          }}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
         />
       )}
 
       <aside
-        className={`absolute left-20 top-0 w-80 bg-white border-r border-gray-300 p-4 overflow-y-auto h-full flex-shrink-0 z-20 shadow-xl transition-all duration-300 ease-out ${
+        className={`absolute left-20 w-80 bg-white flex-shrink-0 z-20 transition-all duration-300 ease-out rounded-3xl shadow-2xl overflow-hidden ${
           activeMode
             ? "translate-x-0 opacity-100"
             : "-translate-x-full opacity-0"
         }`}
+        style={{
+          top: "64px", // Start at the top of the Design item
+          height: "calc(100vh - 100px)", // Leave minimal space at bottom
+          boxShadow:
+            "0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 10px 25px -6px rgba(0, 0, 0, 0.1)",
+        }}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
-        {activeMode === "templates" && (
-          <TemplatesPanel
-            onSelectTemplate={onSelectTemplate}
-            onImageUpload={onImageUpload}
-            canvas={canvas}
-          />
-        )}
+        <div className="w-full h-full overflow-y-auto p-4 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-gray-300 hover:scrollbar-thumb-gray-400">
+          {activeMode === "templates" && (
+            <TemplatesPanel
+              onSelectTemplate={onSelectTemplate}
+              onImageUpload={onImageUpload}
+              canvas={canvas}
+            />
+          )}
 
-        {activeMode === "elements" && (
-          <ElementsPanel
-            addSquare={addSquare}
-            addCircle={addCircle}
-            addTriangle={addTriangle}
-            addRectangle={addRectangle}
-            addEllipse={addEllipse}
-            addStar={addStar}
-            addHeart={addHeart}
-            addHexagon={addHexagon}
-            addPentagon={addPentagon}
-            addDiamond={addDiamond}
-            addArrowShape={addArrowShape}
-            addLine={addLine}
-            addDashedLine={addDashedLine}
-            addArrowLine={addArrowLine}
-            addZigzagLine={addZigzagLine}
-            addWavyLine={addWavyLine}
-            addDottedLine={addDottedLine}
-            addDoubleLine={addDoubleLine}
-            addCurvedLine={addCurvedLine}
-            addStepsLine={addStepsLine}
-            addThickLine={addThickLine}
-            addDashDotLine={addDashDotLine}
-          />
-        )}
-        {activeMode === "text" && (
-          <TextPanel
-            addText={addText}
-            addHeading={addHeading}
-            addSubheading={addSubheading}
-            addBodyText={addBodyText}
-            canvas={canvas}
-          />
-        )}
-        {activeMode === "tools" && (
-          <ToolsPanel
-            canvas={canvas}
-            addStickyNote={addStickyNote}
-            addTable={addTable}
-            addSimpleFrame={addSimpleFrame}
-            addDoubleFrame={addDoubleFrame}
-            addDecorativeFrame={addDecorativeFrame}
-            addRoundedFrame={addRoundedFrame}
-          />
-        )}
-        {activeMode === "advanced-settings" && <AdvancedSettingsLeftPanel />}
+          {activeMode === "elements" && (
+            <ElementsPanel
+              addSquare={addSquare}
+              addCircle={addCircle}
+              addTriangle={addTriangle}
+              addRectangle={addRectangle}
+              addEllipse={addEllipse}
+              addStar={addStar}
+              addHeart={addHeart}
+              addHexagon={addHexagon}
+              addPentagon={addPentagon}
+              addDiamond={addDiamond}
+              addArrowShape={addArrowShape}
+              addLine={addLine}
+              addDashedLine={addDashedLine}
+              addArrowLine={addArrowLine}
+              addZigzagLine={addZigzagLine}
+              addWavyLine={addWavyLine}
+              addDottedLine={addDottedLine}
+              addDoubleLine={addDoubleLine}
+              addCurvedLine={addCurvedLine}
+              addStepsLine={addStepsLine}
+              addThickLine={addThickLine}
+              addDashDotLine={addDashDotLine}
+            />
+          )}
+          {activeMode === "text" && (
+            <TextPanel
+              addText={addText}
+              addHeading={addHeading}
+              addSubheading={addSubheading}
+              addBodyText={addBodyText}
+              canvas={canvas}
+            />
+          )}
+          {activeMode === "tools" && (
+            <ToolsPanel
+              canvas={canvas}
+              addStickyNote={addStickyNote}
+              addTable={addTable}
+              addSimpleFrame={addSimpleFrame}
+              addDoubleFrame={addDoubleFrame}
+              addDecorativeFrame={addDecorativeFrame}
+              addRoundedFrame={addRoundedFrame}
+            />
+          )}
+          {activeMode === "advanced-settings" && <AdvancedSettingsLeftPanel />}
+        </div>
       </aside>
     </>
   );
