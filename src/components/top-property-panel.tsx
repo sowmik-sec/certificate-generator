@@ -550,7 +550,7 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
         </button>
 
         {showOpacityCard && (
-          <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 bg-white border border-gray-200 rounded-lg shadow-xl z-50 p-4 min-w-[150px]">
+          <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-3 bg-white border border-gray-200 rounded-lg shadow-xl z-50 p-4 min-w-[150px]">
             <div className="text-sm text-gray-700 font-semibold mb-3">
               Transparency
             </div>
