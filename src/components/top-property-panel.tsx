@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { FabricCanvas } from "@/types/fabric";
 import { FabricObject } from "fabric";
 import { usePropertiesStore } from "@/stores/usePropertiesStore";
+import AdvancedSettingsPanel from "./advanced-settings-panel";
 import {
   Bold,
   Italic,
@@ -45,6 +46,7 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
   const [isUpperCase, setIsUpperCase] = useState(false);
   const [currentAlignment, setCurrentAlignment] = useState("left");
   const [showOpacityCard, setShowOpacityCard] = useState(false);
+  const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
   const [hasStrikethrough, setHasStrikethrough] = useState(false);
   const [currentListType, setCurrentListType] = useState<
     "none" | "bullet" | "number"
@@ -516,17 +518,19 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
   const renderCommonControls = () => (
     <>
       {/* Advanced Settings */}
-      <button
-        onClick={() => {
-          // TODO: Open advanced settings panel
-          console.log("Advanced settings clicked");
-        }}
-        className="w-10 h-10 flex flex-col items-center justify-center hover:cursor-pointer rounded-md transition-colors hover:bg-gray-100 text-gray-800 border border-transparent"
-        title="Advanced Settings"
-      >
-        <Type className="w-4 h-3" />
-        <MoveHorizontal className="w-6 h-3" />
-      </button>
+      <div className="relative">
+        <button
+          onClick={() => {
+            setShowAdvancedSettings(!showAdvancedSettings);
+          }}
+          className="w-10 h-10 flex flex-col items-center justify-center hover:cursor-pointer rounded-md transition-colors hover:bg-gray-100 text-gray-800 border border-transparent"
+          title="Advanced Settings"
+        >
+          <Type className="w-4 h-3" />
+          <MoveHorizontal className="w-6 h-3" />
+        </button>
+        {showAdvancedSettings && <AdvancedSettingsPanel />}
+      </div>
 
       {/* Separator */}
       <div className="w-px h-7 bg-gray-300 mx-1" />
@@ -625,12 +629,13 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
       </div>
 
       {/* Click outside handler for dropdowns */}
-      {(showFontDropdown || showOpacityCard) && (
+      {(showFontDropdown || showOpacityCard || showAdvancedSettings) && (
         <div
           className="fixed inset-0 z-40"
           onClick={() => {
             setShowFontDropdown(false);
             setShowOpacityCard(false);
+            setShowAdvancedSettings(false);
           }}
         />
       )}
