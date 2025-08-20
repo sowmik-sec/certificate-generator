@@ -124,7 +124,20 @@ export const useCanvasOperations = (
   }, [selectedObject]);
 
   const handlePaste = useCallback(() => {
-    if (!copiedObject || !canvas) return;
+    // If we don't have an in-memory copiedObject, try localStorage fallback
+    let effectiveCopied = copiedObject;
+    if (!effectiveCopied) {
+      try {
+        const stored = localStorage.getItem("copiedObject");
+        if (stored) {
+          effectiveCopied = JSON.parse(stored);
+        }
+      } catch {
+        // ignore JSON parse errors
+      }
+    }
+
+    if (!effectiveCopied || !canvas) return;
 
     const createFabricObject = (objData: any) => {
       const baseProps = {
@@ -272,9 +285,16 @@ export const useCanvasOperations = (
     };
 
     try {
-      // Check if it's a proper Fabric object with clone method
-      if (copiedObject.clone && typeof copiedObject.clone === "function") {
-        copiedObject.clone((clonedObj: any) => {
+      // If we have the original runtime copied object with clone method, prefer it
+      const cloneSource =
+        copiedObject && copiedObject.clone ? copiedObject : effectiveCopied;
+
+      if (
+        cloneSource &&
+        cloneSource.clone &&
+        typeof cloneSource.clone === "function"
+      ) {
+        cloneSource.clone((clonedObj: any) => {
           canvas.discardActiveObject();
           clonedObj.set({
             left: clonedObj.left + 10,
@@ -295,8 +315,8 @@ export const useCanvasOperations = (
           canvas.requestRenderAll();
         });
       } else {
-        // Use our safe copy data to recreate the object
-        const fabricObj = createFabricObject(copiedObject);
+        // Use our safe copy data (effectiveCopied) to recreate the object
+        const fabricObj = createFabricObject(effectiveCopied);
 
         if (fabricObj) {
           canvas.discardActiveObject();

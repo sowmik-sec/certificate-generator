@@ -6,6 +6,7 @@ import { FabricObject } from "fabric";
 import { usePropertiesStore } from "@/stores/usePropertiesStore";
 import { EditorMode } from "@/components/sidebar-navigation";
 import AdvancedSettingsPanel from "./advanced-settings-panel";
+import { toast, Toaster } from "sonner";
 import {
   Bold,
   Italic,
@@ -198,8 +199,93 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
   };
 
   const handleCopyStyle = () => {
-    // TODO: Implement copy style functionality
-    console.log("Copy style clicked");
+    if (!selectedObject) return;
+
+    // Build a safe copy of the object (minimal properties to recreate)
+    const createSafeCopy = (obj: any) => {
+      const safeCopy: any = {
+        type: obj.type,
+        left: obj.left || 0,
+        top: obj.top || 0,
+        width: obj.width,
+        height: obj.height,
+        scaleX: obj.scaleX || 1,
+        scaleY: obj.scaleY || 1,
+        angle: obj.angle || 0,
+        opacity: obj.opacity || 1,
+        visible: obj.visible !== false,
+        flipX: obj.flipX || false,
+        flipY: obj.flipY || false,
+        skewX: obj.skewX || 0,
+        skewY: obj.skewY || 0,
+      };
+
+      switch (obj.type) {
+        case "textbox":
+        case "text":
+          safeCopy.text = obj.text || "Text";
+          safeCopy.fontSize = obj.fontSize || 20;
+          safeCopy.fontFamily = obj.fontFamily || "Arial";
+          safeCopy.fontWeight = obj.fontWeight || "normal";
+          safeCopy.fontStyle = obj.fontStyle || "normal";
+          safeCopy.fill = obj.fill || "#000000";
+          safeCopy.textAlign = obj.textAlign || "left";
+          safeCopy.lineHeight = obj.lineHeight || 1.16;
+          if (obj.type === "textbox") {
+            safeCopy.width = obj.width || 200;
+          }
+          break;
+        case "rect":
+        case "triangle":
+        case "circle":
+        case "ellipse":
+          safeCopy.fill = obj.fill || "#000000";
+          safeCopy.stroke = obj.stroke;
+          safeCopy.strokeWidth = obj.strokeWidth || 1;
+          if (obj.type === "circle") {
+            safeCopy.radius = obj.radius || 50;
+          }
+          if (obj.type === "ellipse") {
+            safeCopy.rx = obj.rx || 50;
+            safeCopy.ry = obj.ry || 30;
+          }
+          break;
+        case "line":
+          safeCopy.x1 = obj.x1 || 0;
+          safeCopy.y1 = obj.y1 || 0;
+          safeCopy.x2 = obj.x2 || 100;
+          safeCopy.y2 = obj.y2 || 0;
+          safeCopy.stroke = obj.stroke || "#000000";
+          safeCopy.strokeWidth = obj.strokeWidth || 1;
+          safeCopy.strokeDashArray = obj.strokeDashArray;
+          break;
+        case "image":
+          safeCopy.src = obj.getSrc ? obj.getSrc() : obj.src;
+          break;
+      }
+
+      return safeCopy;
+    };
+
+    try {
+      const safe = createSafeCopy(selectedObject);
+      // Store in localStorage so other components (context menu / paste handler) can access
+      localStorage.setItem("copiedObject", JSON.stringify(safe));
+
+      // Also write a plain-text clipboard entry so system paste works when possible
+      const payload = `CERT-COPY:${JSON.stringify(safe)}`;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(payload).catch(() => {
+          // ignore failures (may require secure context/permission)
+        });
+      }
+
+      // Provide quick feedback
+      console.log("Style/object copied to clipboard and localStorage");
+      toast.success("Style copied to chipboard");
+    } catch (err) {
+      console.error("Failed to copy style/object:", err);
+    }
   };
 
   const renderTextControls = () => (
@@ -621,6 +707,7 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
 
   return (
     <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-50">
+      <Toaster position="top-center" />
       <div className="flex items-center gap-3 px-5 py-2 bg-white border border-gray-200 rounded-lg shadow-xl backdrop-blur-sm">
         {/* Render controls based on object type */}
         {isTextObject() && renderTextControls()}

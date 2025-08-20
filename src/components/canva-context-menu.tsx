@@ -81,17 +81,61 @@ const CanvaContextMenu: React.FC<CanvaContextMenuProps> = ({
   }, [selectedObject, canvas]);
 
   const handlePaste = useCallback(() => {
-    if (!copiedObject || !canvas) return;
+    // try in-memory copied object first, otherwise try localStorage fallback
+    let source = copiedObject;
+    if (!source) {
+      try {
+        const stored = localStorage.getItem("copiedObject");
+        if (stored) source = JSON.parse(stored);
+      } catch {
+        // ignore
+      }
+    }
 
-    copiedObject.clone((cloned: any) => {
-      cloned.set({
-        left: cloned.left + 20,
-        top: cloned.top + 20,
+    if (!source || !canvas) return;
+
+    if (source.clone && typeof source.clone === "function") {
+      source.clone((cloned: any) => {
+        cloned.set({
+          left: cloned.left + 20,
+          top: cloned.top + 20,
+        });
+        canvas.add(cloned);
+        canvas.setActiveObject(cloned);
+        canvas.renderAll();
       });
-      canvas.add(cloned);
-      canvas.setActiveObject(cloned);
-      canvas.renderAll();
-    });
+    } else {
+      // source is plain data — reconstruct a minimal fabric object
+      try {
+        // simple rectangle/text fallback for stored object
+        if (source.type === "textbox" || source.type === "text") {
+          const tb = new (window as any).fabric.Textbox(source.text || "Text", {
+            left: (source.left || 0) + 20,
+            top: (source.top || 0) + 20,
+            fontSize: source.fontSize || 20,
+            fontFamily: source.fontFamily || "Arial",
+            fill: source.fill || "#000000",
+            width: source.width || 200,
+          });
+          canvas.add(tb);
+          canvas.setActiveObject(tb);
+          canvas.renderAll();
+        } else if (source.type === "rect" || !source.type) {
+          const rect = new (window as any).fabric.Rect({
+            left: (source.left || 0) + 20,
+            top: (source.top || 0) + 20,
+            width: source.width || 100,
+            height: source.height || 100,
+            fill: source.fill || "#cccccc",
+          });
+          canvas.add(rect);
+          canvas.setActiveObject(rect);
+          canvas.renderAll();
+        }
+      } catch (err) {
+        console.error("Failed to paste from stored object:", err);
+      }
+    }
   }, [copiedObject, canvas]);
 
   const handlePasteStyle = useCallback(() => {
