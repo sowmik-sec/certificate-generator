@@ -142,7 +142,7 @@ const TemplatesPanel: React.FC<TemplatesPanelProps> = ({
       <h3 className="text-lg font-semibold my-4 pt-4 border-t">
         Choose a Template
       </h3>
-      <div className="grid grid-cols-1 gap-4">
+      <div className="grid grid-cols-2 gap-3">
         {templates.map((template) => (
           <div
             key={template.name}
@@ -150,7 +150,7 @@ const TemplatesPanel: React.FC<TemplatesPanelProps> = ({
             onClick={() => handleTemplateSelect(template.json)}
           >
             <div
-              className={`h-32 flex items-center justify-center text-gray-500 rounded ${
+              className={`h-24 flex items-center justify-center text-gray-500 rounded text-xs ${
                 template.name === "Blank Canvas"
                   ? "bg-gray-100 border-2 border-dashed border-gray-300"
                   : "bg-gray-300"
@@ -158,14 +158,17 @@ const TemplatesPanel: React.FC<TemplatesPanelProps> = ({
             >
               {template.name === "Blank Canvas" ? (
                 <div className="text-center">
-                  <div className="text-2xl mb-1">📄</div>
-                  <div className="text-sm">Start Fresh</div>
+                  <div className="text-lg mb-1">📄</div>
+                  <div className="text-xs">Start Fresh</div>
                 </div>
               ) : (
-                `${template.name} Certificate`
+                <div className="text-center">
+                  <div className="text-xs font-medium">{template.name}</div>
+                  <div className="text-xs opacity-70">Certificate</div>
+                </div>
               )}
             </div>
-            <p className="text-center mt-2 text-sm text-gray-800 font-medium">
+            <p className="text-center mt-1 text-xs text-gray-800 font-medium truncate">
               {template.name}
             </p>
           </div>
