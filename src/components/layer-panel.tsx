@@ -72,7 +72,6 @@ const LayerPanel: React.FC<LayerPanelProps> = ({
     }
   };
 
-
   // Update layers list when canvas changes
   const updateLayers = useCallback(() => {
     if (!canvas) return;
@@ -308,7 +307,7 @@ const LayerPanel: React.FC<LayerPanelProps> = ({
   };
 
   return (
-    <div className="w-72 bg-white border-l border-gray-200 h-full flex flex-col">
+    <div className="w-full bg-white h-full flex flex-col">
       {/* Header */}
       <div className="px-4 py-3 border-b border-gray-200">
         <h3 className="text-sm font-medium text-gray-900">Layers</h3>

@@ -12,7 +12,6 @@ import CanvaContextMenu from "@/components/canva-context-menu";
 import TextEditingEnhancer from "@/components/text-editing-enhancer";
 import TopPropertyPanel from "@/components/top-property-panel";
 import AlignmentToolbar from "@/components/alignment-toolbar";
-import LayerPanel from "@/components/layer-panel";
 import CanvasSizePanel, { CanvasSize } from "@/components/canvas-size-panel";
 import { useEditorStore } from "@/stores/useEditorStore";
 import { useCanvasStore } from "@/stores/useCanvasStore";
@@ -486,18 +485,6 @@ export default function CertificateGeneratorPage() {
               </div>
             </CanvaContextMenu>
           </div>
-
-          {/* Right Panel - Layer Panel Only */}
-          <aside className="w-80 bg-white border-l border-gray-200 overflow-hidden shadow-lg flex-shrink-0 flex flex-col">
-            {/* Layer Panel */}
-            <div className="flex-1 overflow-hidden">
-              <LayerPanel
-                canvas={canvas}
-                selectedObjects={selectedObjects}
-                onSelectionChange={() => {}} // This is handled by the canvas itself
-              />
-            </div>
-          </aside>
         </div>
       </main>
 
