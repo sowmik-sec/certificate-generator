@@ -1,15 +1,6 @@
 export const creativeTemplate = {
   version: "5.3.0",
   objects: [
-    // Creative gradient background
-    {
-      type: "rect",
-      left: 0,
-      top: 0,
-      width: 800,
-      height: 566,
-      fill: "#fef7ed",
-    },
     // Artistic color blocks
     {
       type: "rect",

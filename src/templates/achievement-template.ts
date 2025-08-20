@@ -1,15 +1,6 @@
 export const achievementTemplate = {
   version: "5.3.0",
   objects: [
-    // Dynamic background
-    {
-      type: "rect",
-      left: 0,
-      top: 0,
-      width: 800,
-      height: 566,
-      fill: "#f0f9ff",
-    },
     // Achievement banner
     {
       type: "rect",

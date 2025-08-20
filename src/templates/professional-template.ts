@@ -1,15 +1,6 @@
 export const professionalTemplate = {
   version: "5.3.0",
   objects: [
-    // Professional white background
-    {
-      type: "rect",
-      left: 0,
-      top: 0,
-      width: 800,
-      height: 566,
-      fill: "#ffffff",
-    },
     // Header section
     {
       type: "rect",

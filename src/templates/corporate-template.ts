@@ -1,15 +1,6 @@
 export const corporateTemplate = {
   version: "5.3.0",
   objects: [
-    // Professional background
-    {
-      type: "rect",
-      left: 0,
-      top: 0,
-      width: 800,
-      height: 566,
-      fill: "#f8fafc",
-    },
     // Header section with gradient effect
     {
       type: "rect",

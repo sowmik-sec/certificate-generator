@@ -1,15 +1,6 @@
 export const minimalistTemplate = {
   version: "5.3.0",
   objects: [
-    // Clean background
-    {
-      type: "rect",
-      left: 0,
-      top: 0,
-      width: 800,
-      height: 566,
-      fill: "#ffffff",
-    },
     // Top accent line
     {
       type: "rect",

@@ -1,15 +1,6 @@
 export const academicTemplate = {
   version: "5.3.0",
   objects: [
-    // Academic background
-    {
-      type: "rect",
-      left: 0,
-      top: 0,
-      width: 800,
-      height: 566,
-      fill: "#fefefe",
-    },
     // University-style header
     {
       type: "rect",

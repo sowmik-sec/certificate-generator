@@ -1,15 +1,6 @@
 export const vintageTemplate = {
   version: "5.3.0",
   objects: [
-    // Vintage paper background
-    {
-      type: "rect",
-      left: 0,
-      top: 0,
-      width: 800,
-      height: 566,
-      fill: "#f7f3e8",
-    },
     // Ornate border frame
     {
       type: "rect",

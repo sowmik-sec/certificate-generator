@@ -1,15 +1,6 @@
 export const artisticTemplate = {
   version: "5.3.0",
   objects: [
-    // Artistic canvas background
-    {
-      type: "rect",
-      left: 0,
-      top: 0,
-      width: 800,
-      height: 566,
-      fill: "#fffbf0",
-    },
     // Paint splash effects
     {
       type: "circle",
