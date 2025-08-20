@@ -6,12 +6,14 @@ import ElementsPanel from "@/components/elements-panel";
 import ToolsPanel from "@/components/tools-panel";
 import TextPanel from "@/components/text-panel";
 import AdvancedSettingsLeftPanel from "@/components/advanced-settings-left-panel";
+import PositionLeftPanel from "@/components/position-left-panel";
 import { EditorMode } from "./sidebar-navigation";
 
 interface LeftPanelProps {
   editorMode: EditorMode;
   hoveredMode: EditorMode;
   setHoveredMode: (mode: EditorMode) => void;
+  setEditorMode: (mode: EditorMode) => void;
   canvas: any;
   selectedObject: any;
   onSelectTemplate: (template: any) => void;
@@ -64,6 +66,7 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
   editorMode,
   hoveredMode,
   setHoveredMode,
+  setEditorMode,
   canvas,
   selectedObject,
   onSelectTemplate,
@@ -224,6 +227,21 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
             />
           )}
           {activeMode === "advanced-settings" && <AdvancedSettingsLeftPanel />}
+          {activeMode === "position" && (
+            <PositionLeftPanel
+              canvas={canvas}
+              selectedObject={selectedObject}
+              onClose={() => {
+                if (editorMode === "position") {
+                  // If position mode is pinned, clear it
+                  setEditorMode(null);
+                } else {
+                  // If it's just hovered, clear the hover
+                  setHoveredMode(null);
+                }
+              }}
+            />
+          )}
         </div>
       </aside>
     </>

@@ -14,6 +14,7 @@ export type EditorMode =
   | "text"
   | "tools"
   | "advanced-settings"
+  | "position"
   | null;
 
 interface SidebarNavigationProps {

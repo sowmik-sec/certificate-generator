@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { FabricCanvas } from "@/types/fabric";
 import { FabricObject } from "fabric";
 import { usePropertiesStore } from "@/stores/usePropertiesStore";
+import { EditorMode } from "@/components/sidebar-navigation";
 import AdvancedSettingsPanel from "./advanced-settings-panel";
 import {
   Bold,
@@ -27,11 +28,15 @@ import {
 interface TopPropertyPanelProps {
   selectedObject: FabricObject;
   canvas: FabricCanvas;
+  setHoveredMode: (mode: EditorMode) => void;
+  setEditorMode: (mode: EditorMode) => void;
 }
 
 const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
   selectedObject,
   canvas,
+  setHoveredMode,
+  setEditorMode,
 }) => {
   const {
     attributes,
@@ -596,8 +601,12 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
       {/* Position */}
       <button
         onClick={() => {
-          // TODO: Open position panel
-          console.log("Position clicked");
+          // Toggle between pinned (editorMode) and hover mode
+          setEditorMode("position");
+        }}
+        onMouseEnter={() => {
+          // Show on hover if not already pinned
+          setHoveredMode("position");
         }}
         className="px-2 h-10 flex items-center justify-center hover:cursor-pointer rounded-md transition-colors hover:bg-gray-100 text-gray-800 border border-transparent"
         title="Position"
