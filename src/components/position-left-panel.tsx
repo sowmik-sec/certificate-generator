@@ -15,6 +15,7 @@ import {
   X,
 } from "lucide-react";
 import { usePropertiesStore } from "@/stores/usePropertiesStore";
+import { alignmentUtils } from "@/lib/alignmentUtils";
 import LayerPanel from "./layer-panel";
 
 interface PositionLeftPanelProps {
@@ -101,139 +102,27 @@ const PositionLeftPanel: React.FC<PositionLeftPanelProps> = ({
 
   // Align to page functions
   const alignToTop = () => {
-    if (!selectedObject || !canvas) return;
-
-    if (selectedObject.type === "textbox" || selectedObject.type === "text") {
-      // For text objects, align the text content to the top edge
-      const boundingRect = selectedObject.getBoundingRect();
-      const topOffset = boundingRect.top - selectedObject.top;
-      selectedObject.set("top", -topOffset);
-    } else {
-      // For shapes, align the top edge to canvas top
-      selectedObject.set("top", 0);
-    }
-
-    selectedObject.setCoords();
-    canvas.renderAll();
-    updateAttribute("top", selectedObject.top);
+    alignmentUtils.alignToTop({ canvas, selectedObject, updateAttribute });
   };
 
   const alignToLeft = () => {
-    if (!selectedObject || !canvas) return;
-
-    if (selectedObject.type === "textbox" || selectedObject.type === "text") {
-      // For text objects, align the text content to the left edge
-      const boundingRect = selectedObject.getBoundingRect();
-      const leftOffset = boundingRect.left - selectedObject.left;
-      selectedObject.set("left", -leftOffset);
-    } else {
-      // For shapes, align the left edge to canvas left
-      selectedObject.set("left", 0);
-    }
-
-    selectedObject.setCoords();
-    canvas.renderAll();
-    updateAttribute("left", selectedObject.left);
+    alignmentUtils.alignToLeft({ canvas, selectedObject, updateAttribute });
   };
 
   const alignToMiddle = () => {
-    if (!selectedObject || !canvas) return;
-    const canvasHeight = canvas.getHeight();
-
-    if (selectedObject.type === "textbox" || selectedObject.type === "text") {
-      // For text objects, use the bounding rect to get actual text height
-      const boundingRect = selectedObject.getBoundingRect();
-      const textHeight = boundingRect.height;
-      const top = (canvasHeight - textHeight) / 2;
-
-      // Adjust for any offset between the object's top and its bounding rect
-      const topOffset = boundingRect.top - selectedObject.top;
-      selectedObject.set("top", top - topOffset);
-    } else {
-      // For shapes, use scaled height
-      const objectHeight = selectedObject.getScaledHeight();
-      const top = (canvasHeight - objectHeight) / 2;
-      selectedObject.set("top", top);
-    }
-
-    selectedObject.setCoords();
-    canvas.renderAll();
-    updateAttribute("top", selectedObject.top);
+    alignmentUtils.alignToMiddle({ canvas, selectedObject, updateAttribute });
   };
 
   const alignToCenter = () => {
-    if (!selectedObject || !canvas) return;
-    const canvasWidth = canvas.getWidth();
-
-    if (selectedObject.type === "textbox" || selectedObject.type === "text") {
-      // For text objects, use the bounding rect to get actual text width
-      const boundingRect = selectedObject.getBoundingRect();
-      const textWidth = boundingRect.width;
-      const left = (canvasWidth - textWidth) / 2;
-
-      // Adjust for any offset between the object's left and its bounding rect
-      const leftOffset = boundingRect.left - selectedObject.left;
-      selectedObject.set("left", left - leftOffset);
-    } else {
-      // For shapes, use scaled width
-      const objectWidth = selectedObject.getScaledWidth();
-      const left = (canvasWidth - objectWidth) / 2;
-      selectedObject.set("left", left);
-    }
-
-    selectedObject.setCoords();
-    canvas.renderAll();
-    updateAttribute("left", selectedObject.left);
+    alignmentUtils.alignToCenter({ canvas, selectedObject, updateAttribute });
   };
 
   const alignToBottom = () => {
-    if (!selectedObject || !canvas) return;
-    const canvasHeight = canvas.getHeight();
-
-    if (selectedObject.type === "textbox" || selectedObject.type === "text") {
-      // For text objects, use the bounding rect to get actual text height
-      const boundingRect = selectedObject.getBoundingRect();
-      const textHeight = boundingRect.height;
-      const top = canvasHeight - textHeight;
-
-      // Adjust for any offset between the object's top and its bounding rect
-      const topOffset = boundingRect.top - selectedObject.top;
-      selectedObject.set("top", top - topOffset);
-    } else {
-      // For shapes, use scaled height
-      const objectHeight = selectedObject.getScaledHeight();
-      const top = canvasHeight - objectHeight;
-      selectedObject.set("top", top);
-    }
-
-    selectedObject.setCoords();
-    canvas.renderAll();
-    updateAttribute("top", selectedObject.top);
+    alignmentUtils.alignToBottom({ canvas, selectedObject, updateAttribute });
   };
 
   const alignToRight = () => {
-    if (!selectedObject || !canvas) return;
-    const canvasWidth = canvas.getWidth();
-
-    if (selectedObject.type === "textbox" || selectedObject.type === "text") {
-      // For text objects, use the bounding rect to get actual text width
-      const boundingRect = selectedObject.getBoundingRect();
-      const textWidth = boundingRect.width;
-      const left = canvasWidth - textWidth;
-
-      // Adjust for any offset between the object's left and its bounding rect
-      const leftOffset = boundingRect.left - selectedObject.left;
-      selectedObject.set("left", left - leftOffset);
-    } else {
-      // For shapes, use scaled width
-      const objectWidth = selectedObject.getScaledWidth();
-      const left = canvasWidth - objectWidth;
-      selectedObject.set("left", left);
-    }
-
-    selectedObject.setCoords();
-    canvas.renderAll();
-    updateAttribute("left", selectedObject.left);
+    alignmentUtils.alignToRight({ canvas, selectedObject, updateAttribute });
   };
 
   // Advanced controls

@@ -36,6 +36,7 @@ import {
 } from "lucide-react";
 import { useHistoryStore } from "@/stores/useHistoryStore";
 import { useCanvasStore } from "@/stores/useCanvasStore";
+import { alignmentUtils } from "@/lib/alignmentUtils";
 
 interface CanvaContextMenuProps {
   canvas: any;
@@ -515,58 +516,32 @@ const CanvaContextMenu: React.FC<CanvaContextMenuProps> = ({
   }, [selectedObject, canvas, saveToHistory]);
 
   const handleAlignLeft = useCallback(() => {
-    if (!selectedObject || !canvas) return;
-    const objectWidth = selectedObject.getScaledWidth();
-    selectedObject.set({ left: objectWidth / 2 });
-    selectedObject.setCoords();
-    canvas.renderAll();
+    alignmentUtils.alignToLeft({ canvas, selectedObject });
     saveToHistory(canvas);
   }, [selectedObject, canvas, saveToHistory]);
 
   const handleAlignCenter = useCallback(() => {
-    if (!selectedObject || !canvas) return;
-    const canvasWidth = canvas.getWidth() / canvas.getZoom();
-    selectedObject.set({ left: canvasWidth / 2 });
-    selectedObject.setCoords();
-    canvas.renderAll();
+    alignmentUtils.alignToCenter({ canvas, selectedObject });
     saveToHistory(canvas);
   }, [selectedObject, canvas, saveToHistory]);
 
   const handleAlignRight = useCallback(() => {
-    if (!selectedObject || !canvas) return;
-    const canvasWidth = canvas.getWidth() / canvas.getZoom();
-    const objectWidth = selectedObject.getScaledWidth();
-    selectedObject.set({ left: canvasWidth - objectWidth / 2 });
-    selectedObject.setCoords();
-    canvas.renderAll();
+    alignmentUtils.alignToRight({ canvas, selectedObject });
     saveToHistory(canvas);
   }, [selectedObject, canvas, saveToHistory]);
 
   const handleAlignTop = useCallback(() => {
-    if (!selectedObject || !canvas) return;
-    const objectHeight = selectedObject.getScaledHeight();
-    selectedObject.set({ top: objectHeight / 2 });
-    selectedObject.setCoords();
-    canvas.renderAll();
+    alignmentUtils.alignToTop({ canvas, selectedObject });
     saveToHistory(canvas);
   }, [selectedObject, canvas, saveToHistory]);
 
   const handleAlignMiddle = useCallback(() => {
-    if (!selectedObject || !canvas) return;
-    const canvasHeight = canvas.getHeight() / canvas.getZoom();
-    selectedObject.set({ top: canvasHeight / 2 });
-    selectedObject.setCoords();
-    canvas.renderAll();
+    alignmentUtils.alignToMiddle({ canvas, selectedObject });
     saveToHistory(canvas);
   }, [selectedObject, canvas, saveToHistory]);
 
   const handleAlignBottom = useCallback(() => {
-    if (!selectedObject || !canvas) return;
-    const canvasHeight = canvas.getHeight() / canvas.getZoom();
-    const objectHeight = selectedObject.getScaledHeight();
-    selectedObject.set({ top: canvasHeight - objectHeight / 2 });
-    selectedObject.setCoords();
-    canvas.renderAll();
+    alignmentUtils.alignToBottom({ canvas, selectedObject });
     saveToHistory(canvas);
   }, [selectedObject, canvas, saveToHistory]);
 
