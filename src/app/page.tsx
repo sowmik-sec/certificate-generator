@@ -452,7 +452,6 @@ export default function CertificateGeneratorPage() {
                   <TopPropertyPanel
                     selectedObject={selectedObject}
                     canvas={canvas}
-                    setHoveredMode={setHoveredMode}
                     setEditorMode={setEditorMode}
                   />
                 )}
