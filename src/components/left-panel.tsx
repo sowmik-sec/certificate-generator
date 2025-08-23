@@ -7,6 +7,7 @@ import ToolsPanel from "@/components/tools-panel";
 import TextPanel from "@/components/text-panel";
 import AdvancedSettingsLeftPanel from "@/components/advanced-settings-left-panel";
 import PositionLeftPanel from "@/components/position-left-panel";
+import EffectsLeftPanel from "@/components/effects-left-panel";
 import { EditorMode } from "./sidebar-navigation";
 
 interface LeftPanelProps {
@@ -15,6 +16,7 @@ interface LeftPanelProps {
   setHoveredMode: (mode: EditorMode) => void;
   setEditorMode: (mode: EditorMode) => void;
   canvas: any;
+  fabric: any;
   selectedObject: any;
   onSelectTemplate: (template: any) => void;
   onImageUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -68,6 +70,7 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
   setHoveredMode,
   setEditorMode,
   canvas,
+  fabric,
   selectedObject,
   onSelectTemplate,
   onImageUpload,
@@ -157,7 +160,7 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
       )}
 
       <aside
-        className={`absolute left-20 w-80 bg-white flex-shrink-0 z-20 transition-all duration-300 ease-out rounded-3xl shadow-2xl overflow-hidden ${
+        className={`absolute left-20 w-96 bg-white flex-shrink-0 z-20 transition-all duration-300 ease-out rounded-3xl shadow-2xl overflow-hidden ${
           activeMode
             ? "translate-x-0 opacity-100"
             : "-translate-x-full opacity-0"
@@ -234,6 +237,22 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
               onClose={() => {
                 if (editorMode === "position") {
                   // If position mode is pinned, clear it
+                  setEditorMode(null);
+                } else {
+                  // If it's just hovered, clear the hover
+                  setHoveredMode(null);
+                }
+              }}
+            />
+          )}
+          {activeMode === "effects" && (
+            <EffectsLeftPanel
+              canvas={canvas}
+              fabric={fabric}
+              selectedObject={selectedObject}
+              onClose={() => {
+                if (editorMode === "effects") {
+                  // If effects mode is pinned, clear it
                   setEditorMode(null);
                 } else {
                   // If it's just hovered, clear the hover

@@ -381,6 +381,7 @@ export default function CertificateGeneratorPage() {
         setHoveredMode={setHoveredMode}
         setEditorMode={setEditorMode}
         canvas={canvas}
+        fabric={fabric}
         selectedObject={selectedObject}
         onSelectTemplate={loadTemplate}
         onImageUpload={handleBackgroundImageUpload}
