@@ -321,11 +321,31 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
       }
     };
 
-    // Add event listener
+    const handleCanvasKeyDown = (e: fabric.IEvent) => {
+      const keyEvent = e.e as KeyboardEvent;
+      if (
+        (keyEvent.key === "Delete" || keyEvent.key === "Backspace") &&
+        selectedObject
+      ) {
+        if (
+          selectedObject._isCurvedText ||
+          selectedObject.type === "curved-text"
+        ) {
+          keyEvent.preventDefault();
+          canvas.remove(selectedObject);
+          canvas.discardActiveObject();
+          canvas.renderAll();
+        }
+      }
+    };
+
+    // Add event listeners for both document and canvas
     document.addEventListener("keydown", handleKeyDown);
+    canvas.on("keydown", handleCanvasKeyDown);
 
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
+      canvas.off("keydown", handleCanvasKeyDown);
     };
   }, [canvas, selectedObject]);
 
@@ -334,72 +354,57 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
     if (selectedObject) {
       syncFromFabricObject(selectedObject);
 
-      // Reset effect and shape selections for new objects
-      setSelectedEffect("none");
-      setSelectedShape("none");
+      // Check if this is a curved text and preserve its curve value
+      let currentCurveValue = 0;
+      let isCurrentlyCurved = false;
 
-      // Reset effect state to defaults, but preserve curve value if it's a curved text
-      if (selectedObject._isCurvedText) {
-        setEffectState({
-          type: "none",
-          shadowOffsetX: 0,
-          shadowOffsetY: 0,
-          shadowBlur: 0,
-          shadowColor: "#000000",
-          shadowOpacity: 100,
-          liftIntensity: 0,
-          hollowThickness: 0,
-          spliceThickness: 0,
-          spliceOffsetX: 0,
-          spliceOffsetY: 0,
-          spliceColor: "#000000",
-          outlineThickness: 0,
-          echoOffsetX: 0,
-          echoOffsetY: 0,
-          echoColor: "#000000",
-          glitchOffsetX: 0,
-          glitchOffsetY: 0,
-          glitchColor1: "#ff0000",
-          glitchColor2: "#00ffff",
-          neonIntensity: 0,
-          backgroundRoundness: 0,
-          backgroundSpread: 0,
-          backgroundOpacity: 100,
-          backgroundColor: "#000000",
-          curveIntensity: selectedObject._curveAmount || 0, // Preserve existing curve
-        });
+      if (
+        selectedObject._isCurvedText ||
+        selectedObject.type === "curved-text"
+      ) {
+        currentCurveValue = selectedObject._curveAmount || 0;
+        isCurrentlyCurved = true;
+      }
+
+      // Reset effect selection for new objects
+      setSelectedEffect("none");
+
+      // Set shape selection based on whether text is curved
+      if (isCurrentlyCurved && Math.abs(currentCurveValue) > 0.01) {
         setSelectedShape("curve");
       } else {
-        // Reset all values to defaults for regular text
-        setEffectState({
-          type: "none",
-          shadowOffsetX: 0,
-          shadowOffsetY: 0,
-          shadowBlur: 0,
-          shadowColor: "#000000",
-          shadowOpacity: 100,
-          liftIntensity: 0,
-          hollowThickness: 0,
-          spliceThickness: 0,
-          spliceOffsetX: 0,
-          spliceOffsetY: 0,
-          spliceColor: "#000000",
-          outlineThickness: 0,
-          echoOffsetX: 0,
-          echoOffsetY: 0,
-          echoColor: "#000000",
-          glitchOffsetX: 0,
-          glitchOffsetY: 0,
-          glitchColor1: "#ff0000",
-          glitchColor2: "#00ffff",
-          neonIntensity: 0,
-          backgroundRoundness: 0,
-          backgroundSpread: 0,
-          backgroundOpacity: 100,
-          backgroundColor: "#000000",
-          curveIntensity: 0, // Always start from 0 for new text
-        });
+        setSelectedShape("none");
       }
+
+      // Reset effect state to defaults, preserving curve value for curved text
+      setEffectState({
+        type: "none",
+        shadowOffsetX: 0,
+        shadowOffsetY: 0,
+        shadowBlur: 0,
+        shadowColor: "#000000",
+        shadowOpacity: 100,
+        liftIntensity: 0,
+        hollowThickness: 0,
+        spliceThickness: 0,
+        spliceOffsetX: 0,
+        spliceOffsetY: 0,
+        spliceColor: "#000000",
+        outlineThickness: 0,
+        echoOffsetX: 0,
+        echoOffsetY: 0,
+        echoColor: "#000000",
+        glitchOffsetX: 0,
+        glitchOffsetY: 0,
+        glitchColor1: "#ff0000",
+        glitchColor2: "#00ffff",
+        neonIntensity: 0,
+        backgroundRoundness: 0,
+        backgroundSpread: 0,
+        backgroundOpacity: 100,
+        backgroundColor: "#000000",
+        curveIntensity: currentCurveValue, // Use the actual curve value
+      });
     }
   }, [selectedObject, syncFromFabricObject]);
 
@@ -415,9 +420,8 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
     requestAnimationFrame(() => {
       // Special handling for curve updates - always re-apply immediately
       if (key === "curveIntensity") {
-        // Force curve update even if the object seems unresponsive
+        // Update the stored curve amount in the object metadata if it exists
         if (selectedObject) {
-          // Update the stored curve amount in the object metadata
           if (
             selectedObject._isCurvedText ||
             selectedObject.type === "curved-text"
@@ -426,7 +430,7 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
           }
         }
         // Always re-apply the curve with the new value
-        applyShape("curve");
+        applyCurveEffect(selectedObject, value);
       } else {
         // Re-apply effects only if necessary
         if (selectedEffect !== "none") {
@@ -646,22 +650,74 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
 
     const intensity = curveAmount / 100; // -1 to 1
 
-    // If curve is near zero, reset to normal text
-    if (Math.abs(intensity) < 0.01) {
-      // Don't modify the original object, just render
-      canvas.renderAll();
-      return;
+    // Get text properties from either regular text or curved text metadata
+    let originalText: string;
+    let fontSize: number;
+    let fontFamily: string;
+    let fill: string;
+    let stroke: string | null;
+    let strokeWidth: number;
+    let originalLeft: number;
+    let originalTop: number;
+
+    if (textObject._isCurvedText || textObject.type === "curved-text") {
+      // Get properties from curved text metadata
+      originalText = textObject._originalText || "";
+      fontSize = textObject._fontSize || 24;
+      fontFamily = textObject._fontFamily || "Arial";
+      fill = textObject._fill || "#000000";
+      stroke = textObject._stroke || null;
+      strokeWidth = textObject._strokeWidth || 0;
+      originalLeft = textObject.left || 0;
+      originalTop = textObject.top || 0;
+    } else {
+      // Get properties from regular text object
+      originalText = textObject.text || "";
+      fontSize = textObject.fontSize || 24;
+      fontFamily = textObject.fontFamily || "Arial";
+      fill = textObject.fill || "#000000";
+      stroke = textObject.stroke || null;
+      strokeWidth = textObject.strokeWidth || 0;
+      originalLeft = textObject.left || 0;
+      originalTop = textObject.top || 0;
     }
 
-    // Get text properties
-    const originalText = textObject.text;
-    const fontSize = textObject.fontSize;
-    const fontFamily = textObject.fontFamily;
-    const fill = textObject.fill;
-    const stroke = textObject.stroke;
-    const strokeWidth = textObject.strokeWidth;
-    const originalLeft = textObject.left;
-    const originalTop = textObject.top;
+    // If curve is near zero, reset to normal text
+    if (Math.abs(intensity) < 0.01) {
+      // Remove curved text if it exists and replace with straight text
+      if (textObject._isCurvedText || textObject.type === "curved-text") {
+        const straightText = new fabric.Text(originalText, {
+          left: originalLeft,
+          top: originalTop,
+          fontSize: fontSize,
+          fontFamily: fontFamily,
+          fill: fill,
+          stroke: stroke,
+          strokeWidth: strokeWidth,
+          originX: "center",
+          originY: "center",
+          selectable: true,
+          hasControls: true,
+          hasBorders: true,
+        });
+
+        canvas.remove(textObject);
+        canvas.add(straightText);
+        canvas.setActiveObject(straightText);
+        canvas.renderAll();
+
+        // Fire selection events
+        setTimeout(() => {
+          canvas.fire("selection:cleared");
+          canvas.fire("selection:created", {
+            target: straightText,
+            selected: [straightText],
+          });
+          canvas.fire("object:selected", { target: straightText });
+        }, 10);
+      }
+      return;
+    }
 
     // Calculate the actual text width in pixels
     const tempText = new fabric.Text(originalText, {
@@ -670,26 +726,20 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
     });
     const actualTextWidth = tempText.width;
 
-    // Calculate radius based on text width - this is key to proper curve behavior
-    // The radius should be calculated so that the arc length equals the text width
-    // Arc length = radius × angle, so radius = text_width / angle
-
-    // Improved arc angle calculation for full range including complete circles
-    const minArcAngle = Math.PI / 8; // Smaller minimum for subtle curves
-    const maxArcAngle = Math.PI * 2.2; // Allow for more than full circle (396 degrees)
+    // Calculate arc parameters for proper Canva-like behavior
+    const minArcAngle = Math.PI / 12; // Minimum curve for subtle effect
+    const maxArcAngle = Math.PI * 1.8; // Maximum curve (about 324 degrees)
     const arcAngle =
       minArcAngle + Math.abs(intensity) * (maxArcAngle - minArcAngle);
 
-    // Calculate radius to maintain text width with better scaling
+    // Calculate radius to maintain text readability
     let radius = actualTextWidth / arcAngle;
-
-    // Dynamic minimum radius based on intensity to prevent overcrowding
-    const minRadius = fontSize * (1.5 + Math.abs(intensity) * 0.5);
+    const minRadius = fontSize * 2; // Minimum radius based on font size
     if (radius < minRadius) {
       radius = minRadius;
     }
 
-    // Remove original text object
+    // Remove the existing object (whether it's curved or straight)
     canvas.remove(textObject);
 
     // Create individual character objects positioned along the arc
@@ -710,23 +760,22 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
       }
 
       // Calculate the angle for this character based on its position along the arc
-      // Convert linear position to angular position
       const normalizedPosition = currentArcPosition / actualTextWidth;
       const angle = (normalizedPosition - 0.5) * arcAngle;
 
-      // Calculate position on the circle
+      // Calculate position on the circle - Fixed direction logic like Canva
       let x: number, y: number, rotation: number;
 
       if (curveAmount > 0) {
-        // Downward curve (text curves down like a smile)
+        // Positive values: curve downward (smile) - like Canva
         x = originalLeft + Math.sin(angle) * radius;
         y = originalTop + radius - Math.cos(angle) * radius;
         rotation = (angle * 180) / Math.PI;
       } else {
-        // Upward curve (text curves up like a frown)
-        x = originalLeft + Math.sin(angle) * radius;
+        // Negative values: curve upward (frown) - like Canva
+        x = originalLeft - Math.sin(angle) * radius;
         y = originalTop - radius + Math.cos(angle) * radius;
-        rotation = (angle * 180) / Math.PI;
+        rotation = -(angle * 180) / Math.PI;
       }
 
       // Create individual character with proper positioning and rotation
@@ -748,8 +797,6 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
       });
 
       charObjects.push(charObject);
-
-      // Advance position for next character
       currentArcPosition += charSpacing;
     });
 
@@ -764,10 +811,13 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
         selectable: true,
         hasControls: true,
         hasBorders: true,
-        // Enable proper event handling for groups
         subTargetCheck: true,
-        // Allow group to be deleted
         excludeFromExport: false,
+        // Enable proper event handling
+        evented: true,
+        // Make sure it can receive keyboard events
+        lockMovementX: false,
+        lockMovementY: false,
       });
 
       // Add metadata to identify this as a curved text
@@ -779,8 +829,6 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
       (curvedTextGroup as any)._fill = fill;
       (curvedTextGroup as any)._stroke = stroke;
       (curvedTextGroup as any)._strokeWidth = strokeWidth;
-
-      // Override the type to make it recognizable as text
       (curvedTextGroup as any).type = "curved-text";
 
       // Add to canvas and make it active
@@ -788,27 +836,15 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
       canvas.setActiveObject(curvedTextGroup);
       canvas.renderAll();
 
-      // Use setTimeout to ensure events fire after current execution stack
+      // Fire selection events
       setTimeout(() => {
-        // Force canvas to fire selection events to update parent component
         canvas.fire("selection:cleared");
         canvas.fire("selection:created", {
           target: curvedTextGroup,
           selected: [curvedTextGroup],
         });
         canvas.fire("object:selected", { target: curvedTextGroup });
-
-        // Update the properties store to reflect the new curved text
-        if (
-          curvedTextGroup &&
-          typeof curvedTextGroup.getBoundingRect === "function"
-        ) {
-          const updateProperties = (window as any).updatePropertiesFromObject;
-          if (typeof updateProperties === "function") {
-            updateProperties(curvedTextGroup);
-          }
-        }
-      }, 10); // Slightly longer delay for better reliability
+      }, 10);
     }
   };
 
@@ -831,82 +867,8 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
         // Get the current curve amount from state
         const curveAmount = effectState.curveIntensity || 0;
 
-        if (Math.abs(curveAmount) > 0.01) {
-          // Always recreate the curve with the current value
-          let sourceTextObject;
-
-          if (
-            selectedObject._isCurvedText ||
-            selectedObject.type === "curved-text"
-          ) {
-            // If it's already curved, recreate from stored original properties
-            const originalText = selectedObject._originalText;
-            const fontSize = selectedObject._fontSize || 24;
-            const fontFamily = selectedObject._fontFamily || "Arial";
-            const fill = selectedObject._fill || "#000000";
-            const stroke = selectedObject._stroke || null;
-            const strokeWidth = selectedObject._strokeWidth || 0;
-
-            sourceTextObject = new fabric.Text(originalText, {
-              left: selectedObject.left,
-              top: selectedObject.top,
-              fontSize: fontSize,
-              fontFamily: fontFamily,
-              fill: fill,
-              stroke: stroke,
-              strokeWidth: strokeWidth,
-              originX: "center",
-              originY: "center",
-            });
-          } else {
-            // Use the current text object
-            sourceTextObject = selectedObject;
-          }
-
-          // Apply the curve effect
-          applyCurveEffect(sourceTextObject, curveAmount);
-        } else {
-          // Reset to straight text if curve amount is near zero
-          if (
-            selectedObject._isCurvedText ||
-            selectedObject.type === "curved-text"
-          ) {
-            const originalText = selectedObject._originalText;
-            const fontSize = selectedObject._fontSize || 24;
-            const fontFamily = selectedObject._fontFamily || "Arial";
-            const fill = selectedObject._fill || "#000000";
-            const stroke = selectedObject._stroke || null;
-            const strokeWidth = selectedObject._strokeWidth || 0;
-
-            const newTextObject = new fabric.Text(originalText, {
-              left: selectedObject.left,
-              top: selectedObject.top,
-              fontSize: fontSize,
-              fontFamily: fontFamily,
-              fill: fill,
-              stroke: stroke,
-              strokeWidth: strokeWidth,
-              originX: "center",
-              originY: "center",
-            });
-
-            canvas.remove(selectedObject);
-            canvas.add(newTextObject);
-            canvas.setActiveObject(newTextObject);
-            canvas.renderAll();
-
-            // Use setTimeout to ensure events fire after current execution stack
-            setTimeout(() => {
-              // Force canvas to fire selection events to update parent component
-              canvas.fire("selection:cleared");
-              canvas.fire("selection:created", {
-                target: newTextObject,
-                selected: [newTextObject],
-              });
-              canvas.fire("object:selected", { target: newTextObject });
-            }, 10);
-          }
-        }
+        // Always apply the curve effect with the current value
+        applyCurveEffect(selectedObject, curveAmount);
         break;
 
       case "none":
@@ -916,7 +878,7 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
           selectedObject._isCurvedText ||
           selectedObject.type === "curved-text"
         ) {
-          const originalText = selectedObject._originalText;
+          const originalText = selectedObject._originalText || "";
           const fontSize = selectedObject._fontSize || 24;
           const fontFamily = selectedObject._fontFamily || "Arial";
           const fill = selectedObject._fill || "#000000";
@@ -933,6 +895,9 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
             strokeWidth: strokeWidth,
             originX: "center",
             originY: "center",
+            selectable: true,
+            hasControls: true,
+            hasBorders: true,
           });
 
           canvas.remove(selectedObject);
@@ -940,9 +905,8 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
           canvas.setActiveObject(newTextObject);
           canvas.renderAll();
 
-          // Use setTimeout to ensure events fire after current execution stack
+          // Fire selection events
           setTimeout(() => {
-            // Force canvas to fire selection events to update parent component
             canvas.fire("selection:cleared");
             canvas.fire("selection:created", {
               target: newTextObject,
