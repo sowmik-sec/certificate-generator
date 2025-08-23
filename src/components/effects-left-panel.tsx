@@ -321,7 +321,7 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
       }
     };
 
-    const handleCanvasKeyDown = (e: fabric.IEvent) => {
+    const handleCanvasKeyDown = (e: any) => {
       const keyEvent = e.e as KeyboardEvent;
       if (
         (keyEvent.key === "Delete" || keyEvent.key === "Backspace") &&
