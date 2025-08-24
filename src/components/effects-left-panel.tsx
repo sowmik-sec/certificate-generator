@@ -1,12 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { X } from "lucide-react";
 import { usePropertiesStore } from "@/stores/usePropertiesStore";
 import { useEditorStore } from "@/stores/useEditorStore";
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 
 interface EffectsLeftPanelProps {
   canvas: any;
@@ -86,7 +89,7 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
     curveIntensity: 0,
   });
 
-  // Helper component for slider with input field
+  // Helper component for slider with input field - True Canva-style smooth dragging
   const SliderWithInput = ({
     label,
     value,
@@ -102,124 +105,86 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
     max: number;
     step?: number;
   }) => {
-    const [displayValue, setDisplayValue] = useState(value);
+    const [localValue, setLocalValue] = useState(value);
     const [inputValue, setInputValue] = useState(value.toString());
-    const [isSliding, setIsSliding] = useState(false);
-    const debounceRef = useRef<NodeJS.Timeout | null>(null);
+    const [isDragging, setIsDragging] = useState(false);
+
+    // RAF-based throttling for effect application during drag
     const rafRef = useRef<number | null>(null);
-    const inputDebounceRef = useRef<NodeJS.Timeout | null>(null);
+    const pendingValueRef = useRef<number>(value);
 
+    // Update local state when prop value changes (but not during dragging)
     useEffect(() => {
-      if (!isSliding) {
-        setDisplayValue(value);
+      if (!isDragging) {
+        setLocalValue(value);
         setInputValue(value.toString());
+        pendingValueRef.current = value;
       }
-    }, [value, isSliding]);
+    }, [value, isDragging]);
 
-    // Additional effect to ensure displayValue is updated when value changes externally
-    useEffect(() => {
-      setDisplayValue(value);
-    }, [value]);
+    // Canva-style: Immediate slider update + throttled effect application
+    const handleSliderChange = (newValues: number[]) => {
+      const newValue = newValues[0];
 
-    const debouncedOnChange = useCallback(
-      (newValue: number) => {
-        // Clear any pending debounced call
-        if (debounceRef.current) {
-          clearTimeout(debounceRef.current);
-        }
-
-        // Debounce the actual onChange call during sliding
-        debounceRef.current = setTimeout(() => {
-          onChange(newValue);
-          debounceRef.current = null;
-        }, 50); // 50ms debounce for smoother performance
-      },
-      [onChange]
-    );
-
-    const handleSliderChange = (val: number[]) => {
-      const newValue = val[0];
-
-      // Update display value immediately for ultra-smooth visual feedback
-      setDisplayValue(newValue);
+      // CRITICAL: Always update slider state immediately for smooth visual feedback
+      setLocalValue(newValue);
       setInputValue(newValue.toString());
+      pendingValueRef.current = newValue;
 
-      if (isSliding) {
-        // Cancel any pending animation frame
+      if (isDragging) {
+        // During dragging: throttle effect application using RAF
         if (rafRef.current) {
+          // Cancel previous pending update
           cancelAnimationFrame(rafRef.current);
         }
 
-        // Use requestAnimationFrame + debounce for buttery smooth sliding
         rafRef.current = requestAnimationFrame(() => {
-          debouncedOnChange(newValue);
           rafRef.current = null;
+          onChange(pendingValueRef.current);
         });
       } else {
-        // Direct onChange when not sliding (click/keyboard)
+        // Single click/tap: immediate effect application
         onChange(newValue);
       }
     };
 
     const handleSliderPointerDown = () => {
-      setIsSliding(true);
+      setIsDragging(true);
     };
 
     const handleSliderPointerUp = () => {
-      setIsSliding(false);
+      setIsDragging(false);
 
-      // Clean up any pending operations
-      if (debounceRef.current) {
-        clearTimeout(debounceRef.current);
-        debounceRef.current = null;
-      }
+      // Cancel any pending RAF and apply final value immediately
       if (rafRef.current) {
         cancelAnimationFrame(rafRef.current);
         rafRef.current = null;
       }
 
-      // Apply final value immediately
-      onChange(displayValue);
+      // Ensure final value is applied
+      onChange(pendingValueRef.current);
     };
-
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const val = e.target.value;
       setInputValue(val);
 
-      // Provide real-time slider position updates for valid numbers
       const numVal = parseFloat(val);
       if (!isNaN(numVal) && val !== "" && val !== "-") {
         const constrainedValue = Math.min(Math.max(numVal, min), max);
-        setDisplayValue(constrainedValue);
-
-        // Clear any pending input debounce
-        if (inputDebounceRef.current) {
-          clearTimeout(inputDebounceRef.current);
-        }
-
-        // Debounce the effect application for smoother typing
-        inputDebounceRef.current = setTimeout(() => {
-          onChange(constrainedValue);
-          inputDebounceRef.current = null;
-        }, 300); // 300ms debounce for input typing
+        setLocalValue(constrainedValue);
+        pendingValueRef.current = constrainedValue;
+        onChange(constrainedValue);
       }
     };
 
     const handleInputBlur = () => {
-      // Clear any pending input debounce
-      if (inputDebounceRef.current) {
-        clearTimeout(inputDebounceRef.current);
-        inputDebounceRef.current = null;
-      }
-
       const numVal = parseFloat(inputValue);
       if (isNaN(numVal)) {
-        // Reset to current display value if invalid input
-        setInputValue(displayValue.toString());
+        setInputValue(localValue.toString());
       } else {
         const constrainedValue = Math.min(Math.max(numVal, min), max);
-        // Update both display value and apply effect immediately
-        setDisplayValue(constrainedValue);
+        setLocalValue(constrainedValue);
+        pendingValueRef.current = constrainedValue;
         setInputValue(constrainedValue.toString());
         onChange(constrainedValue);
       }
@@ -227,39 +192,25 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
 
     const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
       if (e.key === "Enter") {
-        // Clear any pending input debounce
-        if (inputDebounceRef.current) {
-          clearTimeout(inputDebounceRef.current);
-          inputDebounceRef.current = null;
-        }
-
         const numVal = parseFloat(inputValue);
         if (!isNaN(numVal)) {
           const constrainedValue = Math.min(Math.max(numVal, min), max);
-          // Update both display value and apply effect immediately
-          setDisplayValue(constrainedValue);
+          setLocalValue(constrainedValue);
+          pendingValueRef.current = constrainedValue;
           setInputValue(constrainedValue.toString());
           onChange(constrainedValue);
         } else {
-          // Reset to current display value if invalid input
-          setInputValue(displayValue.toString());
+          setInputValue(localValue.toString());
         }
-        // Blur the input to remove focus
         e.currentTarget.blur();
       }
     };
 
-    // Cleanup on unmount
+    // Cleanup
     useEffect(() => {
       return () => {
-        if (debounceRef.current) {
-          clearTimeout(debounceRef.current);
-        }
         if (rafRef.current) {
           cancelAnimationFrame(rafRef.current);
-        }
-        if (inputDebounceRef.current) {
-          clearTimeout(inputDebounceRef.current);
         }
       };
     }, []);
@@ -269,7 +220,7 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
         <Label className="text-sm font-medium text-gray-700">{label}</Label>
         <div className="flex items-center space-x-2">
           <Slider
-            value={[displayValue]}
+            value={[localValue]}
             onValueChange={handleSliderChange}
             onPointerDown={handleSliderPointerDown}
             onPointerUp={handleSliderPointerUp}
@@ -278,7 +229,7 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
             step={step}
             className="flex-1"
           />
-          <input
+          <Input
             type="number"
             value={inputValue}
             onChange={handleInputChange}
@@ -287,7 +238,7 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
             min={min}
             max={max}
             step={step}
-            className="w-16 px-2 py-1 text-sm border border-gray-300 rounded-md text-center focus:outline-none focus:ring-1 focus:ring-purple-500"
+            className="w-16 text-center"
           />
         </div>
       </div>
@@ -408,39 +359,38 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
     }
   }, [selectedObject, syncFromFabricObject]);
 
-  // Optimized state updater function
+  // Enhanced state updater function with proper effect clearing
   const updateEffectState = (key: keyof EffectState, value: any) => {
-    // Batch state updates for better performance
-    setEffectState((prev) => {
-      const newState = { ...prev, [key]: value };
-      return newState;
-    });
+    // Update state immediately
+    setEffectState((prev) => ({
+      ...prev,
+      [key]: value,
+    }));
 
-    // Use requestAnimationFrame to defer heavy canvas operations
-    requestAnimationFrame(() => {
-      // Special handling for curve updates - always re-apply immediately
-      if (key === "curveIntensity") {
-        // Update the stored curve amount in the object metadata if it exists
-        if (selectedObject) {
-          if (
-            selectedObject._isCurvedText ||
-            selectedObject.type === "curved-text"
-          ) {
-            selectedObject._curveAmount = value;
-          }
+    // Apply effects with proper clearing logic
+    if (key === "curveIntensity") {
+      // Handle curve updates
+      if (selectedObject) {
+        if (
+          selectedObject._isCurvedText ||
+          selectedObject.type === "curved-text"
+        ) {
+          selectedObject._curveAmount = value;
         }
-        // Always re-apply the curve with the new value
-        applyCurveEffect(selectedObject, value);
-      } else {
-        // Re-apply effects only if necessary
+      }
+      applyCurveEffect(selectedObject, value);
+    } else {
+      // For other effects, we need to reapply with the updated state
+      // Use a small timeout to ensure state is updated before effect application
+      setTimeout(() => {
         if (selectedEffect !== "none") {
           applyEffect(selectedEffect);
         }
         if (selectedShape !== "none" && selectedShape !== "curve") {
           applyShape(selectedShape);
         }
-      }
-    });
+      }, 0);
+    }
   };
 
   const handleClose = () => {
@@ -461,12 +411,14 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between p-2 border-b border-gray-200 flex-shrink-0">
           <h3 className="text-lg font-semibold text-gray-900">Effects</h3>
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={handleClose}
             className="p-1 hover:bg-gray-100 rounded-md transition-colors"
           >
             <X className="w-5 h-5" />
-          </button>
+          </Button>
         </div>
 
         {/* No text selected message */}
@@ -499,152 +451,187 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
       return;
     }
 
-    // If it's a curved text group, we need to apply effects to individual characters
+    // If it's a curved text group, apply effects to individual characters
     if (selectedObject._isCurvedText || selectedObject.type === "curved-text") {
       const group = selectedObject;
       const objects = group.getObjects();
 
       objects.forEach((obj: any) => {
         if (obj.type === "text") {
-          // Remove existing effects
-          obj.shadow = null;
-          obj.stroke = null;
-          obj.strokeWidth = 0;
-
-          // Apply new effect
           applyEffectToTextObject(obj, effectType);
         }
       });
-
-      canvas.renderAll();
-      return;
+    } else {
+      // Apply effect to regular text object
+      applyEffectToTextObject(selectedObject, effectType);
     }
 
-    // Apply effect to regular text object
-    applyEffectToTextObject(selectedObject, effectType);
+    // Force canvas update after applying effects
     canvas.renderAll();
-  };
-
-  // Helper function to apply effects to individual text objects
+  }; // Enhanced helper function to apply effects with complete clearing
   const applyEffectToTextObject = (textObject: any, effectType: string) => {
-    // Remove existing effects
+    // STEP 1: Complete cleanup of ALL existing effects
     textObject.shadow = null;
     textObject.stroke = null;
     textObject.strokeWidth = 0;
 
-    let shadow = null;
+    // Restore original fill if it was set to transparent
+    if (textObject.fill === "transparent" && attributes.fill) {
+      textObject.fill = attributes.fill;
+    }
 
+    // STEP 2: Apply new effects only if they have meaningful values
     switch (effectType) {
-      case "shadow":
+      case "shadow": {
         const shadowOpacity = (effectState.shadowOpacity || 100) / 100;
-        const shadowColorWithOpacity = effectState.shadowColor
-          ? `rgba(${parseInt(
-              effectState.shadowColor.slice(1, 3),
-              16
-            )}, ${parseInt(
-              effectState.shadowColor.slice(3, 5),
-              16
-            )}, ${parseInt(
-              effectState.shadowColor.slice(5, 7),
-              16
-            )}, ${shadowOpacity})`
-          : `rgba(0, 0, 0, ${shadowOpacity})`;
+        const shadowOffsetX = effectState.shadowOffsetX || 0;
+        const shadowOffsetY = effectState.shadowOffsetY || 0;
+        const shadowBlur = effectState.shadowBlur || 0;
+        const shadowColor = effectState.shadowColor || "#000000";
 
-        shadow = new fabric.Shadow({
+        // For shadow effect, always apply shadow (even with 0 offset/blur) to show transparency changes
+        const shadowColorWithOpacity = `rgba(${parseInt(
+          shadowColor.slice(1, 3),
+          16
+        )}, ${parseInt(shadowColor.slice(3, 5), 16)}, ${parseInt(
+          shadowColor.slice(5, 7),
+          16
+        )}, ${shadowOpacity})`;
+
+        textObject.shadow = new fabric.Shadow({
           color: shadowColorWithOpacity,
-          blur: effectState.shadowBlur || 0,
-          offsetX: effectState.shadowOffsetX || 0,
-          offsetY: effectState.shadowOffsetY || 0,
+          blur: shadowBlur,
+          offsetX: shadowOffsetX,
+          offsetY: shadowOffsetY,
         });
-        textObject.shadow = shadow;
         break;
+      }
 
-      case "lift":
-        shadow = new fabric.Shadow({
-          color: "rgba(0, 0, 0, 0.3)",
-          blur: (effectState.liftIntensity || 0) / 2,
-          offsetX: 0,
-          offsetY: (effectState.liftIntensity || 0) / 10,
-        });
-        textObject.shadow = shadow;
+      case "lift": {
+        const liftIntensity = effectState.liftIntensity || 0;
+        if (liftIntensity > 0.01) {
+          textObject.shadow = new fabric.Shadow({
+            color: "rgba(0, 0, 0, 0.3)",
+            blur: liftIntensity / 2,
+            offsetX: 0,
+            offsetY: liftIntensity / 10,
+          });
+        }
         break;
+      }
 
-      case "hollow":
-        textObject.fill = "transparent";
-        textObject.stroke = attributes.fill || "#000000";
-        textObject.strokeWidth = effectState.hollowThickness || 0;
+      case "hollow": {
+        const hollowThickness = effectState.hollowThickness || 0;
+        if (hollowThickness > 0.01) {
+          textObject.fill = "transparent";
+          textObject.stroke = attributes.fill || "#000000";
+          textObject.strokeWidth = hollowThickness;
+        }
         break;
+      }
 
-      case "splice":
-        shadow = new fabric.Shadow({
-          color: effectState.spliceColor || "#000000",
-          blur: 0,
-          offsetX: effectState.spliceOffsetX || 0,
-          offsetY: effectState.spliceOffsetY || 0,
-        });
-        textObject.shadow = shadow;
-        textObject.strokeWidth = effectState.spliceThickness || 0;
-        textObject.stroke = effectState.spliceColor || "#000000";
-        break;
+      case "splice": {
+        const spliceThickness = effectState.spliceThickness || 0;
+        const spliceOffsetX = effectState.spliceOffsetX || 0;
+        const spliceOffsetY = effectState.spliceOffsetY || 0;
+        const spliceColor = effectState.spliceColor || "#000000";
 
-      case "outline":
-        textObject.stroke = attributes.fill || "#000000";
-        textObject.strokeWidth = effectState.outlineThickness || 0;
+        // Apply splice effect if there's meaningful values
+        if (
+          spliceThickness > 0.01 ||
+          Math.abs(spliceOffsetX) > 0.01 ||
+          Math.abs(spliceOffsetY) > 0.01
+        ) {
+          if (
+            Math.abs(spliceOffsetX) > 0.01 ||
+            Math.abs(spliceOffsetY) > 0.01
+          ) {
+            textObject.shadow = new fabric.Shadow({
+              color: spliceColor,
+              blur: 0,
+              offsetX: spliceOffsetX,
+              offsetY: spliceOffsetY,
+            });
+          }
+          if (spliceThickness > 0.01) {
+            textObject.stroke = spliceColor;
+            textObject.strokeWidth = spliceThickness;
+          }
+        }
         break;
+      }
 
-      case "echo":
-        shadow = new fabric.Shadow({
-          color: effectState.echoColor || "#000000",
-          blur: 0,
-          offsetX: effectState.echoOffsetX || 0,
-          offsetY: effectState.echoOffsetY || 0,
-        });
-        textObject.shadow = shadow;
+      case "outline": {
+        const outlineThickness = effectState.outlineThickness || 0;
+        if (outlineThickness > 0.01) {
+          textObject.stroke = attributes.fill || "#000000";
+          textObject.strokeWidth = outlineThickness;
+        }
         break;
+      }
 
-      case "glitch":
-        shadow = new fabric.Shadow({
-          color: effectState.glitchColor1 || "#ff0000",
-          blur: 0,
-          offsetX: effectState.glitchOffsetX || 0,
-          offsetY: effectState.glitchOffsetY || 0,
-        });
-        textObject.shadow = shadow;
-        break;
+      case "echo": {
+        const echoOffsetX = effectState.echoOffsetX || 0;
+        const echoOffsetY = effectState.echoOffsetY || 0;
 
-      case "neon":
-        shadow = new fabric.Shadow({
-          color: attributes.fill || "#00ffff",
-          blur: effectState.neonIntensity || 0,
-          offsetX: 0,
-          offsetY: 0,
-        });
-        textObject.shadow = shadow;
+        if (Math.abs(echoOffsetX) > 0.01 || Math.abs(echoOffsetY) > 0.01) {
+          textObject.shadow = new fabric.Shadow({
+            color: effectState.echoColor || "#000000",
+            blur: 0,
+            offsetX: echoOffsetX,
+            offsetY: echoOffsetY,
+          });
+        }
         break;
+      }
 
-      case "background":
-        shadow = new fabric.Shadow({
-          color: effectState.backgroundColor || "#000000",
-          blur: effectState.backgroundSpread || 0,
-          offsetX: 0,
-          offsetY: 0,
-        });
-        textObject.shadow = shadow;
+      case "glitch": {
+        const glitchOffsetX = effectState.glitchOffsetX || 0;
+        const glitchOffsetY = effectState.glitchOffsetY || 0;
+
+        if (Math.abs(glitchOffsetX) > 0.01 || Math.abs(glitchOffsetY) > 0.01) {
+          textObject.shadow = new fabric.Shadow({
+            color: effectState.glitchColor1 || "#ff0000",
+            blur: 0,
+            offsetX: glitchOffsetX,
+            offsetY: glitchOffsetY,
+          });
+        }
         break;
+      }
+
+      case "neon": {
+        const neonIntensity = effectState.neonIntensity || 0;
+        if (neonIntensity > 0.01) {
+          textObject.shadow = new fabric.Shadow({
+            color: attributes.fill || "#00ffff",
+            blur: neonIntensity,
+            offsetX: 0,
+            offsetY: 0,
+          });
+        }
+        break;
+      }
+
+      case "background": {
+        const backgroundSpread = effectState.backgroundSpread || 0;
+        if (backgroundSpread > 0.01) {
+          textObject.shadow = new fabric.Shadow({
+            color: effectState.backgroundColor || "#000000",
+            blur: backgroundSpread,
+            offsetX: 0,
+            offsetY: 0,
+          });
+        }
+        break;
+      }
 
       case "none":
       default:
-        textObject.shadow = null;
-        textObject.stroke = null;
-        textObject.strokeWidth = 0;
-        if (textObject.fill === "transparent") {
-          textObject.fill = attributes.fill || "#000000";
-        }
+        // All effects already cleared above
         break;
     }
-  };
-
-  // Function to apply proper arc curve effect like Canva
+  }; // Function to apply proper arc curve effect like Canva
   const applyCurveEffect = (textObject: any, curveAmount: number) => {
     if (!fabric || !canvas) return;
 
@@ -1241,12 +1228,14 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 flex-shrink-0">
         <h3 className="text-lg font-semibold text-gray-900">Effects</h3>
-        <button
+        <Button
+          variant="ghost"
+          size="sm"
           onClick={handleClose}
           className="p-1 hover:bg-gray-100 rounded-md transition-colors"
         >
           <X className="w-5 h-5" />
-        </button>
+        </Button>
       </div>
 
       {/* Content Area */}
@@ -1263,30 +1252,32 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
               {/* Row 1 */}
               <div className="grid grid-cols-3 gap-3">
                 {/* None */}
-                <button
+                <Button
+                  variant={selectedEffect === "none" ? "default" : "outline"}
                   onClick={() => handleEffectSelect("none")}
-                  className={`p-4 border-2 rounded-lg transition-all ${
+                  className={`p-4 h-auto flex-col space-y-2 ${
                     selectedEffect === "none"
-                      ? "border-purple-500 bg-purple-50"
-                      : "border-gray-200 hover:border-gray-300"
+                      ? "border-purple-500 bg-purple-50 text-purple-700"
+                      : ""
                   }`}
                 >
-                  <div className="w-full h-12 flex items-center justify-center bg-gray-100 rounded mb-2">
+                  <div className="w-full h-12 flex items-center justify-center bg-gray-100 rounded">
                     <span className="text-lg font-bold text-gray-700">Ag</span>
                   </div>
-                  <span className="text-xs text-gray-600">None</span>
-                </button>
+                  <span className="text-xs">None</span>
+                </Button>
 
                 {/* Shadow */}
-                <button
+                <Button
+                  variant={selectedEffect === "shadow" ? "default" : "outline"}
                   onClick={() => handleEffectSelect("shadow")}
-                  className={`p-4 border-2 rounded-lg transition-all ${
+                  className={`p-4 h-auto flex-col space-y-2 ${
                     selectedEffect === "shadow"
-                      ? "border-purple-500 bg-purple-50"
-                      : "border-gray-200 hover:border-gray-300"
+                      ? "border-purple-500 bg-purple-50 text-purple-700"
+                      : ""
                   }`}
                 >
-                  <div className="w-full h-12 flex items-center justify-center bg-gray-100 rounded mb-2 relative overflow-hidden">
+                  <div className="w-full h-12 flex items-center justify-center bg-gray-100 rounded relative overflow-hidden">
                     <span className="text-lg font-bold text-gray-700 relative z-10">
                       Ag
                     </span>
@@ -1302,19 +1293,20 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
                       </span>
                     </div>
                   </div>
-                  <span className="text-xs text-gray-600">Shadow</span>
-                </button>
+                  <span className="text-xs">Shadow</span>
+                </Button>
 
                 {/* Lift */}
-                <button
+                <Button
+                  variant={selectedEffect === "lift" ? "default" : "outline"}
                   onClick={() => handleEffectSelect("lift")}
-                  className={`p-4 border-2 rounded-lg transition-all ${
+                  className={`p-4 h-auto flex-col space-y-2 ${
                     selectedEffect === "lift"
-                      ? "border-purple-500 bg-purple-50"
-                      : "border-gray-200 hover:border-gray-300"
+                      ? "border-purple-500 bg-purple-50 text-purple-700"
+                      : ""
                   }`}
                 >
-                  <div className="w-full h-12 flex items-center justify-center bg-gray-100 rounded mb-2">
+                  <div className="w-full h-12 flex items-center justify-center bg-gray-100 rounded">
                     <span
                       className="text-lg font-bold text-gray-700"
                       style={{
@@ -1324,36 +1316,33 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
                       Ag
                     </span>
                   </div>
-                  <span className="text-xs text-gray-600">Lift</span>
-                </button>
+                  <span className="text-xs">Lift</span>
+                </Button>
               </div>
 
               {/* Shadow Controls */}
               {selectedEffect === "shadow" && (
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  {renderShadowControls()}
-                </div>
+                <Card className="p-4">{renderShadowControls()}</Card>
               )}
 
               {/* Lift Controls */}
               {selectedEffect === "lift" && (
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  {renderLiftControls()}
-                </div>
+                <Card className="p-4">{renderLiftControls()}</Card>
               )}
 
               {/* Row 2 */}
               <div className="grid grid-cols-3 gap-3">
                 {/* Hollow */}
-                <button
+                <Button
+                  variant={selectedEffect === "hollow" ? "default" : "outline"}
                   onClick={() => handleEffectSelect("hollow")}
-                  className={`p-4 border-2 rounded-lg transition-all ${
+                  className={`p-4 h-auto flex-col space-y-2 ${
                     selectedEffect === "hollow"
-                      ? "border-purple-500 bg-purple-50"
-                      : "border-gray-200 hover:border-gray-300"
+                      ? "border-purple-500 bg-purple-50 text-purple-700"
+                      : ""
                   }`}
                 >
-                  <div className="w-full h-12 flex items-center justify-center bg-gray-100 rounded mb-2">
+                  <div className="w-full h-12 flex items-center justify-center bg-gray-100 rounded">
                     <span
                       className="text-lg font-bold text-transparent"
                       style={{ WebkitTextStroke: "2px #374151" }}
@@ -1361,19 +1350,20 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
                       Ag
                     </span>
                   </div>
-                  <span className="text-xs text-gray-600">Hollow</span>
-                </button>
+                  <span className="text-xs">Hollow</span>
+                </Button>
 
                 {/* Splice */}
-                <button
+                <Button
+                  variant={selectedEffect === "splice" ? "default" : "outline"}
                   onClick={() => handleEffectSelect("splice")}
-                  className={`p-4 border-2 rounded-lg transition-all ${
+                  className={`p-4 h-auto flex-col space-y-2 ${
                     selectedEffect === "splice"
-                      ? "border-purple-500 bg-purple-50"
-                      : "border-gray-200 hover:border-gray-300"
+                      ? "border-purple-500 bg-purple-50 text-purple-700"
+                      : ""
                   }`}
                 >
-                  <div className="w-full h-12 flex items-center justify-center bg-gray-100 rounded mb-2">
+                  <div className="w-full h-12 flex items-center justify-center bg-gray-100 rounded">
                     <span
                       className="text-lg font-bold text-gray-700"
                       style={{ WebkitTextStroke: "1px #374151" }}
@@ -1381,19 +1371,20 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
                       Ag
                     </span>
                   </div>
-                  <span className="text-xs text-gray-600">Splice</span>
-                </button>
+                  <span className="text-xs">Splice</span>
+                </Button>
 
                 {/* Outline */}
-                <button
+                <Button
+                  variant={selectedEffect === "outline" ? "default" : "outline"}
                   onClick={() => handleEffectSelect("outline")}
-                  className={`p-4 border-2 rounded-lg transition-all ${
+                  className={`p-4 h-auto flex-col space-y-2 ${
                     selectedEffect === "outline"
-                      ? "border-purple-500 bg-purple-50"
-                      : "border-gray-200 hover:border-gray-300"
+                      ? "border-purple-500 bg-purple-50 text-purple-700"
+                      : ""
                   }`}
                 >
-                  <div className="w-full h-12 flex items-center justify-center bg-gray-100 rounded mb-2">
+                  <div className="w-full h-12 flex items-center justify-center bg-gray-100 rounded">
                     <span
                       className="text-lg font-bold text-gray-700"
                       style={{ WebkitTextStroke: "1px #374151" }}
@@ -1401,43 +1392,38 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
                       Ag
                     </span>
                   </div>
-                  <span className="text-xs text-gray-600">Outline</span>
-                </button>
+                  <span className="text-xs">Outline</span>
+                </Button>
               </div>
 
               {/* Hollow Controls */}
               {selectedEffect === "hollow" && (
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  {renderHollowControls()}
-                </div>
+                <Card className="p-4">{renderHollowControls()}</Card>
               )}
 
               {/* Splice Controls */}
               {selectedEffect === "splice" && (
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  {renderSpliceControls()}
-                </div>
+                <Card className="p-4">{renderSpliceControls()}</Card>
               )}
 
               {/* Outline Controls */}
               {selectedEffect === "outline" && (
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  {renderOutlineControls()}
-                </div>
+                <Card className="p-4">{renderOutlineControls()}</Card>
               )}
 
               {/* Row 3 */}
               <div className="grid grid-cols-3 gap-3">
                 {/* Echo */}
-                <button
+                <Button
+                  variant={selectedEffect === "echo" ? "default" : "outline"}
                   onClick={() => handleEffectSelect("echo")}
-                  className={`p-4 border-2 rounded-lg transition-all ${
+                  className={`p-4 h-auto flex-col space-y-2 ${
                     selectedEffect === "echo"
-                      ? "border-purple-500 bg-purple-50"
-                      : "border-gray-200 hover:border-gray-300"
+                      ? "border-purple-500 bg-purple-50 text-purple-700"
+                      : ""
                   }`}
                 >
-                  <div className="w-full h-12 flex items-center justify-center bg-gray-100 rounded mb-2 relative">
+                  <div className="w-full h-12 flex items-center justify-center bg-gray-100 rounded relative">
                     <span className="text-lg font-bold text-gray-700 relative z-10">
                       Ag
                     </span>
@@ -1447,19 +1433,20 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
                       </span>
                     </div>
                   </div>
-                  <span className="text-xs text-gray-600">Echo</span>
-                </button>
+                  <span className="text-xs">Echo</span>
+                </Button>
 
                 {/* Glitch */}
-                <button
+                <Button
+                  variant={selectedEffect === "glitch" ? "default" : "outline"}
                   onClick={() => handleEffectSelect("glitch")}
-                  className={`p-4 border-2 rounded-lg transition-all ${
+                  className={`p-4 h-auto flex-col space-y-2 ${
                     selectedEffect === "glitch"
-                      ? "border-purple-500 bg-purple-50"
-                      : "border-gray-200 hover:border-gray-300"
+                      ? "border-purple-500 bg-purple-50 text-purple-700"
+                      : ""
                   }`}
                 >
-                  <div className="w-full h-12 flex items-center justify-center bg-gray-100 rounded mb-2 relative overflow-hidden">
+                  <div className="w-full h-12 flex items-center justify-center bg-gray-100 rounded relative overflow-hidden">
                     <span className="text-lg font-bold text-gray-700 relative z-20">
                       Ag
                     </span>
@@ -1484,19 +1471,20 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
                       </span>
                     </div>
                   </div>
-                  <span className="text-xs text-gray-600">Glitch</span>
-                </button>
+                  <span className="text-xs">Glitch</span>
+                </Button>
 
                 {/* Neon */}
-                <button
+                <Button
+                  variant={selectedEffect === "neon" ? "default" : "outline"}
                   onClick={() => handleEffectSelect("neon")}
-                  className={`p-4 border-2 rounded-lg transition-all ${
+                  className={`p-4 h-auto flex-col space-y-2 ${
                     selectedEffect === "neon"
-                      ? "border-purple-500 bg-purple-50"
-                      : "border-gray-200 hover:border-gray-300"
+                      ? "border-purple-500 bg-purple-50 text-purple-700"
+                      : ""
                   }`}
                 >
-                  <div className="w-full h-12 flex items-center justify-center bg-gray-100 rounded mb-2">
+                  <div className="w-full h-12 flex items-center justify-center bg-gray-100 rounded">
                     <span
                       className="text-lg font-bold text-pink-500"
                       style={{ textShadow: "0 0 10px currentColor" }}
@@ -1504,47 +1492,44 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
                       Ag
                     </span>
                   </div>
-                  <span className="text-xs text-gray-600">Neon</span>
-                </button>
+                  <span className="text-xs">Neon</span>
+                </Button>
               </div>
 
               {/* Echo Controls */}
               {selectedEffect === "echo" && (
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  {renderEchoControls()}
-                </div>
+                <Card className="p-4">{renderEchoControls()}</Card>
               )}
 
               {/* Glitch Controls */}
               {selectedEffect === "glitch" && (
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  {renderGlitchControls()}
-                </div>
+                <Card className="p-4">{renderGlitchControls()}</Card>
               )}
 
               {/* Neon Controls */}
               {selectedEffect === "neon" && (
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  {renderNeonControls()}
-                </div>
+                <Card className="p-4">{renderNeonControls()}</Card>
               )}
 
               {/* Row 4 */}
               <div className="grid grid-cols-3 gap-3">
                 {/* Background */}
-                <button
+                <Button
+                  variant={
+                    selectedEffect === "background" ? "default" : "outline"
+                  }
                   onClick={() => handleEffectSelect("background")}
-                  className={`p-4 border-2 rounded-lg transition-all ${
+                  className={`p-4 h-auto flex-col space-y-2 ${
                     selectedEffect === "background"
-                      ? "border-purple-500 bg-purple-50"
-                      : "border-gray-200 hover:border-gray-300"
+                      ? "border-purple-500 bg-purple-50 text-purple-700"
+                      : ""
                   }`}
                 >
-                  <div className="w-full h-12 flex items-center justify-center bg-gray-800 rounded mb-2">
+                  <div className="w-full h-12 flex items-center justify-center bg-gray-800 rounded">
                     <span className="text-lg font-bold text-white">Ag</span>
                   </div>
-                  <span className="text-xs text-gray-600">Background</span>
-                </button>
+                  <span className="text-xs">Background</span>
+                </Button>
 
                 {/* Empty placeholders to maintain grid */}
                 <div></div>
@@ -1553,9 +1538,7 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
 
               {/* Background Controls */}
               {selectedEffect === "background" && (
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  {renderBackgroundControls()}
-                </div>
+                <Card className="p-4">{renderBackgroundControls()}</Card>
               )}
             </div>
           </div>
@@ -1570,30 +1553,32 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 {/* None */}
-                <button
+                <Button
+                  variant={selectedShape === "none" ? "default" : "outline"}
                   onClick={() => handleShapeSelect("none")}
-                  className={`p-4 border-2 rounded-lg transition-all ${
+                  className={`p-4 h-auto flex-col space-y-2 ${
                     selectedShape === "none"
-                      ? "border-purple-500 bg-purple-50"
-                      : "border-gray-200 hover:border-gray-300"
+                      ? "border-purple-500 bg-purple-50 text-purple-700"
+                      : ""
                   }`}
                 >
-                  <div className="w-full h-12 flex items-center justify-center bg-gray-100 rounded mb-2">
+                  <div className="w-full h-12 flex items-center justify-center bg-gray-100 rounded">
                     <span className="text-lg font-bold text-gray-700">Ag</span>
                   </div>
-                  <span className="text-xs text-gray-600">None</span>
-                </button>
+                  <span className="text-xs">None</span>
+                </Button>
 
                 {/* Curve */}
-                <button
+                <Button
+                  variant={selectedShape === "curve" ? "default" : "outline"}
                   onClick={() => handleShapeSelect("curve")}
-                  className={`p-4 border-2 rounded-lg transition-all ${
+                  className={`p-4 h-auto flex-col space-y-2 ${
                     selectedShape === "curve"
-                      ? "border-purple-500 bg-purple-50"
-                      : "border-gray-200 hover:border-gray-300"
+                      ? "border-purple-500 bg-purple-50 text-purple-700"
+                      : ""
                   }`}
                 >
-                  <div className="w-full h-12 flex items-center justify-center bg-gray-100 rounded mb-2">
+                  <div className="w-full h-12 flex items-center justify-center bg-gray-100 rounded">
                     <span className="text-lg font-bold text-gray-700">
                       <svg
                         width="24"
@@ -1610,15 +1595,13 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
                       </svg>
                     </span>
                   </div>
-                  <span className="text-xs text-gray-600">Curve</span>
-                </button>
+                  <span className="text-xs">Curve</span>
+                </Button>
               </div>
 
               {/* Curve Controls */}
               {selectedShape === "curve" && (
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  {renderCurveControls()}
-                </div>
+                <Card className="p-4">{renderCurveControls()}</Card>
               )}
             </div>
           </div>
