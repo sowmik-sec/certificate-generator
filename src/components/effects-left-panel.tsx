@@ -1,15 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useState, useEffect, useRef, memo, useCallback } from "react";
-import { X } from "lucide-react";
-import { usePropertiesStore } from "@/stores/usePropertiesStore";
-import { useEditorStore } from "@/stores/useEditorStore";
-import { Slider } from "@/components/ui/slider";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
+import { useState, useCallback, useEffect, useRef, memo } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Slider } from "@/components/ui/slider";
 import { Card } from "@/components/ui/card";
+import { X } from "lucide-react";
+import { useEditorStore } from "@/stores/useEditorStore";
+import { usePropertiesStore } from "@/stores/usePropertiesStore";
 
 interface EffectsLeftPanelProps {
   canvas: any;
@@ -105,6 +105,36 @@ const SliderWithInput = memo(
           return;
 
         try {
+          // Create a temporary state for immediate fabric update
+          const tempState = {
+            shadowOffsetX: 0,
+            shadowOffsetY: 0,
+            shadowBlur: 0,
+            shadowOpacity: 100,
+            shadowColor: "#000000",
+            liftIntensity: 0,
+            hollowThickness: 0,
+            spliceThickness: 0,
+            spliceOffsetX: 0,
+            spliceOffsetY: 0,
+            spliceColor: "#000000",
+            outlineThickness: 0,
+            echoOffsetX: 0,
+            echoOffsetY: 0,
+            echoColor: "#000000",
+            glitchOffsetX: 0,
+            glitchOffsetY: 0,
+            glitchColor1: "#ff0000",
+            glitchColor2: "#00ffff",
+            neonIntensity: 0,
+            backgroundRoundness: 0,
+            backgroundSpread: 0,
+            backgroundOpacity: 100,
+            backgroundColor: "#000000",
+            curveIntensity: 0,
+            [propertyKey]: newValue,
+          };
+
           // Direct manipulation of fabric objects - bypass React entirely during drag
           if (
             selectedObject._isCurvedText ||
@@ -115,24 +145,17 @@ const SliderWithInput = memo(
 
             objects.forEach((obj: any) => {
               if (obj.type === "text") {
-                updateFabricProperty(
-                  obj,
-                  effectType,
-                  propertyKey,
-                  newValue,
-                  fabric
-                );
+                updateFabricPropertyDirect(obj, effectType, tempState, fabric);
               }
             });
           } else if (
             selectedObject.type === "textbox" ||
             selectedObject.type === "text"
           ) {
-            updateFabricProperty(
+            updateFabricPropertyDirect(
               selectedObject,
               effectType,
-              propertyKey,
-              newValue,
+              tempState,
               fabric
             );
           }
@@ -283,12 +306,11 @@ const SliderWithInput = memo(
 
 SliderWithInput.displayName = "SliderWithInput";
 
-// Helper function for direct fabric property updates
-const updateFabricProperty = (
+// Helper function for direct fabric property updates during drag
+const updateFabricPropertyDirect = (
   textObject: any,
   effectType: string,
-  propertyKey: string,
-  value: number,
+  state: any,
   fabric: any
 ) => {
   // Clear existing effects first
@@ -296,74 +318,150 @@ const updateFabricProperty = (
   textObject.stroke = null;
   textObject.strokeWidth = 0;
 
+  // Restore original fill if it was made transparent
+  if (textObject.fill === "transparent" && textObject._originalFill) {
+    textObject.fill = textObject._originalFill;
+  }
+
   switch (effectType) {
     case "shadow":
-      if (
-        propertyKey === "shadowOffsetX" ||
-        propertyKey === "shadowOffsetY" ||
-        propertyKey === "shadowBlur" ||
-        propertyKey === "shadowOpacity"
-      ) {
-        // Get current shadow values from object or defaults
-        const offsetX =
-          propertyKey === "shadowOffsetX"
-            ? value
-            : textObject._shadowOffsetX || 0;
-        const offsetY =
-          propertyKey === "shadowOffsetY"
-            ? value
-            : textObject._shadowOffsetY || 0;
-        const blur =
-          propertyKey === "shadowBlur" ? value : textObject._shadowBlur || 0;
-        const opacity =
-          propertyKey === "shadowOpacity"
-            ? value / 100
-            : textObject._shadowOpacity || 1;
-        const color = textObject._shadowColor || "#000000";
+      const shadowOpacity = (state.shadowOpacity || 100) / 100;
+      const shadowOffsetX = state.shadowOffsetX || 0;
+      const shadowOffsetY = state.shadowOffsetY || 0;
+      const shadowBlur = state.shadowBlur || 0;
+      const shadowColor = state.shadowColor || "#000000";
 
-        // Store values on object for persistence
-        textObject._shadowOffsetX = offsetX;
-        textObject._shadowOffsetY = offsetY;
-        textObject._shadowBlur = blur;
-        textObject._shadowOpacity = opacity;
+      const shadowColorWithOpacity = `rgba(${parseInt(
+        shadowColor.slice(1, 3),
+        16
+      )}, ${parseInt(shadowColor.slice(3, 5), 16)}, ${parseInt(
+        shadowColor.slice(5, 7),
+        16
+      )}, ${shadowOpacity})`;
 
-        const shadowColorWithOpacity = `rgba(${parseInt(
-          color.slice(1, 3),
-          16
-        )}, ${parseInt(color.slice(3, 5), 16)}, ${parseInt(
-          color.slice(5, 7),
-          16
-        )}, ${opacity})`;
-
-        textObject.shadow = new fabric.Shadow({
-          color: shadowColorWithOpacity,
-          blur: blur,
-          offsetX: offsetX,
-          offsetY: offsetY,
-        });
-      }
+      textObject.shadow = new fabric.Shadow({
+        color: shadowColorWithOpacity,
+        blur: shadowBlur,
+        offsetX: shadowOffsetX,
+        offsetY: shadowOffsetY,
+      });
       break;
 
     case "lift":
-      if (propertyKey === "liftIntensity" && value > 0.01) {
+      const liftIntensity = state.liftIntensity || 0;
+      if (liftIntensity > 0.01) {
         textObject.shadow = new fabric.Shadow({
           color: "rgba(0, 0, 0, 0.3)",
-          blur: value / 2,
+          blur: liftIntensity / 2,
           offsetX: 0,
-          offsetY: value / 10,
+          offsetY: liftIntensity / 10,
         });
       }
       break;
 
     case "hollow":
-      if (propertyKey === "hollowThickness" && value > 0.01) {
+      const hollowThickness = state.hollowThickness || 0;
+      if (hollowThickness > 0.01) {
+        // Store original fill if not already stored
+        if (!textObject._originalFill) {
+          textObject._originalFill = textObject.fill;
+        }
         textObject.fill = "transparent";
         textObject.stroke = textObject._originalFill || "#000000";
-        textObject.strokeWidth = value;
+        textObject.strokeWidth = hollowThickness;
       }
       break;
 
-    // Add more cases as needed for other effects
+    case "splice":
+      const spliceThickness = state.spliceThickness || 0;
+      const spliceOffsetX = state.spliceOffsetX || 0;
+      const spliceOffsetY = state.spliceOffsetY || 0;
+      const spliceColor = state.spliceColor || "#000000";
+
+      if (
+        spliceThickness > 0.01 ||
+        Math.abs(spliceOffsetX) > 0.01 ||
+        Math.abs(spliceOffsetY) > 0.01
+      ) {
+        if (Math.abs(spliceOffsetX) > 0.01 || Math.abs(spliceOffsetY) > 0.01) {
+          textObject.shadow = new fabric.Shadow({
+            color: spliceColor,
+            blur: 0,
+            offsetX: spliceOffsetX,
+            offsetY: spliceOffsetY,
+          });
+        }
+        if (spliceThickness > 0.01) {
+          textObject.stroke = spliceColor;
+          textObject.strokeWidth = spliceThickness;
+        }
+      }
+      break;
+
+    case "outline":
+      const outlineThickness = state.outlineThickness || 0;
+      if (outlineThickness > 0.01) {
+        textObject.stroke =
+          textObject._originalFill || textObject.fill || "#000000";
+        textObject.strokeWidth = outlineThickness;
+      }
+      break;
+
+    case "echo":
+      const echoOffsetX = state.echoOffsetX || 0;
+      const echoOffsetY = state.echoOffsetY || 0;
+
+      if (Math.abs(echoOffsetX) > 0.01 || Math.abs(echoOffsetY) > 0.01) {
+        textObject.shadow = new fabric.Shadow({
+          color: state.echoColor || "#000000",
+          blur: 0,
+          offsetX: echoOffsetX,
+          offsetY: echoOffsetY,
+        });
+      }
+      break;
+
+    case "glitch":
+      const glitchOffsetX = state.glitchOffsetX || 0;
+      const glitchOffsetY = state.glitchOffsetY || 0;
+
+      if (Math.abs(glitchOffsetX) > 0.01 || Math.abs(glitchOffsetY) > 0.01) {
+        textObject.shadow = new fabric.Shadow({
+          color: state.glitchColor1 || "#ff0000",
+          blur: 0,
+          offsetX: glitchOffsetX,
+          offsetY: glitchOffsetY,
+        });
+      }
+      break;
+
+    case "neon":
+      const neonIntensity = state.neonIntensity || 0;
+      if (neonIntensity > 0.01) {
+        textObject.shadow = new fabric.Shadow({
+          color: textObject.fill || "#00ffff",
+          blur: neonIntensity,
+          offsetX: 0,
+          offsetY: 0,
+        });
+      }
+      break;
+
+    case "background":
+      const backgroundSpread = state.backgroundSpread || 0;
+      if (backgroundSpread > 0.01) {
+        textObject.shadow = new fabric.Shadow({
+          color: state.backgroundColor || "#000000",
+          blur: backgroundSpread,
+          offsetX: 0,
+          offsetY: 0,
+        });
+      }
+      break;
+
+    default:
+      // Clear all effects for "none" or unknown effects
+      break;
   }
 };
 
@@ -409,46 +507,75 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
     curveIntensity: 0,
   });
 
-  // Optimized state updater with throttling
+  // Create refs to access current values without dependency issues
+  const selectedEffectRef = useRef(selectedEffect);
+  const selectedObjectRef = useRef(selectedObject);
+  const canvasRef = useRef(canvas);
+  const applyEffectWithStateRef = useRef<any>(null);
+  const applyCurveEffectRef = useRef<any>(null);
+
+  // Update refs when values change
+  useEffect(() => {
+    selectedEffectRef.current = selectedEffect;
+  }, [selectedEffect]);
+
+  useEffect(() => {
+    selectedObjectRef.current = selectedObject;
+  }, [selectedObject]);
+
+  useEffect(() => {
+    canvasRef.current = canvas;
+  }, [canvas]);
+
+  // Optimized state updater that immediately applies effects
   const updateEffectState = useCallback(
     (key: keyof EffectState, value: any) => {
-      setEffectState((prev) => ({
-        ...prev,
-        [key]: value,
-      }));
+      setEffectState((prevState) => {
+        const newState = {
+          ...prevState,
+          [key]: value,
+        };
 
-      // For curve effects, handle separately
-      if (key === "curveIntensity") {
-        if (selectedObject) {
+        // Apply effects immediately with the new state
+        if (key === "curveIntensity") {
+          // Handle curve effects
+          if (selectedObjectRef.current) {
+            if (
+              selectedObjectRef.current._isCurvedText ||
+              selectedObjectRef.current.type === "curved-text"
+            ) {
+              selectedObjectRef.current._curveAmount = value;
+            }
+            // Apply curve effect immediately
+            requestAnimationFrame(() => {
+              if (applyCurveEffectRef.current) {
+                applyCurveEffectRef.current(selectedObjectRef.current, value);
+              }
+            });
+          }
+        } else {
+          // Apply other effects immediately if an effect is selected
           if (
-            selectedObject._isCurvedText ||
-            selectedObject.type === "curved-text"
+            selectedEffectRef.current !== "none" &&
+            canvasRef.current &&
+            selectedObjectRef.current
           ) {
-            selectedObject._curveAmount = value;
+            requestAnimationFrame(() => {
+              if (applyEffectWithStateRef.current) {
+                applyEffectWithStateRef.current(
+                  selectedEffectRef.current,
+                  newState
+                );
+              }
+            });
           }
         }
-        // Direct call without closure issues
-        setTimeout(() => {
-          // Call applyCurveEffect directly when it's defined
-          if (typeof applyCurveEffect === "function") {
-            applyCurveEffect(selectedObject, value);
-          }
-        }, 0);
-      } else {
-        // Throttled effect reapplication for other effects
-        setTimeout(() => {
-          if (selectedEffect !== "none") {
-            // Call applyEffect directly when it's defined
-            if (typeof applyEffect === "function") {
-              applyEffect(selectedEffect);
-            }
-          }
-        }, 0);
-      }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
+
+        return newState;
+      });
     },
-    [selectedEffect, selectedObject]
-  ); // Functions will be available in closure
+    []
+  );
 
   // Handle keyboard events for curved text deletion
   useEffect(() => {
@@ -569,6 +696,422 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
     onClose();
   };
 
+  // Enhanced helper function to apply effects with complete clearing
+  const applyEffectToTextObjectWithState = useCallback(
+    (textObject: any, effectType: string, state: EffectState) => {
+      if (!fabric) return;
+
+      // STEP 1: Complete cleanup of ALL existing effects
+      textObject.shadow = null;
+      textObject.stroke = null;
+      textObject.strokeWidth = 0;
+
+      // Restore original fill if it was set to transparent
+      if (textObject.fill === "transparent" && attributes.fill) {
+        textObject.fill = attributes.fill;
+      }
+
+      // STEP 2: Apply new effects only if they have meaningful values
+      switch (effectType) {
+        case "shadow": {
+          const shadowOpacity = (state.shadowOpacity || 100) / 100;
+          const shadowOffsetX = state.shadowOffsetX || 0;
+          const shadowOffsetY = state.shadowOffsetY || 0;
+          const shadowBlur = state.shadowBlur || 0;
+          const shadowColor = state.shadowColor || "#000000";
+
+          // For shadow effect, always apply shadow (even with 0 offset/blur) to show transparency changes
+          const shadowColorWithOpacity = `rgba(${parseInt(
+            shadowColor.slice(1, 3),
+            16
+          )}, ${parseInt(shadowColor.slice(3, 5), 16)}, ${parseInt(
+            shadowColor.slice(5, 7),
+            16
+          )}, ${shadowOpacity})`;
+
+          textObject.shadow = new fabric.Shadow({
+            color: shadowColorWithOpacity,
+            blur: shadowBlur,
+            offsetX: shadowOffsetX,
+            offsetY: shadowOffsetY,
+          });
+          break;
+        }
+
+        case "lift": {
+          const liftIntensity = state.liftIntensity || 0;
+          if (liftIntensity > 0.01) {
+            textObject.shadow = new fabric.Shadow({
+              color: "rgba(0, 0, 0, 0.3)",
+              blur: liftIntensity / 2,
+              offsetX: 0,
+              offsetY: liftIntensity / 10,
+            });
+          }
+          break;
+        }
+
+        case "hollow": {
+          const hollowThickness = state.hollowThickness || 0;
+          if (hollowThickness > 0.01) {
+            textObject.fill = "transparent";
+            textObject.stroke = attributes.fill || "#000000";
+            textObject.strokeWidth = hollowThickness;
+          }
+          break;
+        }
+
+        case "splice": {
+          const spliceThickness = state.spliceThickness || 0;
+          const spliceOffsetX = state.spliceOffsetX || 0;
+          const spliceOffsetY = state.spliceOffsetY || 0;
+          const spliceColor = state.spliceColor || "#000000";
+
+          // Apply splice effect if there's meaningful values
+          if (
+            spliceThickness > 0.01 ||
+            Math.abs(spliceOffsetX) > 0.01 ||
+            Math.abs(spliceOffsetY) > 0.01
+          ) {
+            if (
+              Math.abs(spliceOffsetX) > 0.01 ||
+              Math.abs(spliceOffsetY) > 0.01
+            ) {
+              textObject.shadow = new fabric.Shadow({
+                color: spliceColor,
+                blur: 0,
+                offsetX: spliceOffsetX,
+                offsetY: spliceOffsetY,
+              });
+            }
+            if (spliceThickness > 0.01) {
+              textObject.stroke = spliceColor;
+              textObject.strokeWidth = spliceThickness;
+            }
+          }
+          break;
+        }
+
+        case "outline": {
+          const outlineThickness = state.outlineThickness || 0;
+          if (outlineThickness > 0.01) {
+            textObject.stroke = attributes.fill || "#000000";
+            textObject.strokeWidth = outlineThickness;
+          }
+          break;
+        }
+
+        case "echo": {
+          const echoOffsetX = state.echoOffsetX || 0;
+          const echoOffsetY = state.echoOffsetY || 0;
+
+          if (Math.abs(echoOffsetX) > 0.01 || Math.abs(echoOffsetY) > 0.01) {
+            textObject.shadow = new fabric.Shadow({
+              color: state.echoColor || "#000000",
+              blur: 0,
+              offsetX: echoOffsetX,
+              offsetY: echoOffsetY,
+            });
+          }
+          break;
+        }
+
+        case "glitch": {
+          const glitchOffsetX = state.glitchOffsetX || 0;
+          const glitchOffsetY = state.glitchOffsetY || 0;
+
+          if (
+            Math.abs(glitchOffsetX) > 0.01 ||
+            Math.abs(glitchOffsetY) > 0.01
+          ) {
+            textObject.shadow = new fabric.Shadow({
+              color: state.glitchColor1 || "#ff0000",
+              blur: 0,
+              offsetX: glitchOffsetX,
+              offsetY: glitchOffsetY,
+            });
+          }
+          break;
+        }
+
+        case "neon": {
+          const neonIntensity = state.neonIntensity || 0;
+          if (neonIntensity > 0.01) {
+            textObject.shadow = new fabric.Shadow({
+              color: attributes.fill || "#00ffff",
+              blur: neonIntensity,
+              offsetX: 0,
+              offsetY: 0,
+            });
+          }
+          break;
+        }
+
+        case "background": {
+          const backgroundSpread = state.backgroundSpread || 0;
+          if (backgroundSpread > 0.01) {
+            textObject.shadow = new fabric.Shadow({
+              color: state.backgroundColor || "#000000",
+              blur: backgroundSpread,
+              offsetX: 0,
+              offsetY: 0,
+            });
+          }
+          break;
+        }
+
+        case "none":
+        default:
+          // All effects already cleared above
+          break;
+      }
+    },
+    [fabric, attributes.fill]
+  );
+
+  // Helper function that applies effects with a given state
+  const applyEffectWithState = useCallback(
+    (effectType: string, state: EffectState) => {
+      if (!selectedObject || !canvas || !fabric) return;
+
+      // If it's a curved text group, apply effects to individual characters
+      if (
+        selectedObject._isCurvedText ||
+        selectedObject.type === "curved-text"
+      ) {
+        const group = selectedObject;
+        const objects = group.getObjects();
+
+        objects.forEach((obj: any) => {
+          if (obj.type === "text") {
+            applyEffectToTextObjectWithState(obj, effectType, state);
+          }
+        });
+      } else {
+        // Apply effect to regular text object
+        applyEffectToTextObjectWithState(selectedObject, effectType, state);
+      }
+
+      // Force canvas update after applying effects
+      canvas.renderAll();
+    },
+    [selectedObject, canvas, fabric, applyEffectToTextObjectWithState]
+  );
+
+  // Assign to ref
+  applyEffectWithStateRef.current = applyEffectWithState;
+
+  // Function to apply proper arc curve effect like Canva
+  const applyCurveEffect = useCallback(
+    (textObject: any, curveAmount: number) => {
+      if (!fabric || !canvas) return;
+
+      const intensity = curveAmount / 100; // -1 to 1
+
+      // Get text properties from either regular text or curved text metadata
+      let originalText: string;
+      let fontSize: number;
+      let fontFamily: string;
+      let fill: string;
+      let stroke: string | null;
+      let strokeWidth: number;
+      let originalLeft: number;
+      let originalTop: number;
+
+      if (textObject._isCurvedText || textObject.type === "curved-text") {
+        // Get properties from curved text metadata
+        originalText = textObject._originalText || "";
+        fontSize = textObject._fontSize || 24;
+        fontFamily = textObject._fontFamily || "Arial";
+        fill = textObject._fill || "#000000";
+        stroke = textObject._stroke || null;
+        strokeWidth = textObject._strokeWidth || 0;
+        originalLeft = textObject.left || 0;
+        originalTop = textObject.top || 0;
+      } else {
+        // Get properties from regular text object
+        originalText = textObject.text || "";
+        fontSize = textObject.fontSize || 24;
+        fontFamily = textObject.fontFamily || "Arial";
+        fill = textObject.fill || "#000000";
+        stroke = textObject.stroke || null;
+        strokeWidth = textObject.strokeWidth || 0;
+        originalLeft = textObject.left || 0;
+        originalTop = textObject.top || 0;
+      }
+
+      // If curve is near zero, reset to normal text
+      if (Math.abs(intensity) < 0.01) {
+        // Remove curved text if it exists and replace with straight text
+        if (textObject._isCurvedText || textObject.type === "curved-text") {
+          const straightText = new fabric.Text(originalText, {
+            left: originalLeft,
+            top: originalTop,
+            fontSize: fontSize,
+            fontFamily: fontFamily,
+            fill: fill,
+            stroke: stroke,
+            strokeWidth: strokeWidth,
+            originX: "center",
+            originY: "center",
+            selectable: true,
+            hasControls: true,
+            hasBorders: true,
+          });
+
+          canvas.remove(textObject);
+          canvas.add(straightText);
+          canvas.setActiveObject(straightText);
+          canvas.renderAll();
+
+          // Fire selection events
+          setTimeout(() => {
+            canvas.fire("selection:cleared");
+            canvas.fire("selection:created", {
+              target: straightText,
+              selected: [straightText],
+            });
+            canvas.fire("object:selected", { target: straightText });
+          }, 10);
+        }
+        return;
+      }
+
+      // Calculate the actual text width in pixels
+      const tempText = new fabric.Text(originalText, {
+        fontSize: fontSize,
+        fontFamily: fontFamily,
+      });
+      const actualTextWidth = tempText.width;
+
+      // Calculate arc parameters for proper Canva-like behavior
+      const minArcAngle = Math.PI / 12; // Minimum curve for subtle effect
+      const maxArcAngle = Math.PI * 1.8; // Maximum curve (about 324 degrees)
+      const arcAngle =
+        minArcAngle + Math.abs(intensity) * (maxArcAngle - minArcAngle);
+
+      // Calculate radius to maintain text readability
+      let radius = actualTextWidth / arcAngle;
+      const minRadius = fontSize * 2; // Minimum radius based on font size
+      if (radius < minRadius) {
+        radius = minRadius;
+      }
+
+      // Remove the existing object (whether it's curved or straight)
+      canvas.remove(textObject);
+
+      // Create individual character objects positioned along the arc
+      const characters: string[] = originalText.split("");
+      const charObjects: any[] = [];
+      const nonSpaceChars = characters.filter((c: string) => c.trim() !== "");
+
+      // Calculate character spacing to maintain proper text flow
+      const charSpacing =
+        actualTextWidth / Math.max(nonSpaceChars.length - 1, 1);
+
+      let currentArcPosition = 0;
+
+      characters.forEach((char: string) => {
+        // Handle spaces by advancing position but not creating visible characters
+        if (char.trim() === "") {
+          currentArcPosition += charSpacing * 0.3; // Smaller space for readability
+          return;
+        }
+
+        // Calculate the angle for this character based on its position along the arc
+        const normalizedPosition = currentArcPosition / actualTextWidth;
+        const angle = (normalizedPosition - 0.5) * arcAngle;
+
+        // Calculate position on the circle - Fixed direction logic like Canva
+        let x: number, y: number, rotation: number;
+
+        if (curveAmount > 0) {
+          // Positive values: curve downward (smile) - like Canva
+          x = originalLeft + Math.sin(angle) * radius;
+          y = originalTop + radius - Math.cos(angle) * radius;
+          rotation = (angle * 180) / Math.PI;
+        } else {
+          // Negative values: curve upward (frown) - like Canva
+          x = originalLeft - Math.sin(angle) * radius;
+          y = originalTop - radius + Math.cos(angle) * radius;
+          rotation = -(angle * 180) / Math.PI;
+        }
+
+        // Create individual character with proper positioning and rotation
+        const charObject = new fabric.Text(char, {
+          left: x,
+          top: y,
+          fontSize: fontSize,
+          fontFamily: fontFamily,
+          fill: fill,
+          stroke: stroke,
+          strokeWidth: strokeWidth,
+          angle: rotation,
+          originX: "center",
+          originY: "center",
+          selectable: false,
+          evented: false,
+          hoverCursor: "default",
+          moveCursor: "default",
+        });
+
+        charObjects.push(charObject);
+        currentArcPosition += charSpacing;
+      });
+
+      // Only create group if we have characters
+      if (charObjects.length > 0) {
+        // Group all characters together to create the curved text
+        const curvedTextGroup = new fabric.Group(charObjects, {
+          left: originalLeft,
+          top: originalTop,
+          originX: "center",
+          originY: "center",
+          selectable: true,
+          hasControls: true,
+          hasBorders: true,
+          subTargetCheck: true,
+          excludeFromExport: false,
+          // Enable proper event handling
+          evented: true,
+          // Make sure it can receive keyboard events
+          lockMovementX: false,
+          lockMovementY: false,
+        });
+
+        // Add metadata to identify this as a curved text
+        (curvedTextGroup as any)._isCurvedText = true;
+        (curvedTextGroup as any)._originalText = originalText;
+        (curvedTextGroup as any)._curveAmount = curveAmount;
+        (curvedTextGroup as any)._fontSize = fontSize;
+        (curvedTextGroup as any)._fontFamily = fontFamily;
+        (curvedTextGroup as any)._fill = fill;
+        (curvedTextGroup as any)._stroke = stroke;
+        (curvedTextGroup as any)._strokeWidth = strokeWidth;
+        (curvedTextGroup as any).type = "curved-text";
+
+        // Add to canvas and make it active
+        canvas.add(curvedTextGroup);
+        canvas.setActiveObject(curvedTextGroup);
+        canvas.renderAll();
+
+        // Fire selection events
+        setTimeout(() => {
+          canvas.fire("selection:cleared");
+          canvas.fire("selection:created", {
+            target: curvedTextGroup,
+            selected: [curvedTextGroup],
+          });
+          canvas.fire("object:selected", { target: curvedTextGroup });
+        }, 10);
+      }
+    },
+    [fabric, canvas]
+  );
+
+  // Assign to ref
+  applyCurveEffectRef.current = applyCurveEffect;
+
   // Don't render if no text object is selected
   if (
     !selectedObject ||
@@ -607,404 +1150,6 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
       </div>
     );
   }
-
-  const applyEffect = (effectType: string) => {
-    if (!selectedObject || !canvas || !fabric) return;
-
-    // Only apply effects to text objects or curved text groups
-    if (
-      selectedObject.type !== "textbox" &&
-      selectedObject.type !== "text" &&
-      selectedObject.type !== "curved-text" &&
-      !selectedObject._isCurvedText
-    ) {
-      console.warn("Effects can only be applied to text objects");
-      return;
-    }
-
-    // If it's a curved text group, apply effects to individual characters
-    if (selectedObject._isCurvedText || selectedObject.type === "curved-text") {
-      const group = selectedObject;
-      const objects = group.getObjects();
-
-      objects.forEach((obj: any) => {
-        if (obj.type === "text") {
-          applyEffectToTextObject(obj, effectType);
-        }
-      });
-    } else {
-      // Apply effect to regular text object
-      applyEffectToTextObject(selectedObject, effectType);
-    }
-
-    // Force canvas update after applying effects
-    canvas.renderAll();
-  }; // Enhanced helper function to apply effects with complete clearing
-  const applyEffectToTextObject = (textObject: any, effectType: string) => {
-    // STEP 1: Complete cleanup of ALL existing effects
-    textObject.shadow = null;
-    textObject.stroke = null;
-    textObject.strokeWidth = 0;
-
-    // Restore original fill if it was set to transparent
-    if (textObject.fill === "transparent" && attributes.fill) {
-      textObject.fill = attributes.fill;
-    }
-
-    // STEP 2: Apply new effects only if they have meaningful values
-    switch (effectType) {
-      case "shadow": {
-        const shadowOpacity = (effectState.shadowOpacity || 100) / 100;
-        const shadowOffsetX = effectState.shadowOffsetX || 0;
-        const shadowOffsetY = effectState.shadowOffsetY || 0;
-        const shadowBlur = effectState.shadowBlur || 0;
-        const shadowColor = effectState.shadowColor || "#000000";
-
-        // For shadow effect, always apply shadow (even with 0 offset/blur) to show transparency changes
-        const shadowColorWithOpacity = `rgba(${parseInt(
-          shadowColor.slice(1, 3),
-          16
-        )}, ${parseInt(shadowColor.slice(3, 5), 16)}, ${parseInt(
-          shadowColor.slice(5, 7),
-          16
-        )}, ${shadowOpacity})`;
-
-        textObject.shadow = new fabric.Shadow({
-          color: shadowColorWithOpacity,
-          blur: shadowBlur,
-          offsetX: shadowOffsetX,
-          offsetY: shadowOffsetY,
-        });
-        break;
-      }
-
-      case "lift": {
-        const liftIntensity = effectState.liftIntensity || 0;
-        if (liftIntensity > 0.01) {
-          textObject.shadow = new fabric.Shadow({
-            color: "rgba(0, 0, 0, 0.3)",
-            blur: liftIntensity / 2,
-            offsetX: 0,
-            offsetY: liftIntensity / 10,
-          });
-        }
-        break;
-      }
-
-      case "hollow": {
-        const hollowThickness = effectState.hollowThickness || 0;
-        if (hollowThickness > 0.01) {
-          textObject.fill = "transparent";
-          textObject.stroke = attributes.fill || "#000000";
-          textObject.strokeWidth = hollowThickness;
-        }
-        break;
-      }
-
-      case "splice": {
-        const spliceThickness = effectState.spliceThickness || 0;
-        const spliceOffsetX = effectState.spliceOffsetX || 0;
-        const spliceOffsetY = effectState.spliceOffsetY || 0;
-        const spliceColor = effectState.spliceColor || "#000000";
-
-        // Apply splice effect if there's meaningful values
-        if (
-          spliceThickness > 0.01 ||
-          Math.abs(spliceOffsetX) > 0.01 ||
-          Math.abs(spliceOffsetY) > 0.01
-        ) {
-          if (
-            Math.abs(spliceOffsetX) > 0.01 ||
-            Math.abs(spliceOffsetY) > 0.01
-          ) {
-            textObject.shadow = new fabric.Shadow({
-              color: spliceColor,
-              blur: 0,
-              offsetX: spliceOffsetX,
-              offsetY: spliceOffsetY,
-            });
-          }
-          if (spliceThickness > 0.01) {
-            textObject.stroke = spliceColor;
-            textObject.strokeWidth = spliceThickness;
-          }
-        }
-        break;
-      }
-
-      case "outline": {
-        const outlineThickness = effectState.outlineThickness || 0;
-        if (outlineThickness > 0.01) {
-          textObject.stroke = attributes.fill || "#000000";
-          textObject.strokeWidth = outlineThickness;
-        }
-        break;
-      }
-
-      case "echo": {
-        const echoOffsetX = effectState.echoOffsetX || 0;
-        const echoOffsetY = effectState.echoOffsetY || 0;
-
-        if (Math.abs(echoOffsetX) > 0.01 || Math.abs(echoOffsetY) > 0.01) {
-          textObject.shadow = new fabric.Shadow({
-            color: effectState.echoColor || "#000000",
-            blur: 0,
-            offsetX: echoOffsetX,
-            offsetY: echoOffsetY,
-          });
-        }
-        break;
-      }
-
-      case "glitch": {
-        const glitchOffsetX = effectState.glitchOffsetX || 0;
-        const glitchOffsetY = effectState.glitchOffsetY || 0;
-
-        if (Math.abs(glitchOffsetX) > 0.01 || Math.abs(glitchOffsetY) > 0.01) {
-          textObject.shadow = new fabric.Shadow({
-            color: effectState.glitchColor1 || "#ff0000",
-            blur: 0,
-            offsetX: glitchOffsetX,
-            offsetY: glitchOffsetY,
-          });
-        }
-        break;
-      }
-
-      case "neon": {
-        const neonIntensity = effectState.neonIntensity || 0;
-        if (neonIntensity > 0.01) {
-          textObject.shadow = new fabric.Shadow({
-            color: attributes.fill || "#00ffff",
-            blur: neonIntensity,
-            offsetX: 0,
-            offsetY: 0,
-          });
-        }
-        break;
-      }
-
-      case "background": {
-        const backgroundSpread = effectState.backgroundSpread || 0;
-        if (backgroundSpread > 0.01) {
-          textObject.shadow = new fabric.Shadow({
-            color: effectState.backgroundColor || "#000000",
-            blur: backgroundSpread,
-            offsetX: 0,
-            offsetY: 0,
-          });
-        }
-        break;
-      }
-
-      case "none":
-      default:
-        // All effects already cleared above
-        break;
-    }
-  }; // Function to apply proper arc curve effect like Canva
-  const applyCurveEffect = (textObject: any, curveAmount: number) => {
-    if (!fabric || !canvas) return;
-
-    const intensity = curveAmount / 100; // -1 to 1
-
-    // Get text properties from either regular text or curved text metadata
-    let originalText: string;
-    let fontSize: number;
-    let fontFamily: string;
-    let fill: string;
-    let stroke: string | null;
-    let strokeWidth: number;
-    let originalLeft: number;
-    let originalTop: number;
-
-    if (textObject._isCurvedText || textObject.type === "curved-text") {
-      // Get properties from curved text metadata
-      originalText = textObject._originalText || "";
-      fontSize = textObject._fontSize || 24;
-      fontFamily = textObject._fontFamily || "Arial";
-      fill = textObject._fill || "#000000";
-      stroke = textObject._stroke || null;
-      strokeWidth = textObject._strokeWidth || 0;
-      originalLeft = textObject.left || 0;
-      originalTop = textObject.top || 0;
-    } else {
-      // Get properties from regular text object
-      originalText = textObject.text || "";
-      fontSize = textObject.fontSize || 24;
-      fontFamily = textObject.fontFamily || "Arial";
-      fill = textObject.fill || "#000000";
-      stroke = textObject.stroke || null;
-      strokeWidth = textObject.strokeWidth || 0;
-      originalLeft = textObject.left || 0;
-      originalTop = textObject.top || 0;
-    }
-
-    // If curve is near zero, reset to normal text
-    if (Math.abs(intensity) < 0.01) {
-      // Remove curved text if it exists and replace with straight text
-      if (textObject._isCurvedText || textObject.type === "curved-text") {
-        const straightText = new fabric.Text(originalText, {
-          left: originalLeft,
-          top: originalTop,
-          fontSize: fontSize,
-          fontFamily: fontFamily,
-          fill: fill,
-          stroke: stroke,
-          strokeWidth: strokeWidth,
-          originX: "center",
-          originY: "center",
-          selectable: true,
-          hasControls: true,
-          hasBorders: true,
-        });
-
-        canvas.remove(textObject);
-        canvas.add(straightText);
-        canvas.setActiveObject(straightText);
-        canvas.renderAll();
-
-        // Fire selection events
-        setTimeout(() => {
-          canvas.fire("selection:cleared");
-          canvas.fire("selection:created", {
-            target: straightText,
-            selected: [straightText],
-          });
-          canvas.fire("object:selected", { target: straightText });
-        }, 10);
-      }
-      return;
-    }
-
-    // Calculate the actual text width in pixels
-    const tempText = new fabric.Text(originalText, {
-      fontSize: fontSize,
-      fontFamily: fontFamily,
-    });
-    const actualTextWidth = tempText.width;
-
-    // Calculate arc parameters for proper Canva-like behavior
-    const minArcAngle = Math.PI / 12; // Minimum curve for subtle effect
-    const maxArcAngle = Math.PI * 1.8; // Maximum curve (about 324 degrees)
-    const arcAngle =
-      minArcAngle + Math.abs(intensity) * (maxArcAngle - minArcAngle);
-
-    // Calculate radius to maintain text readability
-    let radius = actualTextWidth / arcAngle;
-    const minRadius = fontSize * 2; // Minimum radius based on font size
-    if (radius < minRadius) {
-      radius = minRadius;
-    }
-
-    // Remove the existing object (whether it's curved or straight)
-    canvas.remove(textObject);
-
-    // Create individual character objects positioned along the arc
-    const characters: string[] = originalText.split("");
-    const charObjects: any[] = [];
-    const nonSpaceChars = characters.filter((c: string) => c.trim() !== "");
-
-    // Calculate character spacing to maintain proper text flow
-    const charSpacing = actualTextWidth / Math.max(nonSpaceChars.length - 1, 1);
-
-    let currentArcPosition = 0;
-
-    characters.forEach((char: string) => {
-      // Handle spaces by advancing position but not creating visible characters
-      if (char.trim() === "") {
-        currentArcPosition += charSpacing * 0.3; // Smaller space for readability
-        return;
-      }
-
-      // Calculate the angle for this character based on its position along the arc
-      const normalizedPosition = currentArcPosition / actualTextWidth;
-      const angle = (normalizedPosition - 0.5) * arcAngle;
-
-      // Calculate position on the circle - Fixed direction logic like Canva
-      let x: number, y: number, rotation: number;
-
-      if (curveAmount > 0) {
-        // Positive values: curve downward (smile) - like Canva
-        x = originalLeft + Math.sin(angle) * radius;
-        y = originalTop + radius - Math.cos(angle) * radius;
-        rotation = (angle * 180) / Math.PI;
-      } else {
-        // Negative values: curve upward (frown) - like Canva
-        x = originalLeft - Math.sin(angle) * radius;
-        y = originalTop - radius + Math.cos(angle) * radius;
-        rotation = -(angle * 180) / Math.PI;
-      }
-
-      // Create individual character with proper positioning and rotation
-      const charObject = new fabric.Text(char, {
-        left: x,
-        top: y,
-        fontSize: fontSize,
-        fontFamily: fontFamily,
-        fill: fill,
-        stroke: stroke,
-        strokeWidth: strokeWidth,
-        angle: rotation,
-        originX: "center",
-        originY: "center",
-        selectable: false,
-        evented: false,
-        hoverCursor: "default",
-        moveCursor: "default",
-      });
-
-      charObjects.push(charObject);
-      currentArcPosition += charSpacing;
-    });
-
-    // Only create group if we have characters
-    if (charObjects.length > 0) {
-      // Group all characters together to create the curved text
-      const curvedTextGroup = new fabric.Group(charObjects, {
-        left: originalLeft,
-        top: originalTop,
-        originX: "center",
-        originY: "center",
-        selectable: true,
-        hasControls: true,
-        hasBorders: true,
-        subTargetCheck: true,
-        excludeFromExport: false,
-        // Enable proper event handling
-        evented: true,
-        // Make sure it can receive keyboard events
-        lockMovementX: false,
-        lockMovementY: false,
-      });
-
-      // Add metadata to identify this as a curved text
-      (curvedTextGroup as any)._isCurvedText = true;
-      (curvedTextGroup as any)._originalText = originalText;
-      (curvedTextGroup as any)._curveAmount = curveAmount;
-      (curvedTextGroup as any)._fontSize = fontSize;
-      (curvedTextGroup as any)._fontFamily = fontFamily;
-      (curvedTextGroup as any)._fill = fill;
-      (curvedTextGroup as any)._stroke = stroke;
-      (curvedTextGroup as any)._strokeWidth = strokeWidth;
-      (curvedTextGroup as any).type = "curved-text";
-
-      // Add to canvas and make it active
-      canvas.add(curvedTextGroup);
-      canvas.setActiveObject(curvedTextGroup);
-      canvas.renderAll();
-
-      // Fire selection events
-      setTimeout(() => {
-        canvas.fire("selection:cleared");
-        canvas.fire("selection:created", {
-          target: curvedTextGroup,
-          selected: [curvedTextGroup],
-        });
-        canvas.fire("object:selected", { target: curvedTextGroup });
-      }, 10);
-    }
-  };
 
   const applyShape = (shapeType: string) => {
     if (!selectedObject || !canvas || !fabric) return;
@@ -1088,13 +1233,121 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
 
   const handleEffectSelect = (effectType: string) => {
     setSelectedEffect(effectType);
-    setEffectState({ ...effectState, type: effectType });
-    applyEffect(effectType);
+
+    // Create new state with default values for the selected effect
+    const newEffectState = {
+      ...effectState,
+      type: effectType,
+    };
+
+    // Apply default values based on effect type to show immediate visual feedback
+    switch (effectType) {
+      case "shadow":
+        if (
+          effectState.shadowOffsetX === 0 &&
+          effectState.shadowOffsetY === 0 &&
+          effectState.shadowBlur === 0
+        ) {
+          newEffectState.shadowOffsetX = 5;
+          newEffectState.shadowOffsetY = 5;
+          newEffectState.shadowBlur = 10;
+          newEffectState.shadowOpacity = 100;
+        }
+        break;
+      case "lift":
+        if (effectState.liftIntensity === 0) {
+          newEffectState.liftIntensity = 20;
+        }
+        break;
+      case "hollow":
+        if (effectState.hollowThickness === 0) {
+          newEffectState.hollowThickness = 2;
+        }
+        break;
+      case "splice":
+        if (
+          effectState.spliceThickness === 0 &&
+          effectState.spliceOffsetX === 0 &&
+          effectState.spliceOffsetY === 0
+        ) {
+          newEffectState.spliceThickness = 2;
+          newEffectState.spliceOffsetX = 3;
+          newEffectState.spliceOffsetY = 3;
+        }
+        break;
+      case "outline":
+        if (effectState.outlineThickness === 0) {
+          newEffectState.outlineThickness = 2;
+        }
+        break;
+      case "echo":
+        if (effectState.echoOffsetX === 0 && effectState.echoOffsetY === 0) {
+          newEffectState.echoOffsetX = 5;
+          newEffectState.echoOffsetY = 5;
+        }
+        break;
+      case "glitch":
+        if (
+          effectState.glitchOffsetX === 0 &&
+          effectState.glitchOffsetY === 0
+        ) {
+          newEffectState.glitchOffsetX = 3;
+          newEffectState.glitchOffsetY = 3;
+        }
+        break;
+      case "neon":
+        if (effectState.neonIntensity === 0) {
+          newEffectState.neonIntensity = 20;
+        }
+        break;
+      case "background":
+        if (effectState.backgroundSpread === 0) {
+          newEffectState.backgroundSpread = 10;
+        }
+        break;
+    }
+
+    setEffectState(newEffectState);
+
+    // Apply the effect immediately with the new state
+    requestAnimationFrame(() => {
+      if (applyEffectWithStateRef.current) {
+        applyEffectWithStateRef.current(effectType, newEffectState);
+      }
+    });
   };
 
   const handleShapeSelect = (shapeType: string) => {
     setSelectedShape(shapeType);
-    applyShape(shapeType);
+
+    if (shapeType === "curve") {
+      // Set default curve value if not already set
+      const newCurveValue =
+        effectState.curveIntensity === 0 ? 25 : effectState.curveIntensity;
+
+      const newState = {
+        ...effectState,
+        curveIntensity: newCurveValue,
+      };
+
+      setEffectState(newState);
+
+      // Apply curve effect immediately
+      requestAnimationFrame(() => {
+        if (applyCurveEffectRef.current && selectedObject) {
+          applyCurveEffectRef.current(selectedObject, newCurveValue);
+        }
+      });
+    } else {
+      // Reset curve to 0 for "none" shape
+      const newState = {
+        ...effectState,
+        curveIntensity: 0,
+      };
+
+      setEffectState(newState);
+      applyShape(shapeType);
+    }
   };
 
   // Individual render functions for controls
