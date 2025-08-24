@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, memo, useCallback } from "react";
 import { X } from "lucide-react";
 import { usePropertiesStore } from "@/stores/usePropertiesStore";
 import { useEditorStore } from "@/stores/useEditorStore";
@@ -47,6 +47,326 @@ interface EffectState {
   curveIntensity?: number;
 }
 
+interface SliderWithInputProps {
+  label: string;
+  value: number;
+  onChange: (value: number) => void;
+  min: number;
+  max: number;
+  step?: number;
+  canvas?: any;
+  fabric?: any;
+  selectedObject?: any;
+  effectType?: string;
+  propertyKey?: string;
+}
+
+// OPTIMIZATION 1 & 2: Move SliderWithInput outside + React.memo for performance
+const SliderWithInput = memo(
+  ({
+    label,
+    value,
+    onChange,
+    min,
+    max,
+    step = 1,
+    canvas,
+    fabric,
+    selectedObject,
+    effectType,
+    propertyKey,
+  }: SliderWithInputProps) => {
+    const [localValue, setLocalValue] = useState(value);
+    const [inputValue, setInputValue] = useState(value.toString());
+    const [isDragging, setIsDragging] = useState(false);
+
+    // Throttling refs for smooth performance
+    const throttleRef = useRef<NodeJS.Timeout | null>(null);
+    const lastDirectUpdateRef = useRef<number>(0);
+
+    // Update local state when prop value changes (but not during dragging)
+    useEffect(() => {
+      if (!isDragging) {
+        setLocalValue(value);
+        setInputValue(value.toString());
+      }
+    }, [value, isDragging]);
+
+    // OPTIMIZATION 3: Direct Fabric manipulation during drag for ultra-smooth updates
+    const applyDirectFabricUpdate = useCallback(
+      (newValue: number) => {
+        if (
+          !canvas ||
+          !fabric ||
+          !selectedObject ||
+          !effectType ||
+          !propertyKey
+        )
+          return;
+
+        try {
+          // Direct manipulation of fabric objects - bypass React entirely during drag
+          if (
+            selectedObject._isCurvedText ||
+            selectedObject.type === "curved-text"
+          ) {
+            const group = selectedObject;
+            const objects = group.getObjects();
+
+            objects.forEach((obj: any) => {
+              if (obj.type === "text") {
+                updateFabricProperty(
+                  obj,
+                  effectType,
+                  propertyKey,
+                  newValue,
+                  fabric
+                );
+              }
+            });
+          } else if (
+            selectedObject.type === "textbox" ||
+            selectedObject.type === "text"
+          ) {
+            updateFabricProperty(
+              selectedObject,
+              effectType,
+              propertyKey,
+              newValue,
+              fabric
+            );
+          }
+
+          // Direct canvas render - no React involved
+          canvas.renderAll();
+        } catch (error) {
+          console.warn("Direct fabric update failed:", error);
+        }
+      },
+      [canvas, fabric, selectedObject, effectType, propertyKey]
+    );
+
+    // Canva-style: Immediate UI + throttled direct Fabric updates
+    const handleSliderChange = useCallback(
+      (newValues: number[]) => {
+        const newValue = newValues[0];
+
+        // Immediate UI update for smooth visual feedback
+        setLocalValue(newValue);
+        setInputValue(newValue.toString());
+
+        if (isDragging) {
+          // During drag: Direct fabric manipulation with throttling
+          const now = performance.now();
+          if (now - lastDirectUpdateRef.current > 16) {
+            // ~60fps
+            lastDirectUpdateRef.current = now;
+            applyDirectFabricUpdate(newValue);
+          }
+
+          // Throttled React state update for final consistency
+          if (throttleRef.current) {
+            clearTimeout(throttleRef.current);
+          }
+          throttleRef.current = setTimeout(() => {
+            onChange(newValue);
+          }, 100); // Longer delay for React state
+        } else {
+          // Single click: immediate React update
+          onChange(newValue);
+        }
+      },
+      [isDragging, onChange, applyDirectFabricUpdate]
+    );
+
+    const handleSliderPointerDown = useCallback(() => {
+      setIsDragging(true);
+    }, []);
+
+    const handleSliderPointerUp = useCallback(() => {
+      setIsDragging(false);
+
+      // Clear throttling and ensure final state sync
+      if (throttleRef.current) {
+        clearTimeout(throttleRef.current);
+        throttleRef.current = null;
+      }
+
+      // Final React state update
+      onChange(localValue);
+    }, [localValue, onChange]);
+
+    const handleInputChange = useCallback(
+      (e: React.ChangeEvent<HTMLInputElement>) => {
+        const val = e.target.value;
+        setInputValue(val);
+
+        const numVal = parseFloat(val);
+        if (!isNaN(numVal) && val !== "" && val !== "-") {
+          const constrainedValue = Math.min(Math.max(numVal, min), max);
+          setLocalValue(constrainedValue);
+          onChange(constrainedValue);
+        }
+      },
+      [min, max, onChange]
+    );
+
+    const handleInputBlur = useCallback(() => {
+      const numVal = parseFloat(inputValue);
+      if (isNaN(numVal)) {
+        setInputValue(localValue.toString());
+      } else {
+        const constrainedValue = Math.min(Math.max(numVal, min), max);
+        setLocalValue(constrainedValue);
+        setInputValue(constrainedValue.toString());
+        onChange(constrainedValue);
+      }
+    }, [inputValue, localValue, min, max, onChange]);
+
+    const handleInputKeyDown = useCallback(
+      (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === "Enter") {
+          const numVal = parseFloat(inputValue);
+          if (!isNaN(numVal)) {
+            const constrainedValue = Math.min(Math.max(numVal, min), max);
+            setLocalValue(constrainedValue);
+            setInputValue(constrainedValue.toString());
+            onChange(constrainedValue);
+          } else {
+            setInputValue(localValue.toString());
+          }
+          e.currentTarget.blur();
+        }
+      },
+      [inputValue, localValue, min, max, onChange]
+    );
+
+    // Cleanup
+    useEffect(() => {
+      return () => {
+        if (throttleRef.current) {
+          clearTimeout(throttleRef.current);
+        }
+      };
+    }, []);
+
+    return (
+      <div className="space-y-2">
+        <Label className="text-sm font-medium text-gray-700">{label}</Label>
+        <div className="flex items-center space-x-2">
+          <Slider
+            value={[localValue]}
+            onValueChange={handleSliderChange}
+            onPointerDown={handleSliderPointerDown}
+            onPointerUp={handleSliderPointerUp}
+            max={max}
+            min={min}
+            step={step}
+            className="flex-1"
+          />
+          <Input
+            type="number"
+            value={inputValue}
+            onChange={handleInputChange}
+            onBlur={handleInputBlur}
+            onKeyDown={handleInputKeyDown}
+            min={min}
+            max={max}
+            step={step}
+            className="w-16 text-center"
+          />
+        </div>
+      </div>
+    );
+  }
+);
+
+SliderWithInput.displayName = "SliderWithInput";
+
+// Helper function for direct fabric property updates
+const updateFabricProperty = (
+  textObject: any,
+  effectType: string,
+  propertyKey: string,
+  value: number,
+  fabric: any
+) => {
+  // Clear existing effects first
+  textObject.shadow = null;
+  textObject.stroke = null;
+  textObject.strokeWidth = 0;
+
+  switch (effectType) {
+    case "shadow":
+      if (
+        propertyKey === "shadowOffsetX" ||
+        propertyKey === "shadowOffsetY" ||
+        propertyKey === "shadowBlur" ||
+        propertyKey === "shadowOpacity"
+      ) {
+        // Get current shadow values from object or defaults
+        const offsetX =
+          propertyKey === "shadowOffsetX"
+            ? value
+            : textObject._shadowOffsetX || 0;
+        const offsetY =
+          propertyKey === "shadowOffsetY"
+            ? value
+            : textObject._shadowOffsetY || 0;
+        const blur =
+          propertyKey === "shadowBlur" ? value : textObject._shadowBlur || 0;
+        const opacity =
+          propertyKey === "shadowOpacity"
+            ? value / 100
+            : textObject._shadowOpacity || 1;
+        const color = textObject._shadowColor || "#000000";
+
+        // Store values on object for persistence
+        textObject._shadowOffsetX = offsetX;
+        textObject._shadowOffsetY = offsetY;
+        textObject._shadowBlur = blur;
+        textObject._shadowOpacity = opacity;
+
+        const shadowColorWithOpacity = `rgba(${parseInt(
+          color.slice(1, 3),
+          16
+        )}, ${parseInt(color.slice(3, 5), 16)}, ${parseInt(
+          color.slice(5, 7),
+          16
+        )}, ${opacity})`;
+
+        textObject.shadow = new fabric.Shadow({
+          color: shadowColorWithOpacity,
+          blur: blur,
+          offsetX: offsetX,
+          offsetY: offsetY,
+        });
+      }
+      break;
+
+    case "lift":
+      if (propertyKey === "liftIntensity" && value > 0.01) {
+        textObject.shadow = new fabric.Shadow({
+          color: "rgba(0, 0, 0, 0.3)",
+          blur: value / 2,
+          offsetX: 0,
+          offsetY: value / 10,
+        });
+      }
+      break;
+
+    case "hollow":
+      if (propertyKey === "hollowThickness" && value > 0.01) {
+        textObject.fill = "transparent";
+        textObject.stroke = textObject._originalFill || "#000000";
+        textObject.strokeWidth = value;
+      }
+      break;
+
+    // Add more cases as needed for other effects
+  }
+};
+
 const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
   canvas,
   selectedObject,
@@ -89,161 +409,46 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
     curveIntensity: 0,
   });
 
-  // Helper component for slider with input field - True Canva-style smooth dragging
-  const SliderWithInput = ({
-    label,
-    value,
-    onChange,
-    min,
-    max,
-    step = 1,
-  }: {
-    label: string;
-    value: number;
-    onChange: (value: number) => void;
-    min: number;
-    max: number;
-    step?: number;
-  }) => {
-    const [localValue, setLocalValue] = useState(value);
-    const [inputValue, setInputValue] = useState(value.toString());
-    const [isDragging, setIsDragging] = useState(false);
+  // Optimized state updater with throttling
+  const updateEffectState = useCallback(
+    (key: keyof EffectState, value: any) => {
+      setEffectState((prev) => ({
+        ...prev,
+        [key]: value,
+      }));
 
-    // RAF-based throttling for effect application during drag
-    const rafRef = useRef<number | null>(null);
-    const pendingValueRef = useRef<number>(value);
-
-    // Update local state when prop value changes (but not during dragging)
-    useEffect(() => {
-      if (!isDragging) {
-        setLocalValue(value);
-        setInputValue(value.toString());
-        pendingValueRef.current = value;
-      }
-    }, [value, isDragging]);
-
-    // Canva-style: Immediate slider update + throttled effect application
-    const handleSliderChange = (newValues: number[]) => {
-      const newValue = newValues[0];
-
-      // CRITICAL: Always update slider state immediately for smooth visual feedback
-      setLocalValue(newValue);
-      setInputValue(newValue.toString());
-      pendingValueRef.current = newValue;
-
-      if (isDragging) {
-        // During dragging: throttle effect application using RAF
-        if (rafRef.current) {
-          // Cancel previous pending update
-          cancelAnimationFrame(rafRef.current);
+      // For curve effects, handle separately
+      if (key === "curveIntensity") {
+        if (selectedObject) {
+          if (
+            selectedObject._isCurvedText ||
+            selectedObject.type === "curved-text"
+          ) {
+            selectedObject._curveAmount = value;
+          }
         }
-
-        rafRef.current = requestAnimationFrame(() => {
-          rafRef.current = null;
-          onChange(pendingValueRef.current);
-        });
+        // Direct call without closure issues
+        setTimeout(() => {
+          // Call applyCurveEffect directly when it's defined
+          if (typeof applyCurveEffect === "function") {
+            applyCurveEffect(selectedObject, value);
+          }
+        }, 0);
       } else {
-        // Single click/tap: immediate effect application
-        onChange(newValue);
+        // Throttled effect reapplication for other effects
+        setTimeout(() => {
+          if (selectedEffect !== "none") {
+            // Call applyEffect directly when it's defined
+            if (typeof applyEffect === "function") {
+              applyEffect(selectedEffect);
+            }
+          }
+        }, 0);
       }
-    };
-
-    const handleSliderPointerDown = () => {
-      setIsDragging(true);
-    };
-
-    const handleSliderPointerUp = () => {
-      setIsDragging(false);
-
-      // Cancel any pending RAF and apply final value immediately
-      if (rafRef.current) {
-        cancelAnimationFrame(rafRef.current);
-        rafRef.current = null;
-      }
-
-      // Ensure final value is applied
-      onChange(pendingValueRef.current);
-    };
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const val = e.target.value;
-      setInputValue(val);
-
-      const numVal = parseFloat(val);
-      if (!isNaN(numVal) && val !== "" && val !== "-") {
-        const constrainedValue = Math.min(Math.max(numVal, min), max);
-        setLocalValue(constrainedValue);
-        pendingValueRef.current = constrainedValue;
-        onChange(constrainedValue);
-      }
-    };
-
-    const handleInputBlur = () => {
-      const numVal = parseFloat(inputValue);
-      if (isNaN(numVal)) {
-        setInputValue(localValue.toString());
-      } else {
-        const constrainedValue = Math.min(Math.max(numVal, min), max);
-        setLocalValue(constrainedValue);
-        pendingValueRef.current = constrainedValue;
-        setInputValue(constrainedValue.toString());
-        onChange(constrainedValue);
-      }
-    };
-
-    const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === "Enter") {
-        const numVal = parseFloat(inputValue);
-        if (!isNaN(numVal)) {
-          const constrainedValue = Math.min(Math.max(numVal, min), max);
-          setLocalValue(constrainedValue);
-          pendingValueRef.current = constrainedValue;
-          setInputValue(constrainedValue.toString());
-          onChange(constrainedValue);
-        } else {
-          setInputValue(localValue.toString());
-        }
-        e.currentTarget.blur();
-      }
-    };
-
-    // Cleanup
-    useEffect(() => {
-      return () => {
-        if (rafRef.current) {
-          cancelAnimationFrame(rafRef.current);
-        }
-      };
-    }, []);
-
-    return (
-      <div className="space-y-2">
-        <Label className="text-sm font-medium text-gray-700">{label}</Label>
-        <div className="flex items-center space-x-2">
-          <Slider
-            value={[localValue]}
-            onValueChange={handleSliderChange}
-            onPointerDown={handleSliderPointerDown}
-            onPointerUp={handleSliderPointerUp}
-            max={max}
-            min={min}
-            step={step}
-            className="flex-1"
-          />
-          <Input
-            type="number"
-            value={inputValue}
-            onChange={handleInputChange}
-            onBlur={handleInputBlur}
-            onKeyDown={handleInputKeyDown}
-            min={min}
-            max={max}
-            step={step}
-            className="w-16 text-center"
-          />
-        </div>
-      </div>
-    );
-  };
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    },
+    [selectedEffect, selectedObject]
+  ); // Functions will be available in closure
 
   // Handle keyboard events for curved text deletion
   useEffect(() => {
@@ -358,40 +563,6 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
       });
     }
   }, [selectedObject, syncFromFabricObject]);
-
-  // Enhanced state updater function with proper effect clearing
-  const updateEffectState = (key: keyof EffectState, value: any) => {
-    // Update state immediately
-    setEffectState((prev) => ({
-      ...prev,
-      [key]: value,
-    }));
-
-    // Apply effects with proper clearing logic
-    if (key === "curveIntensity") {
-      // Handle curve updates
-      if (selectedObject) {
-        if (
-          selectedObject._isCurvedText ||
-          selectedObject.type === "curved-text"
-        ) {
-          selectedObject._curveAmount = value;
-        }
-      }
-      applyCurveEffect(selectedObject, value);
-    } else {
-      // For other effects, we need to reapply with the updated state
-      // Use a small timeout to ensure state is updated before effect application
-      setTimeout(() => {
-        if (selectedEffect !== "none") {
-          applyEffect(selectedEffect);
-        }
-        if (selectedShape !== "none" && selectedShape !== "curve") {
-          applyShape(selectedShape);
-        }
-      }, 0);
-    }
-  };
 
   const handleClose = () => {
     setEditorMode(null);
@@ -936,6 +1107,11 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
         onChange={(value) => updateEffectState("shadowOffsetX", value)}
         min={-50}
         max={50}
+        canvas={canvas}
+        fabric={fabric}
+        selectedObject={selectedObject}
+        effectType="shadow"
+        propertyKey="shadowOffsetX"
       />
 
       {/* Direction */}
@@ -945,6 +1121,11 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
         onChange={(value) => updateEffectState("shadowOffsetY", value)}
         min={-50}
         max={50}
+        canvas={canvas}
+        fabric={fabric}
+        selectedObject={selectedObject}
+        effectType="shadow"
+        propertyKey="shadowOffsetY"
       />
 
       {/* Blur */}
@@ -954,6 +1135,11 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
         onChange={(value) => updateEffectState("shadowBlur", value)}
         min={0}
         max={50}
+        canvas={canvas}
+        fabric={fabric}
+        selectedObject={selectedObject}
+        effectType="shadow"
+        propertyKey="shadowBlur"
       />
 
       {/* Transparency */}
@@ -963,6 +1149,11 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
         onChange={(value) => updateEffectState("shadowOpacity", value)}
         min={0}
         max={100}
+        canvas={canvas}
+        fabric={fabric}
+        selectedObject={selectedObject}
+        effectType="shadow"
+        propertyKey="shadowOpacity"
       />
 
       {/* Color */}
