@@ -2,7 +2,8 @@
 "use client";
 import { FabricCanvas, FabricModule } from "@/types/fabric";
 import { FabricObject } from "fabric";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { safeCanvasRender, safeCanvasOperation } from "@/lib/utils";
 
 interface CanvasComponentProps {
   fabric: FabricModule;
@@ -20,6 +21,12 @@ const CanvasComponent: React.FC<CanvasComponentProps> = ({
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const [isClient, setIsClient] = useState(false);
+
+  // Ensure component only renders on client to prevent hydration issues
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   // Note: This component could use setHasCanvasObjects from useEditorStore for tracking
   // canvas objects, but it's handled in the main page component instead
@@ -49,13 +56,17 @@ const CanvasComponent: React.FC<CanvasComponentProps> = ({
         height: scaledHeight,
       });
       canvasInstance.setZoom(scale);
-      canvasInstance.renderAll();
+
+      // Use safe canvas operation for rendering
+      safeCanvasOperation(canvasInstance, () => {
+        canvasInstance.renderAll();
+      });
     },
     [canvasWidth, canvasHeight]
   );
 
   useEffect(() => {
-    if (!canvasRef.current || !fabric) return;
+    if (!canvasRef.current || !fabric || !isClient) return;
     const canvasInstance = new fabric.Canvas(canvasRef.current, {
       width: canvasWidth,
       height: canvasHeight,
@@ -70,18 +81,18 @@ const CanvasComponent: React.FC<CanvasComponentProps> = ({
     canvasInstance.on("selection:created", (e: any) => {
       const selected = e.selected?.[0] || null;
       setSelectedObject(selected);
-      canvasInstance.renderAll();
+      safeCanvasOperation(canvasInstance, () => canvasInstance.renderAll());
     });
 
     canvasInstance.on("selection:updated", (e: any) => {
       const selected = e.selected?.[0] || null;
       setSelectedObject(selected);
-      canvasInstance.renderAll();
+      safeCanvasOperation(canvasInstance, () => canvasInstance.renderAll());
     });
 
     canvasInstance.on("selection:cleared", () => {
       setSelectedObject(null);
-      canvasInstance.renderAll();
+      safeCanvasOperation(canvasInstance, () => canvasInstance.renderAll());
     });
 
     // Improved object modification handling
@@ -90,7 +101,7 @@ const CanvasComponent: React.FC<CanvasComponentProps> = ({
       if (obj) {
         obj.setCoords();
       }
-      canvasInstance.renderAll();
+      safeCanvasOperation(canvasInstance, () => canvasInstance.renderAll());
     });
 
     // Smooth object movement
@@ -193,7 +204,9 @@ const CanvasComponent: React.FC<CanvasComponentProps> = ({
               canvasInstance.add(obj);
             });
 
-            canvasInstance.renderAll();
+            safeCanvasOperation(canvasInstance, () =>
+              canvasInstance.renderAll()
+            );
 
             // Set active object and enter editing mode
             canvasInstance.setActiveObject(clickedTextObject);
@@ -216,7 +229,9 @@ const CanvasComponent: React.FC<CanvasComponentProps> = ({
                 const newGroup = new fabric.Group(groupObjects, originalProps);
                 canvasInstance.add(newGroup);
                 canvasInstance.setActiveObject(newGroup);
-                canvasInstance.renderAll();
+                safeCanvasOperation(canvasInstance, () =>
+                  canvasInstance.renderAll()
+                );
               } catch (error) {
                 console.error("Error during regrouping:", error);
                 // Fallback: add objects back individually if grouping fails
@@ -225,7 +240,9 @@ const CanvasComponent: React.FC<CanvasComponentProps> = ({
                     canvasInstance.add(obj);
                   }
                 });
-                canvasInstance.renderAll();
+                safeCanvasOperation(canvasInstance, () =>
+                  canvasInstance.renderAll()
+                );
               }
             };
 
@@ -259,6 +276,7 @@ const CanvasComponent: React.FC<CanvasComponentProps> = ({
     resizeCanvas,
     canvasWidth,
     canvasHeight,
+    isClient,
   ]);
 
   // Handle canvas size changes - re-center when dimensions change
@@ -270,6 +288,22 @@ const CanvasComponent: React.FC<CanvasComponentProps> = ({
       }
     }
   }, [canvasWidth, canvasHeight, fabric, resizeCanvas]);
+
+  // Prevent hydration issues by only rendering canvas on client
+  if (!isClient) {
+    return (
+      <div
+        ref={containerRef}
+        className="w-full h-full flex items-center justify-center"
+      >
+        <div className="shadow-xl bg-white rounded-lg overflow-hidden border border-gray-200 relative transition-all duration-300 ease-in-out">
+          <div className="w-full h-[566px] flex items-center justify-center text-gray-500">
+            Loading Canvas...
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div

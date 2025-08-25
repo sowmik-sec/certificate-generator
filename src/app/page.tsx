@@ -15,6 +15,7 @@ import AlignmentToolbar from "@/components/alignment-toolbar";
 import CanvasSizePanel, { CanvasSize } from "@/components/canvas-size-panel";
 import { useEditorStore } from "@/stores/useEditorStore";
 import { useCanvasStore } from "@/stores/useCanvasStore";
+import { getCanvasManager } from "@/lib/canvasManager";
 
 // Import custom hooks
 import { useFabricCanvas } from "@/hooks/useFabricCanvas";
@@ -35,6 +36,7 @@ import LeftPanel from "@/components/left-panel";
 import LayerControls from "@/components/layer-controls";
 import HeaderActions from "@/components/header-actions";
 import { ConfirmModal } from "@/components/confirm-modal";
+import FabricPatchInitializer from "@/components/fabric-patch-initializer";
 
 // Main App Component
 export default function CertificateGeneratorPage() {
@@ -62,8 +64,7 @@ export default function CertificateGeneratorPage() {
   // Custom hooks
   const { handleSetCanvas } = useFabricCanvas();
 
-  const { saveToHistory, undo, redo, canUndo, canRedo } =
-    useCanvasHistory(canvas);
+  const { saveToHistory, undo, redo } = useCanvasHistory(canvas);
 
   const shapeHooks = useCanvasShapes(canvas, fabric, saveToHistory);
   const lineHooks = useCanvasLines(canvas, fabric, saveToHistory);
@@ -193,6 +194,10 @@ export default function CertificateGeneratorPage() {
     if (!canvas) return;
 
     console.log("Starting canvas size change...");
+
+    // Use canvas manager for safe dimension changes
+    const manager = getCanvasManager(canvas);
+
     const previousSize = canvasSize;
 
     // Calculate simple scale factors
@@ -201,7 +206,7 @@ export default function CertificateGeneratorPage() {
 
     console.log(`Scaling factors: ${scaleX}, ${scaleY}`);
 
-    // Get all objects before changing canvas size
+    // Scale objects before dimension change
     const objects = canvas.getObjects();
     console.log(`Found ${objects.length} objects to scale`);
 
@@ -238,15 +243,17 @@ export default function CertificateGeneratorPage() {
       }
     });
 
-    try {
-      // Set new canvas dimensions
-      canvas.setDimensions({ width: newSize.width, height: newSize.height });
-      canvas.renderAll();
-      saveToHistory();
-      console.log("Canvas resize completed successfully");
-    } catch (error) {
-      console.error("Error setting canvas dimensions:", error);
-    }
+    // Use canvas manager for safe dimension change
+    manager.safeDimensionChange(newSize.width, newSize.height, () => {
+      // This callback runs after dimension change is complete and context is valid
+      console.log("Canvas dimension change completed, rendering...");
+      manager.safeRender(() => {
+        // This runs after safe rendering is complete
+        console.log("Canvas rendered successfully, saving to history...");
+        saveToHistory();
+        console.log("Canvas resize completed successfully");
+      });
+    });
   };
 
   const handleConfirmCanvasSizeChange = () => {
@@ -344,174 +351,178 @@ export default function CertificateGeneratorPage() {
   }
 
   return (
-    <div
-      className="flex flex-col md:flex-row h-screen w-screen bg-gray-100 font-sans overflow-hidden relative"
-      onClick={(e) => {
-        // Close hover panel if clicking outside and it's not pinned
-        if (
-          !editorMode &&
-          hoveredMode &&
-          !(e.target as Element).closest("aside")
-        ) {
-          setHoveredMode(null);
-        }
-      }}
-    >
-      <input
-        type="file"
-        accept="image/*"
-        ref={imageInputRef}
-        className="hidden text-gray-700"
-        onChange={handleImageElementUpload}
-      />
+    <>
+      <FabricPatchInitializer />
+      <div
+        className="flex flex-col md:flex-row h-screen w-screen bg-gray-100 font-sans overflow-hidden relative"
+        suppressHydrationWarning={true}
+        onClick={(e) => {
+          // Close hover panel if clicking outside and it's not pinned
+          if (
+            !editorMode &&
+            hoveredMode &&
+            !(e.target as Element).closest("aside")
+          ) {
+            setHoveredMode(null);
+          }
+        }}
+      >
+        <input
+          type="file"
+          accept="image/*"
+          ref={imageInputRef}
+          className="hidden text-gray-700"
+          onChange={handleImageElementUpload}
+        />
 
-      {/* Left Sidebar - Navigation */}
-      <SidebarNavigation
-        editorMode={editorMode}
-        setEditorMode={setEditorMode}
-        hoveredMode={hoveredMode}
-        setHoveredMode={setHoveredMode}
-        onImageUpload={() => imageInputRef.current?.click()}
-      />
+        {/* Left Sidebar - Navigation */}
+        <SidebarNavigation
+          editorMode={editorMode}
+          setEditorMode={setEditorMode}
+          hoveredMode={hoveredMode}
+          setHoveredMode={setHoveredMode}
+          onImageUpload={() => imageInputRef.current?.click()}
+        />
 
-      {/* Left Panel - Tools */}
-      <LeftPanel
-        editorMode={editorMode}
-        hoveredMode={hoveredMode}
-        setHoveredMode={setHoveredMode}
-        setEditorMode={setEditorMode}
-        canvas={canvas}
-        fabric={fabric}
-        selectedObject={selectedObject}
-        onSelectTemplate={loadTemplate}
-        onImageUpload={handleBackgroundImageUpload}
-        {...shapeHooks}
-        {...lineHooks}
-        {...textHooks}
-        {...frameHooks}
-        addStickyNote={addStickyNote}
-        addTable={addTable}
-      />
+        {/* Left Panel - Tools */}
+        <LeftPanel
+          editorMode={editorMode}
+          hoveredMode={hoveredMode}
+          setHoveredMode={setHoveredMode}
+          setEditorMode={setEditorMode}
+          canvas={canvas}
+          fabric={fabric}
+          selectedObject={selectedObject}
+          onSelectTemplate={loadTemplate}
+          onImageUpload={handleBackgroundImageUpload}
+          {...shapeHooks}
+          {...lineHooks}
+          {...textHooks}
+          {...frameHooks}
+          addStickyNote={addStickyNote}
+          addTable={addTable}
+        />
 
-      {/* Main Content Area */}
-      <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* Header */}
-        <header className="bg-white shadow-md z-10 flex justify-between items-center p-2 space-x-2 flex-shrink-0">
-          {/* Layer Management Controls */}
-          <LayerControls
-            selectedObjects={selectedObjects}
-            {...layerManagement}
-          />
-
-          {/* Center Controls - Canvas Size */}
-          <div className="flex items-center space-x-2">
-            <CanvasSizePanel
-              currentSize={canvasSize}
-              onSizeChange={handleCanvasSizeChange}
-              shouldShow={shouldShowCanvasSize}
+        {/* Main Content Area */}
+        <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
+          {/* Header */}
+          <header className="bg-white shadow-md z-10 flex justify-between items-center p-2 space-x-2 flex-shrink-0">
+            {/* Layer Management Controls */}
+            <LayerControls
+              selectedObjects={selectedObjects}
+              {...layerManagement}
             />
-            {!shouldShowCanvasSize && (
-              <div className="text-sm text-gray-500 px-3 py-2 bg-gray-100 rounded-md">
-                Canvas size locked while designing
-              </div>
-            )}
-          </div>
 
-          {/* Right side controls */}
-          <HeaderActions
-            selectedObject={selectedObject}
-            deleteSelected={deleteSelected}
-            exportAsPNG={exportAsPNG}
-            exportAsPDF={exportAsPDF}
-          />
-        </header>
+            {/* Center Controls - Canvas Size */}
+            <div className="flex items-center space-x-2">
+              <CanvasSizePanel
+                currentSize={canvasSize}
+                onSizeChange={handleCanvasSizeChange}
+                shouldShow={shouldShowCanvasSize}
+              />
+              {!shouldShowCanvasSize && (
+                <div className="text-sm text-gray-500 px-3 py-2 bg-gray-100 rounded-md">
+                  Canvas size locked while designing
+                </div>
+              )}
+            </div>
 
-        {/* Alignment Toolbar */}
-        {/* <AlignmentToolbar canvas={canvas} selectedObjects={selectedObjects} /> */}
+            {/* Right side controls */}
+            <HeaderActions
+              selectedObject={selectedObject}
+              deleteSelected={deleteSelected}
+              exportAsPNG={exportAsPNG}
+              exportAsPDF={exportAsPDF}
+            />
+          </header>
 
-        {/* Canvas and Properties Panel Container */}
-        <div className="flex-1 flex overflow-hidden">
-          {/* Canvas Area */}
-          <div
-            className="flex-1 flex items-center justify-center p-4 md:p-8 overflow-hidden min-w-0"
-            style={{
-              backgroundImage: `
+          {/* Alignment Toolbar */}
+          {/* <AlignmentToolbar canvas={canvas} selectedObjects={selectedObjects} /> */}
+
+          {/* Canvas and Properties Panel Container */}
+          <div className="flex-1 flex overflow-hidden">
+            {/* Canvas Area */}
+            <div
+              className="flex-1 flex items-center justify-center p-4 md:p-8 overflow-hidden min-w-0"
+              style={{
+                backgroundImage: `
                    linear-gradient(45deg, #f0f0f0 25%, transparent 25%), 
                    linear-gradient(-45deg, #f0f0f0 25%, transparent 25%), 
                    linear-gradient(45deg, transparent 75%, #f0f0f0 75%), 
                    linear-gradient(-45deg, transparent 75%, #f0f0f0 75%)
                  `,
-              backgroundSize: "20px 20px",
-              backgroundPosition: "0 0, 0 10px, 10px -10px, -10px 0px",
-              backgroundColor: "#e5e5e5",
-            }}
-          >
-            <CanvaContextMenu canvas={canvas} selectedObject={selectedObject}>
-              <div className="w-full h-full relative">
-                {/* Top Property Panel - Appears above canvas when object is selected */}
-                {selectedObject && (
-                  <TopPropertyPanel
-                    selectedObject={selectedObject}
-                    canvas={canvas}
-                    setEditorMode={setEditorMode}
+                backgroundSize: "20px 20px",
+                backgroundPosition: "0 0, 0 10px, 10px -10px, -10px 0px",
+                backgroundColor: "#e5e5e5",
+              }}
+            >
+              <CanvaContextMenu canvas={canvas} selectedObject={selectedObject}>
+                <div className="w-full h-full relative">
+                  {/* Top Property Panel - Appears above canvas when object is selected */}
+                  {selectedObject && (
+                    <TopPropertyPanel
+                      selectedObject={selectedObject}
+                      canvas={canvas}
+                      setEditorMode={setEditorMode}
+                    />
+                  )}
+
+                  <CanvasComponent
+                    fabric={fabric}
+                    setCanvas={handleSetCanvas}
+                    setSelectedObject={setSelectedObject}
+                    canvasWidth={canvasSize.width}
+                    canvasHeight={canvasSize.height}
                   />
-                )}
-
-                <CanvasComponent
-                  fabric={fabric}
-                  setCanvas={handleSetCanvas}
-                  setSelectedObject={setSelectedObject}
-                  canvasWidth={canvasSize.width}
-                  canvasHeight={canvasSize.height}
-                />
-                {/* Add alignment guides component */}
-                <AlignmentGuides canvas={canvas} fabric={fabric} />
-                {/* Add canvas stability component */}
-                <CanvasStability canvas={canvas} fabric={fabric} />
-                {/* Add precision selection component */}
-                <PrecisionSelection canvas={canvas} fabric={fabric} />
-                {/* Add context menu for better object selection */}
-                <ContextMenu canvas={canvas} fabric={fabric} />
-                {/* Add line visibility enhancer */}
-                <LineVisibilityEnhancer canvas={canvas} fabric={fabric} />
-                {/* Add text editing enhancer to fix typing delays */}
-                <TextEditingEnhancer canvas={canvas} fabric={fabric} />
-                {/* Add selection tooltip */}
-                <SelectionTooltip
-                  canvas={canvas}
-                  fabric={fabric}
-                  selectedObject={selectedObject}
-                />
-              </div>
-            </CanvaContextMenu>
+                  {/* Add alignment guides component */}
+                  <AlignmentGuides canvas={canvas} fabric={fabric} />
+                  {/* Add canvas stability component */}
+                  <CanvasStability canvas={canvas} fabric={fabric} />
+                  {/* Add precision selection component */}
+                  <PrecisionSelection canvas={canvas} fabric={fabric} />
+                  {/* Add context menu for better object selection */}
+                  <ContextMenu canvas={canvas} fabric={fabric} />
+                  {/* Add line visibility enhancer */}
+                  <LineVisibilityEnhancer canvas={canvas} fabric={fabric} />
+                  {/* Add text editing enhancer to fix typing delays */}
+                  <TextEditingEnhancer canvas={canvas} fabric={fabric} />
+                  {/* Add selection tooltip */}
+                  <SelectionTooltip
+                    canvas={canvas}
+                    fabric={fabric}
+                    selectedObject={selectedObject}
+                  />
+                </div>
+              </CanvaContextMenu>
+            </div>
           </div>
-        </div>
-      </main>
+        </main>
 
-      {/* Canvas Size Change Confirmation Modal */}
-      <ConfirmModal
-        isOpen={showCanvasSizeModal}
-        title="Change Canvas Size"
-        message="Changing canvas size will scale existing objects. Do you want to continue?"
-        confirmText="Scale Objects"
-        cancelText="Cancel"
-        onConfirm={handleConfirmCanvasSizeChange}
-        onCancel={handleCancelCanvasSizeChange}
-      />
+        {/* Canvas Size Change Confirmation Modal */}
+        <ConfirmModal
+          isOpen={showCanvasSizeModal}
+          title="Change Canvas Size"
+          message="Changing canvas size will scale existing objects. Do you want to continue?"
+          confirmText="Scale Objects"
+          cancelText="Cancel"
+          onConfirm={handleConfirmCanvasSizeChange}
+          onCancel={handleCancelCanvasSizeChange}
+        />
 
-      {/* Debug: Force close button */}
-      {showCanvasSizeModal && (
-        <button
-          onClick={() => {
-            console.log("FORCE CLOSING MODAL");
-            setShowCanvasSizeModal(false);
-            setPendingCanvasSize(null);
-          }}
-          className="fixed top-4 right-4 z-[60] bg-red-600 text-white px-4 py-2 rounded"
-        >
-          FORCE CLOSE MODAL
-        </button>
-      )}
-    </div>
+        {/* Debug: Force close button */}
+        {showCanvasSizeModal && (
+          <button
+            onClick={() => {
+              console.log("FORCE CLOSING MODAL");
+              setShowCanvasSizeModal(false);
+              setPendingCanvasSize(null);
+            }}
+            className="fixed top-4 right-4 z-[60] bg-red-600 text-white px-4 py-2 rounded"
+          >
+            FORCE CLOSE MODAL
+          </button>
+        )}
+      </div>
+    </>
   );
 }

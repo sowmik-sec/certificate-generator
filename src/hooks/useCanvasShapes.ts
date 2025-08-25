@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { useCallback } from "react";
+import { safeCanvasRender } from "@/lib/utils";
 
 export const useCanvasShapes = (
   canvas: any,
