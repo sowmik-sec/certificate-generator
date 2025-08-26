@@ -402,8 +402,9 @@ const LayerPanel: React.FC<LayerPanelProps> = ({
                       e.stopPropagation();
                       toggleVisibility(layer.id);
                     }}
-                    className="p-1 rounded hover:bg-gray-200 transition-colors"
+                    className="p-1 rounded hover:bg-gray-200 transition-colors hover:cursor-pointer"
                     title={layer.visible ? "Hide layer" : "Show layer"}
+                    variant="outline"
                   >
                     {layer.visible ? (
                       <Eye size={14} className="text-gray-600" />
@@ -418,8 +419,9 @@ const LayerPanel: React.FC<LayerPanelProps> = ({
                       e.stopPropagation();
                       toggleLock(layer.id);
                     }}
-                    className="p-1 rounded hover:bg-gray-200 transition-colors"
+                    className="p-1 rounded hover:bg-gray-200 transition-colors hover:cursor-pointer"
                     title={layer.locked ? "Unlock layer" : "Lock layer"}
+                    variant="outline"
                   >
                     {layer.locked ? (
                       <Lock size={14} className="text-red-500" />
@@ -434,8 +436,9 @@ const LayerPanel: React.FC<LayerPanelProps> = ({
                       e.stopPropagation();
                       duplicateLayer(layer.id);
                     }}
-                    className="p-1 rounded hover:bg-gray-200 transition-colors"
+                    className="p-1 rounded hover:bg-gray-200 transition-colors hover:cursor-pointer"
                     title="Duplicate layer"
+                    variant="outline"
                   >
                     <Copy size={14} className="text-gray-600" />
                   </Button>
@@ -446,8 +449,9 @@ const LayerPanel: React.FC<LayerPanelProps> = ({
                       e.stopPropagation();
                       deleteLayer(layer.id);
                     }}
-                    className="p-1 rounded hover:bg-red-100 hover:text-red-600 transition-colors"
+                    className="p-1 rounded hover:bg-red-100 hover:text-red-600 transition-colors hover:cursor-pointer"
                     title="Delete layer"
+                    variant="outline"
                   >
                     <Trash2 size={14} className="text-gray-600" />
                   </Button>

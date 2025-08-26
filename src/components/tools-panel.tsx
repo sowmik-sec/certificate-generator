@@ -109,7 +109,8 @@ const ToolsPanel: React.FC<ToolsPanelProps> = ({
             </div>
             <Button
               onClick={() => addTable(tableRows, tableCols)}
-              className="w-full mt-3"
+              className="w-full mt-3 hover:cursor-pointer"
+              variant="secondary"
             >
               Add Table
             </Button>
