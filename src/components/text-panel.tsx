@@ -1,6 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface TextPanelProps {
   addHeading: (options?: object) => void;
@@ -222,27 +225,27 @@ const TextPanel: React.FC<TextPanelProps> = ({
               />
             </svg>
           </div>
-          <input
+          <Input
             type="text"
             placeholder="Search fonts and combinations"
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            className="w-full pl-10 pr-4"
           />
         </div>
 
         {/* Add Text Box Button */}
-        <button
+        <Button
           onClick={() => addBodyText()}
-          className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 px-4 rounded-lg font-medium flex items-center justify-center space-x-2 transition-colors"
+          className="w-full py-3 px-4 font-medium flex items-center justify-center space-x-2"
         >
           <span className="text-xl">T</span>
           <span>Add a text box</span>
-        </button>
+        </Button>
       </div>
 
       {/* Scrollable Content */}
-      <div className="flex-1 overflow-y-auto">
+      <ScrollArea className="h-[600px] w-full">
         <div className="p-4 space-y-8">
           {/* Default Text Styles Section */}
           <div className="space-y-3">
@@ -251,34 +254,37 @@ const TextPanel: React.FC<TextPanelProps> = ({
             </h3>
 
             {/* Heading */}
-            <button
+            <Button
               onClick={() => addHeading()}
-              className="w-full p-4 bg-gray-50 hover:bg-gray-100 rounded-xl text-left transition-all group border border-gray-100 hover:border-gray-200 hover:shadow-sm"
+              variant="outline"
+              className="w-full p-4 h-auto text-left justify-start"
             >
               <div className="text-3xl font-bold text-gray-900 group-hover:text-purple-600 transition-colors">
                 Add a heading
               </div>
-            </button>
+            </Button>
 
             {/* Subheading */}
-            <button
+            <Button
               onClick={() => addSubheading()}
-              className="w-full p-4 bg-gray-50 hover:bg-gray-100 rounded-xl text-left transition-all group border border-gray-100 hover:border-gray-200 hover:shadow-sm"
+              variant="outline"
+              className="w-full p-4 h-auto text-left justify-start"
             >
               <div className="text-xl font-semibold text-gray-800 group-hover:text-purple-600 transition-colors">
                 Add a subheading
               </div>
-            </button>
+            </Button>
 
             {/* Body Text */}
-            <button
+            <Button
               onClick={() => addBodyText()}
-              className="w-full p-4 bg-gray-50 hover:bg-gray-100 rounded-xl text-left transition-all group border border-gray-100 hover:border-gray-200 hover:shadow-sm"
+              variant="outline"
+              className="w-full p-4 h-auto text-left justify-start"
             >
               <div className="text-sm text-gray-700 group-hover:text-purple-600 transition-colors">
                 Add a little bit of body text
               </div>
-            </button>
+            </Button>
           </div>
 
           {/* Dynamic Text Section */}
@@ -286,8 +292,12 @@ const TextPanel: React.FC<TextPanelProps> = ({
             <h2 className="text-xl font-bold text-gray-800 mb-4">
               Dynamic text
             </h2>
-            <button onClick={addPageNumber}>
-              <div className="flex items-center p-3 space-x-4 bg-white border border-gray-200 rounded-lg shadow-sm w-full max-w-xs cursor-pointer hover:bg-gray-50 transition-colors duration-200">
+            <Button
+              onClick={addPageNumber}
+              variant="outline"
+              className="p-0 h-auto"
+            >
+              <div className="flex items-center p-3 space-x-4 w-full max-w-xs cursor-pointer hover:bg-gray-50 transition-colors duration-200">
                 {/* Icon Container */}
                 <div className="relative flex-shrink-0 w-16 h-16 rounded-md overflow-hidden bg-gradient-to-br from-orange-400 to-red-600 shadow-md border-2 border-yellow-200">
                   {/* Bottom right number '2' */}
@@ -311,7 +321,7 @@ const TextPanel: React.FC<TextPanelProps> = ({
                   Page numbers
                 </p>
               </div>
-            </button>
+            </Button>
           </div>
 
           {/* Font Combinations Section */}
@@ -325,10 +335,11 @@ const TextPanel: React.FC<TextPanelProps> = ({
 
             <div className="grid grid-cols-2 gap-3">
               {fontCombinations.map((combo) => (
-                <button
+                <Button
                   key={combo.id}
                   onClick={() => addFontCombination(combo)}
-                  className="relative p-4 bg-gray-50 hover:bg-gray-100 rounded-xl text-left transition-all group border border-gray-100 hover:border-purple-200 hover:shadow-sm"
+                  variant="outline"
+                  className="relative p-4 h-auto text-left justify-start group"
                 >
                   <div className="space-y-1">
                     <div
@@ -348,12 +359,12 @@ const TextPanel: React.FC<TextPanelProps> = ({
                       </div>
                     )}
                   </div>
-                </button>
+                </Button>
               ))}
             </div>
           </div>
         </div>
-      </div>
+      </ScrollArea>
     </div>
   );
 };

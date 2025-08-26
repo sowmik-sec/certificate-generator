@@ -1,22 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-dconsconst SelectionTooltip: React.FC<SelectionTooltipProps> = ({ 
-  canvas, 
-  fabric, 
-  selectedObject
-}) => {
-  const [tooltipState, setTooltipState] = useState({
-    visible: false,
-    x: 0,
-    y: 0,
-    object: null as any,
-  });ooltip: React.FC<SelectionTooltipProps> = ({ 
-  canvas, 
-  fabric, 
-  selectedObject
-}) => { @typescript-eslint/no-explicit-any */
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import { Lock, Unlock, Copy, Trash2, MoreHorizontal } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 
 interface SelectionTooltipProps {
   canvas: any;
@@ -203,8 +190,8 @@ const SelectionTooltip: React.FC<SelectionTooltipProps> = ({
       />
 
       {/* Tooltip */}
-      <div
-        className="fixed bg-white border border-gray-200 rounded-lg shadow-lg p-2 z-50 flex items-center gap-1"
+      <Card
+        className="fixed p-2 z-50 flex flex-row items-center gap-1 bg-white border shadow-lg"
         style={{
           left: tooltipState.x - 60, // Center horizontally
           top: tooltipState.y - 45, // Position above
@@ -213,46 +200,54 @@ const SelectionTooltip: React.FC<SelectionTooltipProps> = ({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Lock/Unlock Button */}
-        <button
+        <Button
           onClick={handleLockToggle}
-          className={`p-2 rounded hover:bg-gray-100 transition-colors ${
+          variant="ghost"
+          size="sm"
+          className={`p-2 h-auto ${
             isLocked ? "text-red-600" : "text-gray-600"
           }`}
           title={isLocked ? "Unlock" : "Lock"}
         >
           {isLocked ? <Lock size={16} /> : <Unlock size={16} />}
-        </button>
+        </Button>
 
         {/* Duplicate Button */}
-        <button
+        <Button
           onClick={handleDuplicate}
-          className="p-2 rounded hover:bg-gray-100 transition-colors text-gray-600"
+          variant="ghost"
+          size="sm"
+          className="p-2 h-auto text-gray-600"
           title="Duplicate"
         >
           <Copy size={16} />
-        </button>
+        </Button>
 
         {/* Delete Button */}
-        <button
+        <Button
           onClick={handleDelete}
-          className="p-2 rounded hover:bg-gray-100 transition-colors text-red-600"
+          variant="ghost"
+          size="sm"
+          className="p-2 h-auto text-red-600"
           title="Delete"
         >
           <Trash2 size={16} />
-        </button>
+        </Button>
 
         {/* Separator */}
         <div className="w-px h-6 bg-gray-300 mx-1" />
 
         {/* More Options Button */}
-        <button
+        <Button
           onClick={handleShowMore}
-          className="p-2 rounded hover:bg-gray-100 transition-colors text-gray-600"
+          variant="ghost"
+          size="sm"
+          className="p-2 h-auto text-gray-600"
           title="More options"
         >
           <MoreHorizontal size={16} />
-        </button>
-      </div>
+        </Button>
+      </Card>
     </>
   );
 };

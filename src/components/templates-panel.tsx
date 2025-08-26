@@ -16,6 +16,8 @@ import { artisticTemplate } from "@/templates/artistic-template";
 import { ImageIcon, Palette } from "lucide-react";
 import { useRef } from "react";
 import { useTemplatesStore } from "@/stores/useTemplatesStore";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 interface TemplatesPanelProps {
@@ -75,78 +77,81 @@ const TemplatesPanel: React.FC<TemplatesPanelProps> = ({
   };
   return (
     <div>
-      <div className="mb-6 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-        <h3 className="font-semibold text-blue-800 mb-2">
-          ✨ Use Your Own Template
-        </h3>
-        <input
-          type="file"
-          accept="image/*"
-          ref={fileInputRef}
-          onChange={onImageUpload}
-          className="hidden text-gray-700"
-        />
-        <button
-          onClick={() => fileInputRef.current?.click()}
-          className="w-full flex items-center justify-center space-x-2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
-        >
-          <ImageIcon size={16} />
-          <span>Upload an Image</span>
-        </button>
-      </div>
-
-      {/* Background Color Selector */}
-      <div className="mb-6 p-3 bg-purple-50 border border-purple-200 rounded-lg">
-        <h3 className="font-semibold text-purple-800 mb-2 flex items-center">
-          <Palette size={16} className="mr-2" />
-          Background Color
-        </h3>
-        <div className="space-y-3">
+      <Card className="mb-6 bg-blue-50 border-blue-200">
+        <CardContent className="p-3">
+          <h3 className="font-semibold text-blue-800 mb-2">
+            ✨ Use Your Own Template
+          </h3>
           <input
-            type="color"
-            value={backgroundColor}
-            onChange={(e) => handleBackgroundColorChange(e.target.value)}
-            className="w-full h-10 rounded-md border border-purple-300 cursor-pointer"
+            type="file"
+            accept="image/*"
+            ref={fileInputRef}
+            onChange={onImageUpload}
+            className="hidden text-gray-700"
           />
-          <div className="flex flex-wrap gap-2">
-            {[
-              "#ffffff",
-              "#f8f9fa",
-              "#e9ecef",
-              "#dee2e6",
-              "#fdf5e6",
-              "#fff8dc",
-              "#f0f8ff",
-              "#f5f5f5",
-              "#ffe4e1",
-              "#f0fff0",
-              "#f5f5dc",
-              "#ffefd5",
-            ].map((color) => (
-              <button
-                key={color}
-                onClick={() => handleBackgroundColorChange(color)}
-                className={`w-8 h-8 rounded border-2 ${
-                  backgroundColor === color
-                    ? "border-purple-500"
-                    : "border-gray-300"
-                }`}
-                style={{ backgroundColor: color }}
-                title={color}
-              />
-            ))}
+          <Button
+            onClick={() => fileInputRef.current?.click()}
+            className="w-full flex items-center justify-center space-x-2"
+          >
+            <ImageIcon size={16} />
+            <span>Upload an Image</span>
+          </Button>
+        </CardContent>
+      </Card>{" "}
+      {/* Background Color Selector */}
+      <Card className="mb-6 bg-purple-50 border-purple-200">
+        <CardContent className="p-3">
+          <h3 className="font-semibold text-purple-800 mb-2 flex items-center">
+            <Palette size={16} className="mr-2" />
+            Background Color
+          </h3>
+          <div className="space-y-3">
+            <input
+              type="color"
+              value={backgroundColor}
+              onChange={(e) => handleBackgroundColorChange(e.target.value)}
+              className="w-full h-10 rounded-md border border-input bg-background cursor-pointer"
+            />
+            <div className="flex flex-wrap gap-2">
+              {[
+                "#ffffff",
+                "#f8f9fa",
+                "#e9ecef",
+                "#dee2e6",
+                "#fdf5e6",
+                "#fff8dc",
+                "#f0f8ff",
+                "#f5f5f5",
+                "#ffe4e1",
+                "#f0fff0",
+                "#f5f5dc",
+                "#ffefd5",
+              ].map((color) => (
+                <Button
+                  key={color}
+                  onClick={() => handleBackgroundColorChange(color)}
+                  variant="outline"
+                  className={`w-8 h-8 p-0 rounded border-2 ${
+                    backgroundColor === color
+                      ? "border-purple-500"
+                      : "border-gray-300"
+                  }`}
+                  style={{ backgroundColor: color }}
+                  title={color}
+                />
+              ))}
+            </div>
           </div>
-        </div>
-      </div>
-
+        </CardContent>
+      </Card>
       <h3 className="text-lg font-semibold my-4 pt-4 border-t">
         Choose a Template
       </h3>
       <div className="grid grid-cols-2 gap-3">
         {templates.map((template) => (
-          <div
+          <Card
             key={template.name}
-            className="border rounded-lg p-2 cursor-pointer hover:shadow-md bg-white transition-all"
+            className="p-2 cursor-pointer hover:shadow-md transition-all"
             onClick={() => handleTemplateSelect(template.json)}
           >
             <div
@@ -171,7 +176,7 @@ const TemplatesPanel: React.FC<TemplatesPanelProps> = ({
             <p className="text-center mt-1 text-xs text-gray-800 font-medium truncate">
               {template.name}
             </p>
-          </div>
+          </Card>
         ))}
       </div>
     </div>

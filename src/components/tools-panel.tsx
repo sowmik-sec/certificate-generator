@@ -3,6 +3,11 @@ import { FabricCanvas } from "@/types/fabric";
 import { Pencil, StickyNote, Table } from "lucide-react";
 import { useEffect } from "react";
 import { useToolsStore } from "@/stores/useToolsStore";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Slider } from "@/components/ui/slider";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface ToolsPanelProps {
   canvas: FabricCanvas;
@@ -54,87 +59,93 @@ const ToolsPanel: React.FC<ToolsPanelProps> = ({
     <div className="space-y-4">
       <h3 className="text-lg font-semibold mb-4">Tools</h3>
       <div className="grid grid-cols-2 gap-4">
-        <button
+        <Button
           onClick={toggleDrawing}
-          className={`flex flex-col items-center justify-center p-4 rounded-lg shadow-sm transition-all ${
-            isDrawing ? "bg-blue-200" : "bg-white hover:bg-gray-50"
+          variant={isDrawing ? "default" : "outline"}
+          className={`flex flex-col items-center justify-center p-4 h-auto ${
+            isDrawing ? "bg-blue-200" : ""
           }`}
         >
           <Pencil size={40} className="text-gray-700" />
           <span className="mt-2 text-sm text-gray-600">Draw</span>
-        </button>
-        <button
+        </Button>
+        <Button
           onClick={addStickyNote}
-          className="flex flex-col items-center justify-center p-4 bg-white rounded-lg shadow-sm hover:shadow-md hover:bg-gray-50 transition-all"
+          variant="outline"
+          className="flex flex-col items-center justify-center p-4 h-auto"
         >
           <StickyNote size={40} className="text-gray-700" />
           <span className="mt-2 text-sm text-gray-600">Sticky Note</span>
-        </button>
-        <div className="p-4 bg-white rounded-lg shadow-sm">
-          <div className="flex flex-col items-center justify-center">
-            <Table size={40} className="text-gray-700" />
-            <span className="mt-2 text-sm text-gray-600">Table</span>
-          </div>
-          <div className="mt-3 space-y-2">
-            <div className="flex items-center justify-between">
-              <label className="text-sm text-gray-600">Rows:</label>
-              <input
-                type="number"
-                value={tableRows}
-                onChange={(e) => setTableRows(parseInt(e.target.value) || 1)}
-                className="w-16 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                min="1"
-                max="10"
-              />
+        </Button>
+        <Card className="p-4">
+          <CardContent className="p-0">
+            <div className="flex flex-col items-center justify-center">
+              <Table size={40} className="text-gray-700" />
+              <span className="mt-2 text-sm text-gray-600">Table</span>
             </div>
-            <div className="flex items-center justify-between">
-              <label className="text-sm text-gray-600">Cols:</label>
-              <input
-                type="number"
-                value={tableCols}
-                onChange={(e) => setTableCols(parseInt(e.target.value) || 1)}
-                className="w-16 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                min="1"
-                max="10"
-              />
+            <div className="mt-3 space-y-2">
+              <div className="flex items-center justify-between">
+                <Label className="text-sm text-gray-600">Rows:</Label>
+                <Input
+                  type="number"
+                  value={tableRows}
+                  onChange={(e) => setTableRows(parseInt(e.target.value) || 1)}
+                  className="w-16 h-8"
+                  min="1"
+                  max="10"
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <Label className="text-sm text-gray-600">Cols:</Label>
+                <Input
+                  type="number"
+                  value={tableCols}
+                  onChange={(e) => setTableCols(parseInt(e.target.value) || 1)}
+                  className="w-16 h-8"
+                  min="1"
+                  max="10"
+                />
+              </div>
             </div>
-          </div>
-          <button
-            onClick={() => addTable(tableRows, tableCols)}
-            className="w-full mt-3 px-4 py-2 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            Add Table
-          </button>
-        </div>
+            <Button
+              onClick={() => addTable(tableRows, tableCols)}
+              className="w-full mt-3"
+            >
+              Add Table
+            </Button>
+          </CardContent>
+        </Card>
       </div>
       {isDrawing && (
-        <div className="mt-4 p-4 bg-gray-100 rounded-lg space-y-3">
-          <h4 className="font-semibold">Drawing Options</h4>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Color
-            </label>
-            <input
-              type="color"
-              value={brushColor}
-              onChange={(e) => setBrushColor(e.target.value)}
-              className="mt-1 block w-full h-10 rounded-md border-gray-300 shadow-sm"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Brush Size: {brushSize}
-            </label>
-            <input
-              type="range"
-              min="1"
-              max="50"
-              value={brushSize}
-              onChange={(e) => setBrushSize(parseInt(e.target.value, 10))}
-              className="mt-1 block w-full"
-            />
-          </div>
-        </div>
+        <Card className="mt-4 p-4">
+          <CardContent className="p-0 space-y-3">
+            <h4 className="font-semibold">Drawing Options</h4>
+            <div>
+              <Label className="block text-sm font-medium text-gray-700">
+                Color
+              </Label>
+              <input
+                type="color"
+                value={brushColor}
+                onChange={(e) => setBrushColor(e.target.value)}
+                className="mt-1 block w-full h-10 rounded-md border border-input bg-background"
+              />
+            </div>
+            <div>
+              <Label className="block text-sm font-medium text-gray-700 mb-2">
+                Brush Size: {brushSize}
+              </Label>
+              <Slider
+                value={[brushSize]}
+                onValueChange={(value) => setBrushSize(value[0])}
+                min={1}
+                max={50}
+                step={1}
+                className="w-full"
+              />
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       {/* Frames Section */}
@@ -142,43 +153,46 @@ const ToolsPanel: React.FC<ToolsPanelProps> = ({
         <h4 className="text-md font-semibold mb-3">Frames</h4>
 
         {/* Frame Color and Width Controls */}
-        <div className="mb-4 p-3 bg-gray-50 rounded-lg space-y-3">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Frame Color
-            </label>
-            <div className="flex items-center space-x-2">
-              <input
-                type="color"
-                value={frameColor}
-                onChange={(e) => setFrameColor(e.target.value)}
-                className="w-12 h-8 rounded border border-gray-300 cursor-pointer"
-              />
-              <span className="text-sm text-gray-600">{frameColor}</span>
+        <Card className="mb-4 p-3">
+          <CardContent className="p-0 space-y-3">
+            <div>
+              <Label className="block text-sm font-medium text-gray-700 mb-2">
+                Frame Color
+              </Label>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="color"
+                  value={frameColor}
+                  onChange={(e) => setFrameColor(e.target.value)}
+                  className="w-12 h-8 rounded border border-gray-300 cursor-pointer"
+                />
+                <span className="text-sm text-gray-600">{frameColor}</span>
+              </div>
             </div>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Frame Width: {frameWidth}px
-            </label>
-            <input
-              type="range"
-              min="1"
-              max="12"
-              value={frameWidth}
-              onChange={(e) => setFrameWidth(parseInt(e.target.value, 10))}
-              className="w-full"
-            />
-          </div>
-        </div>
+            <div>
+              <Label className="block text-sm font-medium text-gray-700 mb-2">
+                Frame Width: {frameWidth}px
+              </Label>
+              <Slider
+                value={[frameWidth]}
+                onValueChange={(value) => setFrameWidth(value[0])}
+                min={1}
+                max={12}
+                step={1}
+                className="w-full"
+              />
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Frame Types */}
         <div className="grid grid-cols-2 gap-3">
-          <button
+          <Button
             onClick={() =>
               addSimpleFrame({ stroke: frameColor, strokeWidth: frameWidth })
             }
-            className="flex flex-col items-center justify-center p-3 bg-white rounded-lg shadow-sm hover:shadow-md hover:bg-gray-50 transition-all"
+            variant="outline"
+            className="flex flex-col items-center justify-center p-3 h-auto"
           >
             <svg
               width="40"
@@ -197,13 +211,14 @@ const ToolsPanel: React.FC<ToolsPanelProps> = ({
               />
             </svg>
             <span className="text-xs text-gray-600">Simple</span>
-          </button>
+          </Button>
 
-          <button
+          <Button
             onClick={() =>
               addDoubleFrame({ stroke: frameColor, strokeWidth: frameWidth })
             }
-            className="flex flex-col items-center justify-center p-3 bg-white rounded-lg shadow-sm hover:shadow-md hover:bg-gray-50 transition-all"
+            variant="outline"
+            className="flex flex-col items-center justify-center p-3 h-auto"
           >
             <svg
               width="40"
@@ -231,16 +246,17 @@ const ToolsPanel: React.FC<ToolsPanelProps> = ({
               />
             </svg>
             <span className="text-xs text-gray-600">Double</span>
-          </button>
+          </Button>
 
-          <button
+          <Button
             onClick={() =>
               addDecorativeFrame({
                 stroke: frameColor,
                 strokeWidth: frameWidth,
               })
             }
-            className="flex flex-col items-center justify-center p-3 bg-white rounded-lg shadow-sm hover:shadow-md hover:bg-gray-50 transition-all"
+            variant="outline"
+            className="flex flex-col items-center justify-center p-3 h-auto"
           >
             <svg
               width="40"
@@ -272,13 +288,14 @@ const ToolsPanel: React.FC<ToolsPanelProps> = ({
               <rect x="33" y="33" width="4" height="4" fill="currentColor" />
             </svg>
             <span className="text-xs text-gray-600">Decorative</span>
-          </button>
+          </Button>
 
-          <button
+          <Button
             onClick={() =>
               addRoundedFrame({ stroke: frameColor, strokeWidth: frameWidth })
             }
-            className="flex flex-col items-center justify-center p-3 bg-white rounded-lg shadow-sm hover:shadow-md hover:bg-gray-50 transition-all"
+            variant="outline"
+            className="flex flex-col items-center justify-center p-3 h-auto"
           >
             <svg
               width="40"
@@ -299,7 +316,7 @@ const ToolsPanel: React.FC<ToolsPanelProps> = ({
               />
             </svg>
             <span className="text-xs text-gray-600">Rounded</span>
-          </button>
+          </Button>
         </div>
       </div>
     </div>

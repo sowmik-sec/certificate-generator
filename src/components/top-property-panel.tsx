@@ -25,6 +25,16 @@ import {
   MoveHorizontal,
   PaintRoller,
 } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface TopPropertyPanelProps {
   selectedObject: FabricObject;
@@ -46,7 +56,6 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
     isLineObject,
   } = usePropertiesStore();
 
-  const [showFontDropdown, setShowFontDropdown] = useState(false);
   const [isUpperCase, setIsUpperCase] = useState(false);
   const [currentAlignment, setCurrentAlignment] = useState("left");
   const [showOpacityCard, setShowOpacityCard] = useState(false);
@@ -103,7 +112,7 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
 
   const handleFontSizeChange = (increment: boolean) => {
     const currentSize = attributes.fontSize || 14;
-    const newSize = increment ? currentSize + 2 : Math.max(8, currentSize - 2);
+    const newSize = increment ? currentSize + 1 : Math.max(8, currentSize - 1);
     handlePropertyChange("fontSize", newSize);
   };
 
@@ -289,66 +298,66 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
   };
 
   const renderTextControls = () => (
-    <>
+    <div className="flex items-center gap-3">
       {/* Font Family Dropdown */}
-      <div className="relative">
-        <button
-          onClick={() => setShowFontDropdown(!showFontDropdown)}
-          className="flex items-center gap-1 px-2 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:cursor-pointer rounded-md transition-colors max-w-[100px]"
-          title="Font Family"
-        >
-          <span className="font-medium truncate">
-            {attributes.fontFamily || "Poppins"}
-          </span>
-          {/* <ChevronDown className="w-3 h-3 flex-shrink-0" /> */}
-        </button>
-        {showFontDropdown && (
-          <div className="absolute top-full left-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-xl z-50 min-w-[160px] max-h-64 overflow-y-auto">
-            {fontOptions.map((font) => (
-              <button
-                key={font}
-                onClick={() => {
-                  handlePropertyChange("fontFamily", font);
-                  setShowFontDropdown(false);
-                }}
-                className={`w-full text-left px-4 py-2.5 text-sm hover:bg-blue-50 hover:cursor-pointer first:rounded-t-lg last:rounded-b-lg transition-colors ${
-                  attributes.fontFamily === font
-                    ? "bg-blue-50 text-blue-600"
-                    : "text-gray-700"
-                }`}
-                style={{ fontFamily: font }}
-              >
-                {font}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="ghost"
+            className="flex items-center gap-1 px-2 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:cursor-pointer rounded-md transition-colors max-w-[100px]"
+            title="Font Family"
+          >
+            <span className="font-medium truncate">
+              {attributes.fontFamily || "Poppins"}
+            </span>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="min-w-[160px] max-h-64">
+          {fontOptions.map((font) => (
+            <DropdownMenuItem
+              key={font}
+              onClick={() => handlePropertyChange("fontFamily", font)}
+              className={`cursor-pointer ${
+                attributes.fontFamily === font
+                  ? "bg-blue-50 text-blue-600"
+                  : "text-gray-700"
+              }`}
+              style={{ fontFamily: font }}
+            >
+              {font}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
 
       {/* Font Size Controls */}
       <div className="flex items-center gap-1">
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={() => handleFontSizeChange(false)}
           className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 hover:cursor-pointer rounded-md transition-colors"
           title="Decrease Font Size"
         >
           <Minus className="w-4 h-4 font-bold" />
-        </button>
+        </Button>
         <span className="px-3 py-2 text-base font-semibold min-w-[40px] text-center h-10 flex items-center justify-center">
           {Math.round(attributes.fontSize || 14)}
         </span>
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={() => handleFontSizeChange(true)}
           className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 hover:cursor-pointer rounded-md transition-colors"
           title="Increase Font Size"
         >
           <Plus className="w-4 h-4 font-bold" />
-        </button>
+        </Button>
       </div>
 
       {/* Font Color */}
       <div className="flex items-center">
-        <label
+        <Label
           className="flex items-center cursor-pointer group"
           title="Text Color"
         >
@@ -366,12 +375,14 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
             onChange={(e) => handlePropertyChange("fill", e.target.value)}
             className="sr-only"
           />
-        </label>
+        </Label>
       </div>
 
       {/* Text Formatting */}
       <div className="flex items-center gap-0.5">
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={() => {
             const newWeight =
               attributes.fontWeight === "bold" ? "normal" : "bold";
@@ -385,9 +396,11 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
           title="Bold"
         >
           <Bold className="w-5 h-5 font-bold" />
-        </button>
+        </Button>
 
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={() => {
             const newStyle =
               attributes.fontStyle === "italic" ? "normal" : "italic";
@@ -401,9 +414,11 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
           title="Italic"
         >
           <Italic className="w-5 h-5 font-bold" />
-        </button>
+        </Button>
 
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={() =>
             handlePropertyChange("underline", !attributes.underline)
           }
@@ -415,9 +430,11 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
           title="Underline"
         >
           <Underline className="w-5 h-5 font-bold" />
-        </button>
+        </Button>
 
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={() => {
             handlePropertyChange("linethrough", !attributes.linethrough);
             setHasStrikethrough(!hasStrikethrough);
@@ -430,11 +447,13 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
           title="Strikethrough"
         >
           <Strikethrough className="w-5 h-5 font-bold" />
-        </button>
+        </Button>
       </div>
 
       {/* Text Case Toggle */}
-      <button
+      <Button
+        variant="ghost"
+        size="icon"
         onClick={handleTextCaseToggle}
         className={`w-10 h-10 flex items-center justify-center hover:cursor-pointer text-sm font-bold rounded-md transition-colors ${
           isUpperCase
@@ -444,19 +463,23 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
         title="Toggle Text Case"
       >
         aA
-      </button>
+      </Button>
 
       {/* Text Alignment */}
-      <button
+      <Button
+        variant="ghost"
+        size="icon"
         onClick={handleAlignmentClick}
         className="w-10 h-10 flex items-center justify-center hover:cursor-pointer rounded-md transition-colors hover:bg-gray-100 text-gray-800 border border-transparent"
         title="Text Alignment"
       >
         {getAlignmentIcon()}
-      </button>
+      </Button>
 
       {/* List Toggle */}
-      <button
+      <Button
+        variant="ghost"
+        size="icon"
         onClick={handleListTypeToggle}
         className={`w-10 h-10 flex items-center justify-center hover:cursor-pointer rounded-md transition-colors ${
           currentListType !== "none"
@@ -472,11 +495,13 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
         }`}
       >
         {getListIcon()}
-      </button>
+      </Button>
 
       {/* Advanced Settings - Only for Text */}
       <div className="relative">
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={() => {
             setShowAdvancedSettings(!showAdvancedSettings);
           }}
@@ -485,21 +510,21 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
         >
           <Type className="w-4 h-3" />
           <MoveHorizontal className="w-6 h-3" />
-        </button>
+        </Button>
         {showAdvancedSettings && (
           <AdvancedSettingsPanel
             onClose={() => setShowAdvancedSettings(false)}
           />
         )}
       </div>
-    </>
+    </div>
   );
 
   const renderShapeControls = () => (
-    <>
+    <div className="flex items-center gap-3">
       {/* Shape Color */}
       <div className="flex items-center">
-        <label
+        <Label
           className="flex items-center cursor-pointer group"
           title="Shape Color"
         >
@@ -515,7 +540,7 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
             onChange={(e) => handlePropertyChange("fill", e.target.value)}
             className="sr-only"
           />
-        </label>
+        </Label>
       </div>
 
       {/* Stroke Color */}
@@ -544,7 +569,9 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
 
       {/* Stroke Width */}
       <div className="flex items-center gap-1">
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={() => {
             const newWidth = Math.max(0, (attributes.strokeWidth || 1) - 1);
             handlePropertyChange("strokeWidth", newWidth);
@@ -553,11 +580,13 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
           title="Decrease Border Width"
         >
           <Minus className="w-4 h-4 font-bold" />
-        </button>
+        </Button>
         <span className="px-3 py-2 text-base font-semibold min-w-[32px] text-center h-10 flex items-center justify-center">
           {Math.round(attributes.strokeWidth || 1)}
         </span>
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={() => {
             const newWidth = (attributes.strokeWidth || 1) + 1;
             handlePropertyChange("strokeWidth", newWidth);
@@ -566,13 +595,13 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
           title="Increase Border Width"
         >
           <Plus className="w-4 h-4 font-bold" />
-        </button>
+        </Button>
       </div>
-    </>
+    </div>
   );
 
   const renderLineControls = () => (
-    <>
+    <div className="flex items-center gap-3">
       {/* Line Color */}
       <div className="flex items-center">
         <label
@@ -596,7 +625,9 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
 
       {/* Line Width */}
       <div className="flex items-center gap-1">
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={() => {
             const newWidth = Math.max(1, (attributes.strokeWidth || 1) - 1);
             handlePropertyChange("strokeWidth", newWidth);
@@ -605,11 +636,13 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
           title="Decrease Line Width"
         >
           <Minus className="w-4 h-4 font-bold" />
-        </button>
+        </Button>
         <span className="px-3 py-2 text-base font-semibold min-w-[32px] text-center h-10 flex items-center justify-center">
           {Math.round(attributes.strokeWidth || 1)}
         </span>
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={() => {
             const newWidth = (attributes.strokeWidth || 1) + 1;
             handlePropertyChange("strokeWidth", newWidth);
@@ -618,94 +651,104 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
           title="Increase Line Width"
         >
           <Plus className="w-4 h-4 font-bold" />
-        </button>
+        </Button>
       </div>
-    </>
+    </div>
   );
 
   const renderCommonControls = () => (
-    <>
+    <div className="flex items-center gap-3">
       {/* Separator */}
-      <div className="w-px h-7 bg-gray-300 mx-1" />
+      <Separator orientation="vertical" className="h-7 mx-1" />
 
       {/* Transparency */}
       <div className="relative">
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={() => setShowOpacityCard(!showOpacityCard)}
           className="w-10 h-10 flex items-center justify-center hover:cursor-pointer rounded-md transition-colors hover:bg-gray-100 text-gray-800 border border-transparent"
           title="Transparency"
         >
           <Droplets className="w-5 h-5" />
-        </button>
+        </Button>
 
         {showOpacityCard && (
-          <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-3 bg-white border border-gray-200 rounded-lg shadow-xl z-50 p-4 min-w-[150px]">
-            <div className="text-sm text-gray-700 font-semibold mb-3">
-              Transparency
-            </div>
-            <div className="flex items-center gap-3">
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.01"
-                value={attributes.opacity || 1}
-                onChange={(e) =>
-                  handlePropertyChange("opacity", parseFloat(e.target.value))
-                }
-                className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
-              />
-              <span className="text-sm text-gray-700 font-semibold min-w-[35px] text-center">
-                {Math.round((attributes.opacity || 1) * 100)}%
-              </span>
-            </div>
-          </div>
+          <Card className="absolute top-full left-1/2 transform -translate-x-1/2 mt-3 z-50 min-w-[150px]">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm text-gray-700 font-semibold">
+                Transparency
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="flex items-center gap-3">
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.01"
+                  value={attributes.opacity || 1}
+                  onChange={(e) =>
+                    handlePropertyChange("opacity", parseFloat(e.target.value))
+                  }
+                  className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                />
+                <span className="text-sm text-gray-700 font-semibold min-w-[35px] text-center">
+                  {Math.round((attributes.opacity || 1) * 100)}%
+                </span>
+              </div>
+            </CardContent>
+          </Card>
         )}
       </div>
 
       {/* Separator */}
-      <div className="w-px h-7 bg-gray-300 mx-1" />
+      <Separator orientation="vertical" className="h-7 mx-1" />
 
       {/* Effects */}
-      <button
+      <Button
+        variant="ghost"
         onClick={() => setEditorMode("effects")}
         className="px-2 h-10 flex items-center justify-center hover:cursor-pointer rounded-md transition-colors hover:bg-gray-100 text-gray-800 border border-transparent"
         title="Effects"
       >
         {/* <Sparkles className="w-5 h-5" />*/}
         Effects
-      </button>
+      </Button>
 
       {/* Separator */}
-      <div className="w-px h-7 bg-gray-300 mx-1" />
+      <Separator orientation="vertical" className="h-7 mx-1" />
 
       {/* Position (open only on click) */}
-      <button
+      <Button
+        variant="ghost"
         onClick={() => setEditorMode("position")}
         className="px-2 h-10 flex items-center justify-center hover:cursor-pointer rounded-md transition-colors hover:bg-gray-100 text-gray-800 border border-transparent"
         title="Position"
       >
         Position
-      </button>
+      </Button>
 
       {/* Separator */}
-      <div className="w-px h-7 bg-gray-300 mx-1" />
+      <Separator orientation="vertical" className="h-7 mx-1" />
 
       {/* Copy Style */}
-      <button
+      <Button
+        variant="ghost"
+        size="icon"
         onClick={handleCopyStyle}
         className="w-10 h-10 flex items-center justify-center hover:cursor-pointer rounded-md transition-colors hover:bg-gray-100 text-gray-800 border border-transparent"
         title="Copy Style"
       >
         <PaintRoller className="w-5 h-5" />
-      </button>
-    </>
+      </Button>
+    </div>
   );
 
   return (
     <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-50">
       <Toaster position="top-center" />
-      <div className="flex items-center gap-3 px-5 py-2 bg-white border border-gray-200 rounded-lg shadow-xl backdrop-blur-sm">
+      <Card className="flex flex-row items-center gap-3 px-5 py-2 backdrop-blur-sm bg-white border shadow-lg">
         {/* Render controls based on object type */}
         {isTextObject() && renderTextControls()}
         {isShapeObject() && renderShapeControls()}
@@ -713,14 +756,14 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
 
         {/* Common controls */}
         {renderCommonControls()}
-      </div>
+      </Card>
 
       {/* Click outside handler for dropdowns */}
-      {(showFontDropdown || showOpacityCard || showAdvancedSettings) && (
+      {(showOpacityCard || showAdvancedSettings) && (
         <div
           className="fixed inset-0 z-40"
           onClick={() => {
-            setShowFontDropdown(false);
+            setShowOpacityCard(false);
             setShowOpacityCard(false);
             setShowAdvancedSettings(false);
           }}
