@@ -1,18 +1,6 @@
 "use client";
-import { classicTemplate } from "@/templates/classic-template";
-import { modernTemplate } from "@/templates/modern-template";
-import { playfulTemplate } from "@/templates/playful-template";
-import { elegantTemplate } from "@/templates/elegant-template";
-import { minimalistTemplate } from "@/templates/minimalist-template";
-import { corporateTemplate } from "@/templates/corporate-template";
-import { luxuryTemplate } from "@/templates/luxury-template";
-import { techTemplate } from "@/templates/tech-template";
-import { creativeTemplate } from "@/templates/creative-template";
-import { vintageTemplate } from "@/templates/vintage-template";
-import { professionalTemplate } from "@/templates/professional-template";
-import { academicTemplate } from "@/templates/academic-template";
-import { achievementTemplate } from "@/templates/achievement-template";
-import { artisticTemplate } from "@/templates/artistic-template";
+import { useRouter } from "next/navigation";
+import { getAllTemplates } from "@/lib/templateMap";
 import { ImageIcon, Palette } from "lucide-react";
 import { useRef } from "react";
 import { useTemplatesStore } from "@/stores/useTemplatesStore";
@@ -25,48 +13,32 @@ interface TemplatesPanelProps {
   onImageUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
   canvas?: any;
 }
+
 const TemplatesPanel: React.FC<TemplatesPanelProps> = ({
   onSelectTemplate,
   onImageUpload,
   canvas,
 }) => {
+  const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Use zustand store for templates state
   const { backgroundColor, setBackgroundColor } = useTemplatesStore();
 
-  const templates = [
-    {
-      name: "Blank Canvas",
-      json: {
-        version: "5.3.1",
-        objects: [],
-        background: backgroundColor,
-      },
-    },
-    { name: "Modern", json: modernTemplate },
-    { name: "Classic", json: classicTemplate },
-    { name: "Playful", json: playfulTemplate },
-    { name: "Elegant", json: elegantTemplate },
-    { name: "Minimalist", json: minimalistTemplate },
-    { name: "Corporate", json: corporateTemplate },
-    { name: "Luxury", json: luxuryTemplate },
-    { name: "Tech", json: techTemplate },
-    { name: "Creative", json: creativeTemplate },
-    { name: "Vintage", json: vintageTemplate },
-    { name: "Professional", json: professionalTemplate },
-    { name: "Academic", json: academicTemplate },
-    { name: "Achievement", json: achievementTemplate },
-    { name: "Artistic", json: artisticTemplate },
-  ];
+  const templates = getAllTemplates();
 
-  const handleTemplateSelect = (templateJson: any) => {
-    // Create a copy of the template with custom background color
-    const customTemplate = {
-      ...templateJson,
-      background: backgroundColor,
-    };
-    onSelectTemplate(customTemplate);
+  const handleTemplateSelect = (templateJson: any, templateId?: string) => {
+    if (templateId) {
+      // Navigate to the template editor route
+      router.push(`/design/${templateId}/edit`);
+    } else {
+      // Fallback to the current method for custom templates
+      const customTemplate = {
+        ...templateJson,
+        background: backgroundColor,
+      };
+      onSelectTemplate(customTemplate);
+    }
   };
 
   const handleBackgroundColorChange = (color: string) => {
@@ -75,6 +47,7 @@ const TemplatesPanel: React.FC<TemplatesPanelProps> = ({
       canvas.setBackgroundColor(color, canvas.renderAll.bind(canvas));
     }
   };
+
   return (
     <div>
       <Card className="mb-6 bg-blue-50 border-blue-200">
@@ -97,7 +70,8 @@ const TemplatesPanel: React.FC<TemplatesPanelProps> = ({
             <span>Upload an Image</span>
           </Button>
         </CardContent>
-      </Card>{" "}
+      </Card>
+
       {/* Background Color Selector */}
       <Card className="mb-6 bg-purple-50 border-purple-200">
         <CardContent className="p-3">
@@ -144,24 +118,25 @@ const TemplatesPanel: React.FC<TemplatesPanelProps> = ({
           </div>
         </CardContent>
       </Card>
+
       <h3 className="text-lg font-semibold my-4 pt-4 border-t">
         Choose a Template
       </h3>
       <div className="grid grid-cols-2 gap-3">
         {templates.map((template) => (
           <Card
-            key={template.name}
+            key={template.id}
             className="p-2 cursor-pointer hover:shadow-md transition-all"
-            onClick={() => handleTemplateSelect(template.json)}
+            onClick={() => handleTemplateSelect(template.json, template.id)}
           >
             <div
               className={`h-24 flex items-center justify-center text-gray-500 rounded text-xs ${
-                template.name === "Blank Canvas"
+                template.id === "blank"
                   ? "bg-gray-100 border-2 border-dashed border-gray-300"
                   : "bg-gray-300"
               }`}
             >
-              {template.name === "Blank Canvas" ? (
+              {template.id === "blank" ? (
                 <div className="text-center">
                   <div className="text-lg mb-1">📄</div>
                   <div className="text-xs">Start Fresh</div>
