@@ -3,7 +3,8 @@
 import { FabricCanvas, FabricModule } from "@/types/fabric";
 import { FabricObject } from "fabric";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { safeCanvasRender, safeCanvasOperation } from "@/lib/utils";
+import { safeCanvasOperation } from "@/lib/utils";
+import { Card } from "@/components/ui/card";
 
 interface CanvasComponentProps {
   fabric: FabricModule;
@@ -39,23 +40,30 @@ const CanvasComponent: React.FC<CanvasComponentProps> = ({
       const { width: containerWidth, height: containerHeight } =
         container.getBoundingClientRect();
 
-      // Calculate scale to fit canvas in container with some padding
-      const padding = 40; // 20px padding on each side
-      const availableWidth = containerWidth - padding;
-      const availableHeight = containerHeight - padding;
+      // Calculate available space with some padding for better UX
+      const availableWidth = containerWidth - 20; // Small margin for breathing room
+      const availableHeight = containerHeight - 20;
 
+      // Calculate scale to fit canvas in available space
       const scaleX = availableWidth / canvasWidth;
       const scaleY = availableHeight / canvasHeight;
-      const scale = Math.min(scaleX, scaleY, 1); // Don't scale up beyond 100%
+      const scale = Math.min(scaleX, scaleY, 1); // Don't scale up beyond original size
 
       const scaledWidth = canvasWidth * scale;
       const scaledHeight = canvasHeight * scale;
 
+      // Set canvas dimensions to the scaled size
       canvasInstance.setDimensions({
         width: scaledWidth,
         height: scaledHeight,
       });
       canvasInstance.setZoom(scale);
+
+      // Update canvas element style
+      if (canvasRef.current) {
+        canvasRef.current.style.width = `${scaledWidth}px`;
+        canvasRef.current.style.height = `${scaledHeight}px`;
+      }
 
       // Use safe canvas operation for rendering
       safeCanvasOperation(canvasInstance, () => {
@@ -292,27 +300,27 @@ const CanvasComponent: React.FC<CanvasComponentProps> = ({
   // Prevent hydration issues by only rendering canvas on client
   if (!isClient) {
     return (
-      <div
-        ref={containerRef}
-        className="w-full h-full flex items-center justify-center"
-      >
-        <div className="shadow-xl bg-white rounded-lg overflow-hidden border border-gray-200 relative transition-all duration-300 ease-in-out">
-          <div className="w-full h-[566px] flex items-center justify-center text-gray-500">
+      <div ref={containerRef} className="w-full h-full">
+        <Card
+          className="w-full h-full shadow-xl overflow-hidden border border-gray-200 relative transition-all duration-300 ease-in-out bg-transparent"
+          style={{ padding: 0, margin: 0 }}
+        >
+          <div className="w-full h-full flex items-center justify-center text-gray-500">
             Loading Canvas...
           </div>
-        </div>
+        </Card>
       </div>
     );
   }
 
   return (
-    <div
-      ref={containerRef}
-      className="w-full h-full flex items-center justify-center"
-    >
-      <div className="shadow-xl bg-white rounded-lg overflow-hidden border border-gray-200 relative transition-all duration-300 ease-in-out">
-        <canvas ref={canvasRef} className="display-block" />
-      </div>
+    <div ref={containerRef} className="w-full h-full">
+      <Card
+        className="w-full h-full shadow-xl overflow-hidden border border-gray-200 relative transition-all duration-300 ease-in-out flex items-center justify-center bg-transparent"
+        style={{ padding: 0, margin: 0 }}
+      >
+        <canvas ref={canvasRef} className="shadow-md" />
+      </Card>
     </div>
   );
 };
