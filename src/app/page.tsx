@@ -33,6 +33,7 @@ import { useEditorShortcuts } from "@/hooks/useKeyboardShortcuts";
 // Import UI components
 import SidebarNavigation from "@/components/sidebar-navigation";
 import LeftPanel from "@/components/left-panel";
+import { Button } from "@/components/ui/button";
 import LayerControls from "@/components/layer-controls";
 import HeaderActions from "@/components/header-actions";
 import { ConfirmModal } from "@/components/confirm-modal";
@@ -511,16 +512,17 @@ export default function CertificateGeneratorPage() {
 
         {/* Debug: Force close button */}
         {showCanvasSizeModal && (
-          <button
+          <Button
             onClick={() => {
               console.log("FORCE CLOSING MODAL");
               setShowCanvasSizeModal(false);
               setPendingCanvasSize(null);
             }}
-            className="fixed top-4 right-4 z-[60] bg-red-600 text-white px-4 py-2 rounded"
+            variant="destructive"
+            className="fixed top-4 right-4 z-[60]"
           >
             FORCE CLOSE MODAL
-          </button>
+          </Button>
         )}
       </div>
     </>
