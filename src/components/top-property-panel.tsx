@@ -517,6 +517,19 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
           />
         )}
       </div>
+      {/* Separator */}
+      <Separator orientation="vertical" className="h-7 mx-1" />
+
+      {/* Effects */}
+      <Button
+        variant="ghost"
+        onClick={() => setEditorMode("effects")}
+        className="px-2 h-10 flex items-center justify-center hover:cursor-pointer rounded-md transition-colors hover:bg-gray-100 text-gray-800 border border-transparent"
+        title="Effects"
+      >
+        {/* <Sparkles className="w-5 h-5" />*/}
+        Effects
+      </Button>
     </div>
   );
 
@@ -701,20 +714,6 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
           </Card>
         )}
       </div>
-
-      {/* Separator */}
-      <Separator orientation="vertical" className="h-7 mx-1" />
-
-      {/* Effects */}
-      <Button
-        variant="ghost"
-        onClick={() => setEditorMode("effects")}
-        className="px-2 h-10 flex items-center justify-center hover:cursor-pointer rounded-md transition-colors hover:bg-gray-100 text-gray-800 border border-transparent"
-        title="Effects"
-      >
-        {/* <Sparkles className="w-5 h-5" />*/}
-        Effects
-      </Button>
 
       {/* Separator */}
       <Separator orientation="vertical" className="h-7 mx-1" />
