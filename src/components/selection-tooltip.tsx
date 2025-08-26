@@ -27,6 +27,9 @@ const SelectionTooltip: React.FC<SelectionTooltipProps> = ({
     object: null as any,
   });
 
+  // local tick to force re-render after mutating Fabric objects
+  const [, setTick] = useState(0);
+
   const updateTooltipPosition = useCallback(
     (obj: any) => {
       if (!obj || !canvas) return;
@@ -160,6 +163,9 @@ const SelectionTooltip: React.FC<SelectionTooltipProps> = ({
     // Update object coordinates and render
     targetObject.setCoords();
     canvas.renderAll();
+
+    // Force a react re-render so computed icon state updates
+    setTick((t) => t + 1);
 
     // Update tooltip position if using internal state
     if (!position) {
