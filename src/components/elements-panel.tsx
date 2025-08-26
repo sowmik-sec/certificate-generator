@@ -406,7 +406,7 @@ const ElementsPanel: React.FC<ElementsPanelProps> = ({
               key={line.name}
               onClick={line.action}
               variant="outline"
-              className="flex flex-col items-center justify-center p-3 h-auto bg-white hover:bg-gray-50"
+              className="flex flex-col items-center justify-center p-3 h-auto bg-white hover:bg-gray-50 hover:cursor-pointer"
             >
               {line.icon}
               <span className="mt-1 text-xs text-center text-gray-600">
@@ -424,7 +424,7 @@ const ElementsPanel: React.FC<ElementsPanelProps> = ({
               key={shape.name}
               onClick={shape.action}
               variant="outline"
-              className="flex flex-col items-center justify-center p-3 h-auto bg-white hover:bg-gray-50"
+              className="flex flex-col items-center justify-center p-3 h-auto bg-white hover:bg-gray-50 hover:cursor-pointer"
             >
               {shape.icon}
               <span className="mt-1 text-xs text-gray-600">{shape.name}</span>

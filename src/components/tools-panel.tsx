@@ -62,7 +62,7 @@ const ToolsPanel: React.FC<ToolsPanelProps> = ({
         <Button
           onClick={toggleDrawing}
           variant={isDrawing ? "default" : "outline"}
-          className={`flex flex-col items-center justify-center p-4 h-auto ${
+          className={`flex flex-col items-center justify-center p-4 h-auto hover:cursor-pointer ${
             isDrawing ? "bg-blue-200" : ""
           }`}
         >
@@ -72,7 +72,7 @@ const ToolsPanel: React.FC<ToolsPanelProps> = ({
         <Button
           onClick={addStickyNote}
           variant="outline"
-          className="flex flex-col items-center justify-center p-4 h-auto"
+          className="flex flex-col items-center justify-center p-4 h-auto hover:cursor-pointer"
         >
           <StickyNote size={40} className="text-gray-700" />
           <span className="mt-2 text-sm text-gray-600">Sticky Note</span>
@@ -193,7 +193,7 @@ const ToolsPanel: React.FC<ToolsPanelProps> = ({
               addSimpleFrame({ stroke: frameColor, strokeWidth: frameWidth })
             }
             variant="outline"
-            className="flex flex-col items-center justify-center p-3 h-auto"
+            className="flex flex-col items-center justify-center p-3 h-auto hover:cursor-pointer"
           >
             <svg
               width="40"
@@ -219,7 +219,7 @@ const ToolsPanel: React.FC<ToolsPanelProps> = ({
               addDoubleFrame({ stroke: frameColor, strokeWidth: frameWidth })
             }
             variant="outline"
-            className="flex flex-col items-center justify-center p-3 h-auto"
+            className="flex flex-col items-center justify-center p-3 h-auto hover:cursor-pointer"
           >
             <svg
               width="40"
@@ -257,7 +257,7 @@ const ToolsPanel: React.FC<ToolsPanelProps> = ({
               })
             }
             variant="outline"
-            className="flex flex-col items-center justify-center p-3 h-auto"
+            className="flex flex-col items-center justify-center p-3 h-auto hover:cursor-pointer"
           >
             <svg
               width="40"
@@ -296,7 +296,7 @@ const ToolsPanel: React.FC<ToolsPanelProps> = ({
               addRoundedFrame({ stroke: frameColor, strokeWidth: frameWidth })
             }
             variant="outline"
-            className="flex flex-col items-center justify-center p-3 h-auto"
+            className="flex flex-col items-center justify-center p-3 h-auto hover:cursor-pointer"
           >
             <svg
               width="40"
