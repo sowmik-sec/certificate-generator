@@ -91,7 +91,7 @@ const TemplatesPanel: React.FC<TemplatesPanelProps> = ({
           />
           <Button
             onClick={() => fileInputRef.current?.click()}
-            className="w-full flex items-center justify-center space-x-2"
+            className="w-full bg-purple-400 hover:bg-purple-800 hover:cursor-pointer flex items-center justify-center space-x-2"
           >
             <ImageIcon size={16} />
             <span>Upload an Image</span>

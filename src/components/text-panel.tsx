@@ -237,7 +237,7 @@ const TextPanel: React.FC<TextPanelProps> = ({
         {/* Add Text Box Button */}
         <Button
           onClick={() => addBodyText()}
-          className="w-full py-3 px-4 font-medium flex items-center justify-center space-x-2"
+          className="w-full bg-purple-400 hover:bg-purple-800 hover:cursor-pointer py-3 px-4 font-medium flex items-center justify-center space-x-2"
         >
           <span className="text-xl">T</span>
           <span>Add a text box</span>
@@ -257,7 +257,7 @@ const TextPanel: React.FC<TextPanelProps> = ({
             <Button
               onClick={() => addHeading()}
               variant="outline"
-              className="w-full p-4 h-auto text-left justify-start"
+              className="w-full p-4 h-auto text-left justify-start hover:cursor-pointer"
             >
               <div className="text-3xl font-bold text-gray-900 group-hover:text-purple-600 transition-colors">
                 Add a heading
@@ -268,7 +268,7 @@ const TextPanel: React.FC<TextPanelProps> = ({
             <Button
               onClick={() => addSubheading()}
               variant="outline"
-              className="w-full p-4 h-auto text-left justify-start"
+              className="w-full p-4 h-auto text-left justify-start hover:cursor-pointer"
             >
               <div className="text-xl font-semibold text-gray-800 group-hover:text-purple-600 transition-colors">
                 Add a subheading
@@ -279,7 +279,7 @@ const TextPanel: React.FC<TextPanelProps> = ({
             <Button
               onClick={() => addBodyText()}
               variant="outline"
-              className="w-full p-4 h-auto text-left justify-start"
+              className="w-full p-4 h-auto text-left justify-start hover:cursor-pointer"
             >
               <div className="text-sm text-gray-700 group-hover:text-purple-600 transition-colors">
                 Add a little bit of body text
@@ -295,7 +295,7 @@ const TextPanel: React.FC<TextPanelProps> = ({
             <Button
               onClick={addPageNumber}
               variant="outline"
-              className="p-0 h-auto"
+              className="p-0 h-auto w-full hover:cursor-pointer"
             >
               <div className="flex items-center p-3 space-x-4 w-full max-w-xs cursor-pointer hover:bg-gray-50 transition-colors duration-200">
                 {/* Icon Container */}
@@ -339,7 +339,7 @@ const TextPanel: React.FC<TextPanelProps> = ({
                   key={combo.id}
                   onClick={() => addFontCombination(combo)}
                   variant="outline"
-                  className="relative p-4 h-auto text-left justify-start group"
+                  className="relative p-4 h-auto text-left justify-start group hover:cursor-pointer"
                 >
                   <div className="space-y-1">
                     <div
