@@ -9,12 +9,16 @@ interface SelectionTooltipProps {
   canvas: any;
   fabric: any;
   selectedObject: any;
+  position?: { x: number; y: number };
+  onHide?: () => void;
 }
 
 const SelectionTooltip: React.FC<SelectionTooltipProps> = ({
   canvas,
   fabric,
   selectedObject,
+  position,
+  onHide,
 }) => {
   const [tooltipState, setTooltipState] = useState({
     visible: false,
@@ -26,6 +30,17 @@ const SelectionTooltip: React.FC<SelectionTooltipProps> = ({
   const updateTooltipPosition = useCallback(
     (obj: any) => {
       if (!obj || !canvas) return;
+
+      // If position is provided from parent, use it
+      if (position) {
+        setTooltipState({
+          visible: true,
+          x: position.x,
+          y: position.y,
+          object: obj,
+        });
+        return;
+      }
 
       const objBounds = obj.getBoundingRect();
       const canvasContainer = canvas.getElement().parentNode;
@@ -44,14 +59,32 @@ const SelectionTooltip: React.FC<SelectionTooltipProps> = ({
         object: obj,
       });
     },
-    [canvas]
+    [canvas, position]
   );
 
   const hideTooltip = useCallback(() => {
-    setTooltipState((prev) => ({ ...prev, visible: false }));
-  }, []);
+    if (onHide) {
+      onHide();
+    } else {
+      setTooltipState((prev) => ({ ...prev, visible: false }));
+    }
+  }, [onHide]);
 
   useEffect(() => {
+    // Only handle canvas events if position is not provided from parent
+    if (position) {
+      // Update tooltip state with provided position and selected object
+      if (selectedObject && !selectedObject.excludeFromExport) {
+        setTooltipState({
+          visible: true,
+          x: position.x,
+          y: position.y,
+          object: selectedObject,
+        });
+      }
+      return;
+    }
+
     if (!canvas || !fabric) return;
 
     const handleSelectionCreated = (e: any) => {
@@ -98,15 +131,22 @@ const SelectionTooltip: React.FC<SelectionTooltipProps> = ({
       canvas.off("object:modified", handleObjectModified);
       canvas.off("path:created", handleCanvasMove);
     };
-  }, [canvas, fabric, selectedObject, updateTooltipPosition, hideTooltip]);
+  }, [
+    canvas,
+    fabric,
+    selectedObject,
+    updateTooltipPosition,
+    hideTooltip,
+    position,
+  ]);
 
   const handleLockToggle = () => {
-    if (!tooltipState.object || !canvas) return;
+    const targetObject = position ? selectedObject : tooltipState.object;
+    if (!targetObject || !canvas) return;
 
-    const isLocked =
-      tooltipState.object.lockMovementX || tooltipState.object.lockMovementY;
+    const isLocked = targetObject.lockMovementX || targetObject.lockMovementY;
 
-    tooltipState.object.set({
+    targetObject.set({
       lockMovementX: !isLocked,
       lockMovementY: !isLocked,
       lockScalingX: !isLocked,
@@ -118,13 +158,16 @@ const SelectionTooltip: React.FC<SelectionTooltipProps> = ({
     canvas.renderAll();
 
     // Update tooltip position in case object state changed
-    setTimeout(() => updateTooltipPosition(tooltipState.object), 100);
+    if (!position) {
+      setTimeout(() => updateTooltipPosition(targetObject), 100);
+    }
   };
 
   const handleDuplicate = () => {
-    if (!tooltipState.object) return;
+    const targetObject = position ? selectedObject : tooltipState.object;
+    if (!targetObject) return;
 
-    tooltipState.object.clone((cloned: any) => {
+    targetObject.clone((cloned: any) => {
       cloned.set({
         left: cloned.left + 20,
         top: cloned.top + 20,
@@ -136,9 +179,10 @@ const SelectionTooltip: React.FC<SelectionTooltipProps> = ({
   };
 
   const handleDelete = () => {
-    if (!tooltipState.object) return;
+    const targetObject = position ? selectedObject : tooltipState.object;
+    if (!targetObject) return;
 
-    canvas.remove(tooltipState.object);
+    canvas.remove(targetObject);
     canvas.renderAll();
     hideTooltip();
   };
@@ -147,7 +191,8 @@ const SelectionTooltip: React.FC<SelectionTooltipProps> = ({
     e.preventDefault();
     e.stopPropagation();
 
-    if (!tooltipState.object || !canvas) return;
+    const targetObject = position ? selectedObject : tooltipState.object;
+    if (!targetObject || !canvas) return;
 
     // Find the CanvaContextMenu trigger element by looking for the canvas wrapper
     const canvasContainer = canvas.getElement().parentNode;
@@ -175,6 +220,86 @@ const SelectionTooltip: React.FC<SelectionTooltipProps> = ({
     // Hide the tooltip
     hideTooltip();
   };
+  if (position) {
+    // When position is provided, use selectedObject directly
+    if (!selectedObject || selectedObject.excludeFromExport) return null;
+
+    const isLocked =
+      selectedObject.lockMovementX || selectedObject.lockMovementY;
+
+    return (
+      <>
+        {/* Overlay to detect clicks outside */}
+        <div
+          className="fixed inset-0 z-40"
+          onClick={hideTooltip}
+          style={{ pointerEvents: "auto" }}
+        />
+
+        {/* Tooltip */}
+        <Card
+          className="fixed p-2 z-50 flex flex-row items-center gap-1 bg-white border shadow-lg"
+          style={{
+            left: position.x - 60, // Center horizontally
+            top: position.y - 45, // Position above
+            pointerEvents: "auto",
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Lock/Unlock Button */}
+          <Button
+            onClick={handleLockToggle}
+            variant="ghost"
+            size="sm"
+            className={`p-2 h-auto ${
+              isLocked ? "text-red-600" : "text-gray-600"
+            }`}
+            title={isLocked ? "Unlock" : "Lock"}
+          >
+            {isLocked ? <Lock size={16} /> : <Unlock size={16} />}
+          </Button>
+
+          {/* Duplicate Button */}
+          <Button
+            onClick={handleDuplicate}
+            variant="ghost"
+            size="sm"
+            className="p-2 h-auto text-gray-600"
+            title="Duplicate"
+          >
+            <Copy size={16} />
+          </Button>
+
+          {/* Delete Button */}
+          <Button
+            onClick={handleDelete}
+            variant="ghost"
+            size="sm"
+            className="p-2 h-auto text-red-600"
+            title="Delete"
+          >
+            <Trash2 size={16} />
+          </Button>
+
+          {/* Separator */}
+          <div className="w-px h-6 bg-gray-300 mx-1" />
+
+          {/* More Options Button */}
+          <Button
+            onClick={handleShowMore}
+            variant="ghost"
+            size="sm"
+            className="p-2 h-auto text-gray-600"
+            title="More options"
+          >
+            <MoreHorizontal size={16} />
+          </Button>
+        </Card>
+      </>
+    );
+  }
+
+  // Original logic for backward compatibility
   if (!tooltipState.visible || !tooltipState.object) return null;
 
   const isLocked =

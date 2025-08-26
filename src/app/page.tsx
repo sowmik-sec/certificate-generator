@@ -7,14 +7,13 @@ import CanvasStability from "@/components/canvas-stability";
 import PrecisionSelection from "@/components/precision-selection";
 import ContextMenu from "@/components/context-menu";
 import LineVisibilityEnhancer from "@/components/line-visibility-enhancer";
-import SelectionTooltip from "@/components/selection-tooltip";
 import CanvaContextMenu from "@/components/canva-context-menu";
 import TextEditingEnhancer from "@/components/text-editing-enhancer";
-import TopPropertyPanel from "@/components/top-property-panel";
-import AlignmentToolbar from "@/components/alignment-toolbar";
+import SelectionOverlay from "@/components/selection-overlay";
 import CanvasSizePanel, { CanvasSize } from "@/components/canvas-size-panel";
 import { useEditorStore } from "@/stores/useEditorStore";
 import { useCanvasStore } from "@/stores/useCanvasStore";
+import { useSelectionState } from "@/hooks/useSelectionState";
 import { getCanvasManager } from "@/lib/canvasManager";
 
 // Import custom hooks
@@ -56,8 +55,11 @@ export default function CertificateGeneratorPage() {
     setHasCanvasObjects,
   } = useEditorStore();
 
-  const { fabric, canvas, selectedObject, selectedObjects, setSelectedObject } =
+  const { fabric, canvas, selectedObject, setSelectedObject } =
     useCanvasStore();
+
+  // Selection state management
+  const { selectionState, hideSelection } = useSelectionState(canvas, fabric);
 
   const imageInputRef = useRef<HTMLInputElement>(null);
 
@@ -454,14 +456,14 @@ export default function CertificateGeneratorPage() {
             >
               <CanvaContextMenu canvas={canvas} selectedObject={selectedObject}>
                 <div className="w-full h-full relative">
-                  {/* Top Property Panel - Appears above canvas when object is selected */}
-                  {selectedObject && (
-                    <TopPropertyPanel
-                      selectedObject={selectedObject}
-                      canvas={canvas}
-                      setEditorMode={setEditorMode}
-                    />
-                  )}
+                  {/* Selection Overlay - Unified tooltip and top property panel */}
+                  <SelectionOverlay
+                    canvas={canvas}
+                    fabric={fabric}
+                    selectionState={selectionState}
+                    onHideSelection={hideSelection}
+                    setEditorMode={setEditorMode}
+                  />
 
                   <CanvasComponent
                     fabric={fabric}
@@ -482,12 +484,6 @@ export default function CertificateGeneratorPage() {
                   <LineVisibilityEnhancer canvas={canvas} fabric={fabric} />
                   {/* Add text editing enhancer to fix typing delays */}
                   <TextEditingEnhancer canvas={canvas} fabric={fabric} />
-                  {/* Add selection tooltip */}
-                  <SelectionTooltip
-                    canvas={canvas}
-                    fabric={fabric}
-                    selectedObject={selectedObject}
-                  />
                 </div>
               </CanvaContextMenu>
             </div>

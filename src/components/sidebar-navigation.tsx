@@ -48,7 +48,10 @@ const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
   };
 
   return (
-    <aside className="w-full md:w-20 flex md:flex-col items-center p-2 md:py-4 flex-shrink-0 relative z-30">
+    <aside
+      className="w-full md:w-20 flex md:flex-col items-center p-2 md:py-4 flex-shrink-0 relative z-30"
+      data-sidebar-nav
+    >
       <div className="text-2xl font-bold mr-auto md:mr-0 md:mb-8">CG</div>
       <nav className="flex flex-row md:flex-col space-x-2 md:space-x-0 md:space-y-6">
         <div className="flex items-center justify-center flex-col">

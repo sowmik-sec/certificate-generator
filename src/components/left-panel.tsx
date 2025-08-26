@@ -173,6 +173,7 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
         }}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
+        data-left-panel
       >
         <div className="w-full h-full overflow-y-auto p-4 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-gray-300 hover:scrollbar-thumb-gray-400">
           {activeMode === "templates" && (
