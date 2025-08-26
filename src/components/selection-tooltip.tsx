@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { useState, useEffect, useCallback } from "react";
-import { Lock, Unlock, Copy, Trash2, MoreHorizontal } from "lucide-react";
+import { Lock, Unlock, Trash2, MoreHorizontal, CopyPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
@@ -146,6 +146,7 @@ const SelectionTooltip: React.FC<SelectionTooltipProps> = ({
 
     const isLocked = targetObject.lockMovementX || targetObject.lockMovementY;
 
+    // Toggle lock state with proper fabric.js properties
     targetObject.set({
       lockMovementX: !isLocked,
       lockMovementY: !isLocked,
@@ -153,11 +154,14 @@ const SelectionTooltip: React.FC<SelectionTooltipProps> = ({
       lockScalingY: !isLocked,
       lockRotation: !isLocked,
       selectable: true, // Keep selectable so user can still unlock it
+      evented: true, // Keep events enabled for selection
     });
 
+    // Update object coordinates and render
+    targetObject.setCoords();
     canvas.renderAll();
 
-    // Update tooltip position in case object state changed
+    // Update tooltip position if using internal state
     if (!position) {
       setTimeout(() => updateTooltipPosition(targetObject), 100);
     }
@@ -165,17 +169,255 @@ const SelectionTooltip: React.FC<SelectionTooltipProps> = ({
 
   const handleDuplicate = () => {
     const targetObject = position ? selectedObject : tooltipState.object;
-    if (!targetObject) return;
+    if (!targetObject || !canvas || !fabric) return;
 
-    targetObject.clone((cloned: any) => {
-      cloned.set({
-        left: cloned.left + 20,
-        top: cloned.top + 20,
-      });
-      canvas.add(cloned);
-      canvas.setActiveObject(cloned);
-      canvas.renderAll();
-    });
+    // Use the same robust duplication logic as the context menu
+    const createSafeCopy = (obj: any) => {
+      const safeCopy: any = {
+        type: obj.type,
+        left: obj.left || 0,
+        top: obj.top || 0,
+        width: obj.width,
+        height: obj.height,
+        scaleX: obj.scaleX || 1,
+        scaleY: obj.scaleY || 1,
+        angle: obj.angle || 0,
+        opacity: obj.opacity || 1,
+        visible: obj.visible !== false,
+        flipX: obj.flipX || false,
+        flipY: obj.flipY || false,
+        skewX: obj.skewX || 0,
+        skewY: obj.skewY || 0,
+      };
+
+      // Handle different object types
+      switch (obj.type) {
+        case "textbox":
+        case "text":
+          safeCopy.text = obj.text || "Text";
+          safeCopy.fontSize = obj.fontSize || 20;
+          safeCopy.fontFamily = obj.fontFamily || "Arial";
+          safeCopy.fontWeight = obj.fontWeight || "normal";
+          safeCopy.fontStyle = obj.fontStyle || "normal";
+          safeCopy.fill = obj.fill || "#000000";
+          safeCopy.textAlign = obj.textAlign || "left";
+          safeCopy.lineHeight = obj.lineHeight || 1.16;
+          if (obj.type === "textbox") {
+            safeCopy.width = obj.width || 200;
+          }
+          break;
+
+        case "rect":
+        case "triangle":
+        case "circle":
+        case "ellipse":
+          safeCopy.fill = obj.fill || "#000000";
+          safeCopy.stroke = obj.stroke;
+          safeCopy.strokeWidth = obj.strokeWidth || 1;
+          if (obj.type === "circle") {
+            safeCopy.radius = obj.radius || 50;
+          }
+          if (obj.type === "ellipse") {
+            safeCopy.rx = obj.rx || 50;
+            safeCopy.ry = obj.ry || 30;
+          }
+          break;
+
+        case "line":
+          safeCopy.x1 = obj.x1 || 0;
+          safeCopy.y1 = obj.y1 || 0;
+          safeCopy.x2 = obj.x2 || 100;
+          safeCopy.y2 = obj.y2 || 0;
+          safeCopy.stroke = obj.stroke || "#000000";
+          safeCopy.strokeWidth = obj.strokeWidth || 1;
+          safeCopy.strokeDashArray = obj.strokeDashArray;
+          break;
+
+        case "group":
+          safeCopy.objects = [];
+          if (obj.getObjects) {
+            obj.getObjects().forEach((subObj: any) => {
+              safeCopy.objects.push(createSafeCopy(subObj));
+            });
+          }
+          break;
+      }
+
+      return safeCopy;
+    };
+
+    const createFabricObject = (objData: any) => {
+      const baseProps = {
+        left: (objData.left || 0) + 20,
+        top: (objData.top || 0) + 20,
+        scaleX: objData.scaleX || 1,
+        scaleY: objData.scaleY || 1,
+        angle: objData.angle || 0,
+        opacity: objData.opacity || 1,
+        flipX: objData.flipX || false,
+        flipY: objData.flipY || false,
+        skewX: objData.skewX || 0,
+        skewY: objData.skewY || 0,
+      };
+
+      let fabricObj;
+
+      switch (objData.type) {
+        case "textbox":
+          fabricObj = new fabric.Textbox(objData.text || "Text", {
+            ...baseProps,
+            width: objData.width || 200,
+            fontSize: objData.fontSize || 20,
+            fontFamily: objData.fontFamily || "Arial",
+            fontWeight: objData.fontWeight || "normal",
+            fontStyle: objData.fontStyle || "normal",
+            fill: objData.fill || "#000000",
+            textAlign: objData.textAlign || "left",
+            lineHeight: objData.lineHeight || 1.16,
+          });
+          break;
+
+        case "text":
+          fabricObj = new fabric.Text(objData.text || "Text", {
+            ...baseProps,
+            fontSize: objData.fontSize || 20,
+            fontFamily: objData.fontFamily || "Arial",
+            fontWeight: objData.fontWeight || "normal",
+            fontStyle: objData.fontStyle || "normal",
+            fill: objData.fill || "#000000",
+            textAlign: objData.textAlign || "left",
+            lineHeight: objData.lineHeight || 1.16,
+          });
+          break;
+
+        case "rect":
+          fabricObj = new fabric.Rect({
+            ...baseProps,
+            width: objData.width || 100,
+            height: objData.height || 100,
+            fill: objData.fill || "#000000",
+            stroke: objData.stroke,
+            strokeWidth: objData.strokeWidth || 1,
+          });
+          break;
+
+        case "circle":
+          fabricObj = new fabric.Circle({
+            ...baseProps,
+            radius: objData.radius || 50,
+            fill: objData.fill || "#000000",
+            stroke: objData.stroke,
+            strokeWidth: objData.strokeWidth || 1,
+          });
+          break;
+
+        case "triangle":
+          fabricObj = new fabric.Triangle({
+            ...baseProps,
+            width: objData.width || 100,
+            height: objData.height || 100,
+            fill: objData.fill || "#000000",
+            stroke: objData.stroke,
+            strokeWidth: objData.strokeWidth || 1,
+          });
+          break;
+
+        case "ellipse":
+          fabricObj = new fabric.Ellipse({
+            ...baseProps,
+            rx: objData.rx || 50,
+            ry: objData.ry || 30,
+            fill: objData.fill || "#000000",
+            stroke: objData.stroke,
+            strokeWidth: objData.strokeWidth || 1,
+          });
+          break;
+
+        case "line":
+          fabricObj = new fabric.Line(
+            [
+              objData.x1 || 0,
+              objData.y1 || 0,
+              objData.x2 || 100,
+              objData.y2 || 0,
+            ],
+            {
+              ...baseProps,
+              stroke: objData.stroke || "#000000",
+              strokeWidth: objData.strokeWidth || 1,
+              strokeDashArray: objData.strokeDashArray,
+            }
+          );
+          break;
+
+        case "group":
+          if (objData.objects && objData.objects.length > 0) {
+            const groupObjects = objData.objects
+              .map((subObj: any) =>
+                createFabricObject({
+                  ...subObj,
+                  left: subObj.left || 0,
+                  top: subObj.top || 0,
+                })
+              )
+              .filter(Boolean);
+
+            if (groupObjects.length > 0) {
+              fabricObj = new fabric.Group(groupObjects, baseProps);
+            }
+          }
+          break;
+
+        default:
+          // Fallback to rectangle
+          fabricObj = new fabric.Rect({
+            ...baseProps,
+            width: 100,
+            height: 100,
+            fill: "#cccccc",
+          });
+      }
+
+      return fabricObj;
+    };
+
+    try {
+      // Try fabric clone method first for better compatibility
+      if (targetObject.clone && typeof targetObject.clone === "function") {
+        targetObject.clone((cloned: any) => {
+          cloned.set({
+            left: cloned.left + 20,
+            top: cloned.top + 20,
+          });
+          canvas.add(cloned);
+          canvas.setActiveObject(cloned);
+          canvas.renderAll();
+        });
+      } else {
+        // Fallback to safe recreation method
+        const safeCopy = createSafeCopy(targetObject);
+        const newObj = createFabricObject(safeCopy);
+        if (newObj) {
+          canvas.add(newObj);
+          canvas.setActiveObject(newObj);
+          canvas.renderAll();
+        }
+      }
+    } catch (error) {
+      console.error("Fabric clone failed, using safe recreation:", error);
+      // Fallback to safe recreation method
+      try {
+        const safeCopy = createSafeCopy(targetObject);
+        const newObj = createFabricObject(safeCopy);
+        if (newObj) {
+          canvas.add(newObj);
+          canvas.setActiveObject(newObj);
+          canvas.renderAll();
+        }
+      } catch (fallbackError) {
+        console.error("All duplication methods failed:", fallbackError);
+      }
+    }
   };
 
   const handleDelete = () => {
@@ -267,7 +509,7 @@ const SelectionTooltip: React.FC<SelectionTooltipProps> = ({
             className="p-2 h-auto text-gray-600"
             title="Duplicate"
           >
-            <Copy size={16} />
+            <CopyPlus size={16} />
           </Button>
 
           {/* Delete Button */}
@@ -345,7 +587,7 @@ const SelectionTooltip: React.FC<SelectionTooltipProps> = ({
           className="p-2 h-auto text-gray-600"
           title="Duplicate"
         >
-          <Copy size={16} />
+          <CopyPlus size={16} />
         </Button>
 
         {/* Delete Button */}
