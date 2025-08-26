@@ -17,6 +17,8 @@ import {
 } from "lucide-react";
 import { useEffect, useCallback } from "react";
 import { useLayerStore } from "@/stores/useLayerStore";
+import { Input } from "@/components/ui/input";
+import { Button } from "./ui/button";
 
 interface LayerPanelProps {
   canvas: FabricCanvas;
@@ -354,7 +356,7 @@ const LayerPanel: React.FC<LayerPanelProps> = ({
                 {/* Layer Info */}
                 <div className="flex-1 min-w-0">
                   {editingLayer === layer.id ? (
-                    <input
+                    <Input
                       type="text"
                       value={editingName}
                       onChange={(e) => setEditingName(e.target.value)}
@@ -395,7 +397,7 @@ const LayerPanel: React.FC<LayerPanelProps> = ({
                 {/* Layer Controls */}
                 <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100">
                   {/* Visibility Toggle */}
-                  <button
+                  <Button
                     onClick={(e) => {
                       e.stopPropagation();
                       toggleVisibility(layer.id);
@@ -408,10 +410,10 @@ const LayerPanel: React.FC<LayerPanelProps> = ({
                     ) : (
                       <EyeOff size={14} className="text-gray-400" />
                     )}
-                  </button>
+                  </Button>
 
                   {/* Lock Toggle */}
-                  <button
+                  <Button
                     onClick={(e) => {
                       e.stopPropagation();
                       toggleLock(layer.id);
@@ -424,10 +426,10 @@ const LayerPanel: React.FC<LayerPanelProps> = ({
                     ) : (
                       <Unlock size={14} className="text-gray-600" />
                     )}
-                  </button>
+                  </Button>
 
                   {/* Duplicate */}
-                  <button
+                  <Button
                     onClick={(e) => {
                       e.stopPropagation();
                       duplicateLayer(layer.id);
@@ -436,10 +438,10 @@ const LayerPanel: React.FC<LayerPanelProps> = ({
                     title="Duplicate layer"
                   >
                     <Copy size={14} className="text-gray-600" />
-                  </button>
+                  </Button>
 
                   {/* Delete */}
-                  <button
+                  <Button
                     onClick={(e) => {
                       e.stopPropagation();
                       deleteLayer(layer.id);
@@ -448,7 +450,7 @@ const LayerPanel: React.FC<LayerPanelProps> = ({
                     title="Delete layer"
                   >
                     <Trash2 size={14} className="text-gray-600" />
-                  </button>
+                  </Button>
                 </div>
               </div>
             ))}

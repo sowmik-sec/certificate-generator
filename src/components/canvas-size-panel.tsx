@@ -2,6 +2,12 @@
 import React, { useState } from "react";
 import { RotateCcw, Settings } from "lucide-react";
 import { useClickOutside } from "@/hooks/useClickOutside";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 export interface CanvasSize {
   width: number;
@@ -203,9 +209,10 @@ const CanvasSizePanel: React.FC<CanvasSizePanelProps> = ({
   return (
     <div className="relative" ref={panelRef}>
       {/* Size Display Button */}
-      <button
+      <Button
         onClick={() => setShowSizePanel(!showSizePanel)}
-        className="flex items-center space-x-2 px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+        variant="outline"
+        className="flex items-center space-x-2 px-3 py-2 text-sm"
         title="Canvas Size Settings"
       >
         <Settings size={16} />
@@ -213,171 +220,181 @@ const CanvasSizePanel: React.FC<CanvasSizePanelProps> = ({
         <span className="text-gray-500">
           {currentSize.width}×{currentSize.height}
         </span>
-        <span
-          className={`px-2 py-1 text-xs rounded-full ${
+        <Badge
+          variant={
+            currentSize.orientation === "portrait" ? "default" : "secondary"
+          }
+          className={
             currentSize.orientation === "portrait"
-              ? "bg-blue-100 text-blue-700"
-              : "bg-green-100 text-green-700"
-          }`}
+              ? "bg-blue-100 text-blue-700 hover:bg-blue-200"
+              : "bg-green-100 text-green-700 hover:bg-green-200"
+          }
         >
           {currentSize.orientation === "portrait" ? "📄" : "📰"}
-        </span>
-      </button>
+        </Badge>
+      </Button>
 
       {/* Size Panel Dropdown */}
       {showSizePanel && (
-        <div className="absolute top-full left-0 mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto">
-          <div className="p-4">
-            <div className="flex items-center justify-between mb-4">
+        <Card className="absolute top-full left-0 mt-2 w-80 shadow-lg z-50 bg-white border">
+          <CardHeader className="p-4 pb-2 flex-shrink-0">
+            <div className="flex items-center justify-between">
               <h3 className="font-medium text-gray-900">Canvas Size</h3>
-              <button
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={toggleOrientation}
                 className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
                 title="Toggle Orientation"
               >
                 <RotateCcw size={16} />
-              </button>
+              </Button>
             </div>
-
-            {/* Paper Sizes */}
-            <div className="mb-4">
-              <h4 className="text-sm font-medium text-gray-700 mb-2">
-                Paper Sizes
-              </h4>
-              <div className="space-y-1">
-                {paperSizes.map(([key, size]) => (
-                  <button
-                    key={key}
-                    onClick={() => handlePresetSizeChange(key)}
-                    className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${
-                      currentSize.name === size.name
-                        ? "bg-blue-100 text-blue-700"
-                        : "hover:bg-gray-100"
-                    }`}
-                  >
-                    <div className="flex justify-between">
-                      <span>{size.name}</span>
-                      <span className="text-gray-500">
-                        {size.width}×{size.height}
-                      </span>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Social Media Sizes */}
-            <div className="mb-4">
-              <h4 className="text-sm font-medium text-gray-700 mb-2">
-                Social Media
-              </h4>
-              <div className="space-y-1">
-                {socialMediaSizes.map(([key, size]) => (
-                  <button
-                    key={key}
-                    onClick={() => handlePresetSizeChange(key)}
-                    className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${
-                      currentSize.name === size.name
-                        ? "bg-blue-100 text-blue-700"
-                        : "hover:bg-gray-100"
-                    }`}
-                  >
-                    <div className="flex justify-between">
-                      <span>{size.name}</span>
-                      <span className="text-gray-500">
-                        {size.width}×{size.height}
-                      </span>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Other Sizes */}
-            <div className="mb-4">
-              <h4 className="text-sm font-medium text-gray-700 mb-2">Other</h4>
-              <div className="space-y-1">
-                {otherSizes.map(([key, size]) => (
-                  <button
-                    key={key}
-                    onClick={() =>
-                      key === "CUSTOM"
-                        ? setIsCustomMode(true)
-                        : handlePresetSizeChange(key)
-                    }
-                    className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${
-                      currentSize.name === size.name
-                        ? "bg-blue-100 text-blue-700"
-                        : "hover:bg-gray-100"
-                    }`}
-                  >
-                    <div className="flex justify-between">
-                      <span>{size.name}</span>
-                      <span className="text-gray-500">
-                        {size.width}×{size.height}
-                      </span>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Custom Size Input */}
-            {isCustomMode && (
-              <div className="border-t pt-4">
-                <h4 className="text-sm font-medium text-gray-700 mb-3">
-                  Custom Size
-                </h4>
-                <div className="grid grid-cols-2 gap-3 mb-3">
-                  <div>
-                    <label className="block text-xs text-gray-600 mb-1">
-                      Width (px)
-                    </label>
-                    <input
-                      type="number"
-                      value={customWidth}
-                      onChange={(e) =>
-                        setCustomWidth(parseInt(e.target.value) || 0)
-                      }
-                      className="w-full px-2 py-1 text-sm border border-gray-300 rounded"
-                      min="100"
-                      max="5000"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs text-gray-600 mb-1">
-                      Height (px)
-                    </label>
-                    <input
-                      type="number"
-                      value={customHeight}
-                      onChange={(e) =>
-                        setCustomHeight(parseInt(e.target.value) || 0)
-                      }
-                      className="w-full px-2 py-1 text-sm border border-gray-300 rounded"
-                      min="100"
-                      max="5000"
-                    />
+          </CardHeader>
+          <CardContent className="p-4">
+            <ScrollArea className="h-[400px] w-full">
+              <div className="pr-4">
+                {/* Paper Sizes */}
+                <div className="mb-4">
+                  <h4 className="text-sm font-medium text-gray-700 mb-2">
+                    Paper Sizes
+                  </h4>
+                  <div className="space-y-1">
+                    {paperSizes.map(([key, size]) => (
+                      <Button
+                        key={key}
+                        variant="ghost"
+                        onClick={() => handlePresetSizeChange(key)}
+                        className={`w-full justify-between text-left px-3 py-2 text-sm rounded-lg transition-colors ${
+                          currentSize.name === size.name
+                            ? "bg-blue-100 text-blue-700"
+                            : "hover:bg-gray-100"
+                        }`}
+                      >
+                        <span>{size.name}</span>
+                        <span className="text-gray-500">
+                          {size.width}×{size.height}
+                        </span>
+                      </Button>
+                    ))}
                   </div>
                 </div>
-                <div className="flex space-x-2">
-                  <button
-                    onClick={handleCustomSizeChange}
-                    className="flex-1 px-3 py-2 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-                  >
-                    Apply
-                  </button>
-                  <button
-                    onClick={() => setIsCustomMode(false)}
-                    className="flex-1 px-3 py-2 text-sm bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors"
-                  >
-                    Cancel
-                  </button>
+
+                {/* Social Media Sizes */}
+                <div className="mb-4">
+                  <h4 className="text-sm font-medium text-gray-700 mb-2">
+                    Social Media
+                  </h4>
+                  <div className="space-y-1">
+                    {socialMediaSizes.map(([key, size]) => (
+                      <Button
+                        key={key}
+                        variant="ghost"
+                        onClick={() => handlePresetSizeChange(key)}
+                        className={`w-full justify-between text-left px-3 py-2 text-sm rounded-lg transition-colors ${
+                          currentSize.name === size.name
+                            ? "bg-blue-100 text-blue-700"
+                            : "hover:bg-gray-100"
+                        }`}
+                      >
+                        <span>{size.name}</span>
+                        <span className="text-gray-500">
+                          {size.width}×{size.height}
+                        </span>
+                      </Button>
+                    ))}
+                  </div>
                 </div>
+
+                {/* Other Sizes */}
+                <div className="mb-4">
+                  <h4 className="text-sm font-medium text-gray-700 mb-2">
+                    Other
+                  </h4>
+                  <div className="space-y-1">
+                    {otherSizes.map(([key, size]) => (
+                      <Button
+                        key={key}
+                        variant="ghost"
+                        onClick={() =>
+                          key === "CUSTOM"
+                            ? setIsCustomMode(true)
+                            : handlePresetSizeChange(key)
+                        }
+                        className={`w-full justify-between text-left px-3 py-2 text-sm rounded-lg transition-colors ${
+                          currentSize.name === size.name
+                            ? "bg-blue-100 text-blue-700"
+                            : "hover:bg-gray-100"
+                        }`}
+                      >
+                        <span>{size.name}</span>
+                        <span className="text-gray-500">
+                          {size.width}×{size.height}
+                        </span>
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Custom Size Input */}
+                {isCustomMode && (
+                  <div className="border-t pt-4">
+                    <h4 className="text-sm font-medium text-gray-700 mb-3">
+                      Custom Size
+                    </h4>
+                    <div className="grid grid-cols-2 gap-3 mb-3">
+                      <div>
+                        <Label className="block text-xs text-gray-600 mb-1">
+                          Width (px)
+                        </Label>
+                        <Input
+                          type="number"
+                          value={customWidth}
+                          onChange={(e) =>
+                            setCustomWidth(parseInt(e.target.value) || 0)
+                          }
+                          className="w-full text-sm"
+                          min="100"
+                          max="5000"
+                        />
+                      </div>
+                      <div>
+                        <Label className="block text-xs text-gray-600 mb-1">
+                          Height (px)
+                        </Label>
+                        <Input
+                          type="number"
+                          value={customHeight}
+                          onChange={(e) =>
+                            setCustomHeight(parseInt(e.target.value) || 0)
+                          }
+                          className="w-full text-sm"
+                          min="100"
+                          max="5000"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex space-x-2">
+                      <Button
+                        onClick={handleCustomSizeChange}
+                        className="flex-1 px-3 py-2 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                      >
+                        Apply
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        onClick={() => setIsCustomMode(false)}
+                        className="flex-1 px-3 py-2 text-sm bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-        </div>
+            </ScrollArea>
+          </CardContent>
+        </Card>
       )}
     </div>
   );

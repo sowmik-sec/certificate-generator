@@ -9,6 +9,7 @@ import {
   ChevronUp,
   ChevronDown,
 } from "lucide-react";
+import { Button } from "./ui/button";
 
 interface LayerControlsProps {
   selectedObjects: any[];
@@ -32,56 +33,56 @@ const LayerControls: React.FC<LayerControlsProps> = ({
   return (
     <div className="flex items-center space-x-2">
       {selectedObjects.length > 1 && (
-        <button
+        <Button
           onClick={groupObjects}
           className="flex items-center space-x-1 px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
           title="Group Objects"
         >
           <Group size={16} />
           <span className="text-sm">Group</span>
-        </button>
+        </Button>
       )}
       {selectedObjects.length === 1 && selectedObjects[0]?.type === "group" && (
-        <button
+        <Button
           onClick={ungroupObjects}
           className="flex items-center space-x-1 px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
           title="Ungroup Objects"
         >
           <Ungroup size={16} />
           <span className="text-sm">Ungroup</span>
-        </button>
+        </Button>
       )}
       {selectedObjects.length > 0 && (
         <>
           <div className="w-px h-6 bg-gray-300"></div>
-          <button
+          <Button
             onClick={bringToFront}
             className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
             title="Bring to Front"
           >
             <MoveUp size={16} />
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={bringForward}
             className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
             title="Bring Forward"
           >
             <ChevronUp size={16} />
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={sendBackward}
             className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
             title="Send Backward"
           >
             <ChevronDown size={16} />
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={sendToBack}
             className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
             title="Send to Back"
           >
             <MoveDown size={16} />
-          </button>
+          </Button>
         </>
       )}
     </div>

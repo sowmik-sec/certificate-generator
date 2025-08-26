@@ -8,7 +8,7 @@ import {
   Heart,
   Hexagon,
 } from "lucide-react";
-import { useState } from "react";
+import { Button } from "@/components/ui/button";
 
 interface ElementsPanelProps {
   addSquare: (options?: { fill?: string }) => void;
@@ -58,27 +58,8 @@ const ElementsPanel: React.FC<ElementsPanelProps> = ({
   addThickLine,
   addDashDotLine,
 }) => {
-  const [lineColor, setLineColor] = useState("#333333");
-  const [shapeColor, setShapeColor] = useState("#4A90E2");
-
-  // Predefined color palettes
-  const colorPalette = [
-    "#4A90E2",
-    "#E91E63",
-    "#FFC107",
-    "#8E24AA",
-    "#FF7043",
-    "#4CAF50",
-    "#2196F3",
-    "#FF9800",
-    "#9C27B0",
-    "#607D8B",
-    "#F44336",
-    "#03DAC5",
-    "#6200EE",
-    "#018786",
-    "#000000",
-  ];
+  const lineColor = "#333333";
+  const shapeColor = "#4A90E2";
 
   const shapes = [
     {
@@ -421,16 +402,17 @@ const ElementsPanel: React.FC<ElementsPanelProps> = ({
         <h3 className="text-lg font-semibold mb-4 text-gray-800 ">Lines</h3>
         <div className="grid grid-cols-3 gap-3">
           {lines.map((line) => (
-            <button
+            <Button
               key={line.name}
               onClick={line.action}
-              className="flex flex-col items-center justify-center p-3 bg-white rounded-lg shadow-sm hover:shadow-md hover:bg-gray-50 transition-all"
+              variant="outline"
+              className="flex flex-col items-center justify-center p-3 h-auto bg-white hover:bg-gray-50"
             >
               {line.icon}
               <span className="mt-1 text-xs text-center text-gray-600">
                 {line.name}
               </span>
-            </button>
+            </Button>
           ))}
         </div>
       </div>
@@ -438,14 +420,15 @@ const ElementsPanel: React.FC<ElementsPanelProps> = ({
         <h3 className="text-lg font-semibold mb-4 text-gray-800">Shapes</h3>
         <div className="grid grid-cols-3 gap-3">
           {shapes.map((shape) => (
-            <button
+            <Button
               key={shape.name}
               onClick={shape.action}
-              className="flex flex-col items-center justify-center p-3 bg-white rounded-lg shadow-sm hover:shadow-md hover:bg-gray-50 transition-all"
+              variant="outline"
+              className="flex flex-col items-center justify-center p-3 h-auto bg-white hover:bg-gray-50"
             >
               {shape.icon}
               <span className="mt-1 text-xs text-gray-600">{shape.name}</span>
-            </button>
+            </Button>
           ))}
         </div>
       </div>

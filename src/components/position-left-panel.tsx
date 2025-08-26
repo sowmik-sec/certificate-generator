@@ -17,6 +17,13 @@ import {
 import { usePropertiesStore } from "@/stores/usePropertiesStore";
 import { alignmentUtils } from "@/lib/alignmentUtils";
 import LayerPanel from "./layer-panel";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Card, CardContent } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 
 interface PositionLeftPanelProps {
   canvas: any;
@@ -226,254 +233,287 @@ const PositionLeftPanel: React.FC<PositionLeftPanelProps> = ({
       {/* Header */}
       <div className="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0">
         <h3 className="text-lg font-semibold text-gray-900">Position</h3>
-        <button
+        <Button
           onClick={onClose}
-          className="p-1 hover:bg-gray-100 rounded-md transition-colors"
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8"
         >
           <X className="w-5 h-5" />
-        </button>
+        </Button>
       </div>
 
-      {/* Tab Navigation */}
-      <div className="px-6 py-4 border-b border-gray-200 flex-shrink-0">
-        <div className="flex">
-          <button
-            onClick={() => setActiveTab("arrange")}
-            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-              activeTab === "arrange"
-                ? "text-purple-600 border-purple-600"
-                : "text-gray-500 border-transparent hover:text-gray-700"
-            }`}
-          >
-            Arrange
-          </button>
-          <button
-            onClick={() => setActiveTab("layers")}
-            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-              activeTab === "layers"
-                ? "text-purple-600 border-purple-600"
-                : "text-gray-500 border-transparent hover:text-gray-700"
-            }`}
-          >
-            Layers
-          </button>
+      {/* Tabs Implementation */}
+      <Tabs
+        value={activeTab}
+        onValueChange={(value) => setActiveTab(value as "arrange" | "layers")}
+        className="flex-1 flex flex-col overflow-hidden"
+      >
+        {/* Tab Navigation */}
+        <div className="px-6 py-4 border-b border-gray-200 flex-shrink-0">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger
+              value="arrange"
+              className="px-4 py-2 text-sm font-medium"
+            >
+              Arrange
+            </TabsTrigger>
+            <TabsTrigger
+              value="layers"
+              className="px-4 py-2 text-sm font-medium"
+            >
+              Layers
+            </TabsTrigger>
+          </TabsList>
         </div>
-      </div>
 
-      {/* Content Area */}
-      <div className="flex-1 overflow-hidden">
         {/* Arrange Tab Content */}
-        {activeTab === "arrange" && (
-          <div className="px-6 pb-6 overflow-y-auto h-full">
-            {/* Arrange Buttons */}
-            <div className="grid grid-cols-2 gap-3 mb-6 mt-4">
-              <button
-                onClick={bringForward}
-                className="flex items-center gap-2 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                <ChevronUp className="w-5 h-5" />
-                <span className="text-sm font-medium">Forward</span>
-              </button>
-              <button
-                onClick={sendBackward}
-                className="flex items-center gap-2 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                <ChevronDown className="w-5 h-5" />
-                <span className="text-sm font-medium">Backward</span>
-              </button>
-              <button
-                onClick={bringToFront}
-                className="flex items-center gap-2 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                <ChevronUp className="w-5 h-5" />
-                <span className="text-sm font-medium">To front</span>
-              </button>
-              <button
-                onClick={sendToBack}
-                className="flex items-center gap-2 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                <ChevronDown className="w-5 h-5" />
-                <span className="text-sm font-medium">To back</span>
-              </button>
-            </div>
-
-            {/* Align to page Section */}
-            <div className="mb-6">
-              <h4 className="text-sm font-medium text-gray-900 mb-4">
-                Align to page
-              </h4>
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  onClick={alignToTop}
+        <TabsContent value="arrange" className="flex-1 overflow-hidden m-0">
+          <ScrollArea className="h-[600px] w-full">
+            <div className="px-6 pb-6">
+              {/* Arrange Buttons */}
+              <div className="grid grid-cols-2 gap-3 mb-6 mt-4">
+                <Button
+                  variant="outline"
+                  onClick={bringForward}
                   className="flex items-center gap-2 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
                 >
-                  <AlignVerticalJustifyStart className="w-5 h-5" />
-                  <span className="text-sm font-medium">Top</span>
-                </button>
-                <button
-                  onClick={alignToLeft}
+                  <ChevronUp className="w-5 h-5" />
+                  <span className="text-sm font-medium">Forward</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={sendBackward}
                   className="flex items-center gap-2 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
                 >
-                  <AlignHorizontalJustifyStart className="w-5 h-5" />
-                  <span className="text-sm font-medium">Left</span>
-                </button>
-                <button
-                  onClick={alignToMiddle}
+                  <ChevronDown className="w-5 h-5" />
+                  <span className="text-sm font-medium">Backward</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={bringToFront}
                   className="flex items-center gap-2 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
                 >
-                  <AlignVerticalJustifyCenter className="w-5 h-5" />
-                  <span className="text-sm font-medium">Middle</span>
-                </button>
-                <button
-                  onClick={alignToCenter}
+                  <ChevronUp className="w-5 h-5" />
+                  <span className="text-sm font-medium">To front</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={sendToBack}
                   className="flex items-center gap-2 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
                 >
-                  <AlignHorizontalJustifyCenter className="w-5 h-5" />
-                  <span className="text-sm font-medium">Center</span>
-                </button>
-                <button
-                  onClick={alignToBottom}
-                  className="flex items-center gap-2 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  <AlignVerticalJustifyEnd className="w-5 h-5" />
-                  <span className="text-sm font-medium">Bottom</span>
-                </button>
-                <button
-                  onClick={alignToRight}
-                  className="flex items-center gap-2 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  <AlignHorizontalJustifyEnd className="w-5 h-5" />
-                  <span className="text-sm font-medium">Right</span>
-                </button>
+                  <ChevronDown className="w-5 h-5" />
+                  <span className="text-sm font-medium">To back</span>
+                </Button>
               </div>
-            </div>
 
-            {/* Advanced Section */}
-            <div>
-              <h4 className="text-sm font-medium text-gray-900 mb-4">
-                Advanced
-              </h4>
+              <Separator className="mb-6" />
 
-              {/* Width, Height, and Ratio Row */}
-              <div className="grid grid-cols-3 gap-2 mb-4">
-                <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-2">
-                    Width
-                  </label>
-                  <input
-                    type="number"
-                    value={(getDisplayedWidth() / PX_TO_CM).toFixed(2)}
-                    onChange={(e) =>
-                      handleWidthChange(Number(e.target.value) * PX_TO_CM)
-                    }
-                    className="w-full px-3 py-2.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white"
-                    step="0.01"
-                    min="0.1"
-                  />
-                  <span className="text-xs text-gray-500 mt-1 block">cm</span>
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-2">
-                    Height
-                  </label>
-                  <input
-                    type="number"
-                    value={(getDisplayedHeight() / PX_TO_CM).toFixed(2)}
-                    onChange={(e) =>
-                      handleHeightChange(Number(e.target.value) * PX_TO_CM)
-                    }
-                    disabled={isRatioLocked}
-                    className={`w-full px-3 py-2.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
-                      isRatioLocked ? "bg-gray-100 text-gray-500" : "bg-white"
-                    }`}
-                    step="0.01"
-                    min="0.1"
-                  />
-                  <span className="text-xs text-gray-500 mt-1 block">cm</span>
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-2">
-                    Ratio
-                  </label>
-                  <button
-                    onClick={toggleRatioLock}
-                    className={`w-full h-[42px] border rounded-md transition-colors flex items-center justify-center ${
-                      isRatioLocked
-                        ? "bg-purple-100 border-purple-300 text-purple-700"
-                        : "border-gray-300 text-gray-600 hover:bg-gray-50 bg-white"
-                    }`}
-                    title={isRatioLocked ? "Unlock ratio" : "Lock ratio"}
+              {/* Align to page Section */}
+              <div className="mb-6">
+                <h4 className="text-sm font-medium text-gray-900 mb-4">
+                  Align to page
+                </h4>
+                <div className="grid grid-cols-2 gap-3">
+                  <Button
+                    variant="outline"
+                    onClick={alignToTop}
+                    className="flex items-center gap-2 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
                   >
-                    {isRatioLocked ? (
-                      <Lock className="w-5 h-5" />
-                    ) : (
-                      <Unlock className="w-5 h-5" />
-                    )}
-                  </button>
+                    <AlignVerticalJustifyStart className="w-5 h-5" />
+                    <span className="text-sm font-medium">Top</span>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={alignToLeft}
+                    className="flex items-center gap-2 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    <AlignHorizontalJustifyStart className="w-5 h-5" />
+                    <span className="text-sm font-medium">Left</span>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={alignToMiddle}
+                    className="flex items-center gap-2 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    <AlignVerticalJustifyCenter className="w-5 h-5" />
+                    <span className="text-sm font-medium">Middle</span>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={alignToCenter}
+                    className="flex items-center gap-2 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    <AlignHorizontalJustifyCenter className="w-5 h-5" />
+                    <span className="text-sm font-medium">Center</span>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={alignToBottom}
+                    className="flex items-center gap-2 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    <AlignVerticalJustifyEnd className="w-5 h-5" />
+                    <span className="text-sm font-medium">Bottom</span>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={alignToRight}
+                    className="flex items-center gap-2 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    <AlignHorizontalJustifyEnd className="w-5 h-5" />
+                    <span className="text-sm font-medium">Right</span>
+                  </Button>
                 </div>
               </div>
 
-              {/* X, Y and Rotate Row */}
-              <div className="grid grid-cols-3 gap-2 mb-4">
-                <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-2">
-                    X
-                  </label>
-                  <input
-                    type="number"
-                    value={(attributes.left / PX_TO_CM).toFixed(2)}
-                    onChange={(e) =>
-                      handleXPositionChange(Number(e.target.value) * PX_TO_CM)
-                    }
-                    className="w-full px-3 py-2.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white"
-                    step="0.01"
-                  />
-                  <span className="text-xs text-gray-500 mt-1 block">cm</span>
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-2">
-                    Y
-                  </label>
-                  <input
-                    type="number"
-                    value={(attributes.top / PX_TO_CM).toFixed(2)}
-                    onChange={(e) =>
-                      handleYPositionChange(Number(e.target.value) * PX_TO_CM)
-                    }
-                    className="w-full px-3 py-2.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white"
-                    step="0.01"
-                  />
-                  <span className="text-xs text-gray-500 mt-1 block">cm</span>
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-2">
-                    Rotate
-                  </label>
-                  <input
-                    type="number"
-                    value={Math.round(attributes.angle || 0)}
-                    onChange={(e) =>
-                      handleRotationChange(Number(e.target.value))
-                    }
-                    className="w-full px-3 py-2.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white"
-                    min="0"
-                    max="360"
-                    step="1"
-                  />
-                  <span className="text-xs text-gray-500 mt-1 block">°</span>
-                </div>
-              </div>
+              <Separator className="mb-6" />
+
+              {/* Advanced Section */}
+              <Card>
+                <CardContent className="p-4">
+                  <h4 className="text-sm font-medium text-gray-900 mb-4">
+                    Advanced
+                  </h4>
+
+                  {/* Width, Height, and Ratio Row */}
+                  <div className="grid grid-cols-3 gap-2 mb-4">
+                    <div>
+                      <Label className="block text-xs font-medium text-gray-600 mb-2">
+                        Width
+                      </Label>
+                      <Input
+                        type="number"
+                        value={(getDisplayedWidth() / PX_TO_CM).toFixed(2)}
+                        onChange={(e) =>
+                          handleWidthChange(Number(e.target.value) * PX_TO_CM)
+                        }
+                        className="w-full"
+                        step="0.01"
+                        min="0.1"
+                      />
+                      <span className="text-xs text-gray-500 mt-1 block">
+                        cm
+                      </span>
+                    </div>
+                    <div>
+                      <Label className="block text-xs font-medium text-gray-600 mb-2">
+                        Height
+                      </Label>
+                      <Input
+                        type="number"
+                        value={(getDisplayedHeight() / PX_TO_CM).toFixed(2)}
+                        onChange={(e) =>
+                          handleHeightChange(Number(e.target.value) * PX_TO_CM)
+                        }
+                        disabled={isRatioLocked}
+                        className={`w-full ${
+                          isRatioLocked
+                            ? "bg-gray-100 text-gray-500"
+                            : "bg-white"
+                        }`}
+                        step="0.01"
+                        min="0.1"
+                      />
+                      <span className="text-xs text-gray-500 mt-1 block">
+                        cm
+                      </span>
+                    </div>
+                    <div>
+                      <Label className="block text-xs font-medium text-gray-600 mb-2">
+                        Ratio
+                      </Label>
+                      <Button
+                        variant="outline"
+                        onClick={toggleRatioLock}
+                        className={`w-full h-[42px] border rounded-md transition-colors flex items-center justify-center ${
+                          isRatioLocked
+                            ? "bg-purple-100 border-purple-300 text-purple-700"
+                            : "border-gray-300 text-gray-600 hover:bg-gray-50 bg-white"
+                        }`}
+                        title={isRatioLocked ? "Unlock ratio" : "Lock ratio"}
+                      >
+                        {isRatioLocked ? (
+                          <Lock className="w-5 h-5" />
+                        ) : (
+                          <Unlock className="w-5 h-5" />
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* X, Y and Rotate Row */}
+                  <div className="grid grid-cols-3 gap-2 mb-4">
+                    <div>
+                      <Label className="block text-xs font-medium text-gray-600 mb-2">
+                        X
+                      </Label>
+                      <Input
+                        type="number"
+                        value={(attributes.left / PX_TO_CM).toFixed(2)}
+                        onChange={(e) =>
+                          handleXPositionChange(
+                            Number(e.target.value) * PX_TO_CM
+                          )
+                        }
+                        className="w-full"
+                        step="0.01"
+                      />
+                      <span className="text-xs text-gray-500 mt-1 block">
+                        cm
+                      </span>
+                    </div>
+                    <div>
+                      <Label className="block text-xs font-medium text-gray-600 mb-2">
+                        Y
+                      </Label>
+                      <Input
+                        type="number"
+                        value={(attributes.top / PX_TO_CM).toFixed(2)}
+                        onChange={(e) =>
+                          handleYPositionChange(
+                            Number(e.target.value) * PX_TO_CM
+                          )
+                        }
+                        className="w-full"
+                        step="0.01"
+                      />
+                      <span className="text-xs text-gray-500 mt-1 block">
+                        cm
+                      </span>
+                    </div>
+                    <div>
+                      <Label className="block text-xs font-medium text-gray-600 mb-2">
+                        Rotate
+                      </Label>
+                      <Input
+                        type="number"
+                        value={Math.round(attributes.angle || 0)}
+                        onChange={(e) =>
+                          handleRotationChange(Number(e.target.value))
+                        }
+                        className="w-full"
+                        min="0"
+                        max="360"
+                        step="1"
+                      />
+                      <span className="text-xs text-gray-500 mt-1 block">
+                        °
+                      </span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
-          </div>
-        )}
+          </ScrollArea>
+        </TabsContent>
 
         {/* Layers Tab Content */}
-        {activeTab === "layers" && (
-          <div className="h-full w-full">
+        <TabsContent value="layers" className="flex-1 m-0">
+          <div className="h-[600px] w-full">
             <LayerPanel canvas={canvas} onSelectionChange={() => {}} />
           </div>
-        )}
-      </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
