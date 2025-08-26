@@ -34,7 +34,6 @@ import { useEditorShortcuts } from "@/hooks/useKeyboardShortcuts";
 import SidebarNavigation from "@/components/sidebar-navigation";
 import LeftPanel from "@/components/left-panel";
 import { Button } from "@/components/ui/button";
-import LayerControls from "@/components/layer-controls";
 import HeaderActions from "@/components/header-actions";
 import { ConfirmModal } from "@/components/confirm-modal";
 import FabricPatchInitializer from "@/components/fabric-patch-initializer";
@@ -408,11 +407,7 @@ export default function CertificateGeneratorPage() {
         <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
           {/* Header */}
           <header className="bg-white shadow-md z-10 flex justify-between items-center p-2 space-x-2 flex-shrink-0">
-            {/* Layer Management Controls */}
-            <LayerControls
-              selectedObjects={selectedObjects}
-              {...layerManagement}
-            />
+            <div className=""></div>
 
             {/* Center Controls - Canvas Size */}
             <div className="flex items-center space-x-2">
