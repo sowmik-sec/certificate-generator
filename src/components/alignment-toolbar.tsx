@@ -15,6 +15,10 @@ import {
 } from "lucide-react";
 import { useEffect } from "react";
 import { useGridAlignmentStore } from "@/stores/useGridAlignmentStore";
+import { Card } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Slider } from "@/components/ui/slider";
+import { Button } from "./ui/button";
 
 interface AlignmentToolbarProps {
   canvas: FabricCanvas;
@@ -113,23 +117,22 @@ const AlignmentToolbar: React.FC<AlignmentToolbarProps> = ({
   }, [canvas, snapToGrid, setupCanvasSnapping, removeCanvasSnapping]);
 
   return (
-    <div className="bg-white border-b border-gray-200 px-4 py-2">
+    <Card className="border-b px-4 py-2">
       <div className="flex items-center space-x-1">
         {/* Grid and Snap Controls */}
-        <div className="flex items-center space-x-1 pr-2 border-r border-gray-300">
-          <button
+        <div className="flex items-center space-x-1 pr-2">
+          <Button
             onClick={handleToggleGrid}
-            className={`p-2 rounded transition-colors ${
-              showGrid
-                ? "bg-blue-100 text-blue-600"
-                : "text-gray-600 hover:bg-gray-100"
-            }`}
+            variant={showGrid ? "default" : "outline"}
+            size="sm"
+            className="p-2 h-auto"
             title="Toggle Grid"
           >
             <Grid3x3 size={16} />
-          </button>
+          </Button>
+          <Separator orientation="vertical" className="h-6 mx-2" />
 
-          <button
+          <Button
             onClick={() => {
               setSnapToGrid(!snapToGrid);
               if (!snapToGrid) {
@@ -138,174 +141,177 @@ const AlignmentToolbar: React.FC<AlignmentToolbarProps> = ({
                 removeCanvasSnapping(canvas);
               }
             }}
-            className={`p-2 rounded transition-colors ${
-              snapToGrid
-                ? "bg-blue-100 text-blue-600"
-                : "text-gray-600 hover:bg-gray-100"
-            }`}
+            variant={snapToGrid ? "default" : "outline"}
+            size="sm"
+            className="p-2 h-auto"
             title="Snap to Grid"
           >
             <Move size={16} />
-          </button>
+          </Button>
 
-          <button
+          <Button
             onClick={() => setSnapToObjects(!snapToObjects)}
-            className={`p-2 rounded transition-colors ${
-              snapToObjects
-                ? "bg-blue-100 text-blue-600"
-                : "text-gray-600 hover:bg-gray-100"
-            }`}
+            variant={snapToObjects ? "default" : "outline"}
+            size="sm"
+            className="p-2 h-auto"
             title="Snap to Objects"
           >
             <Move size={16} />
-          </button>
+          </Button>
 
-          <button
+          <Button
             onClick={() => setShowAlignmentGuides(!showAlignmentGuides)}
-            className={`p-2 rounded transition-colors ${
-              showAlignmentGuides
-                ? "bg-blue-100 text-blue-600"
-                : "text-gray-600 hover:bg-gray-100"
-            }`}
+            variant={showAlignmentGuides ? "default" : "outline"}
+            size="sm"
+            className="p-2 h-auto"
             title="Show Alignment Guides"
           >
             {showAlignmentGuides ? <Eye size={16} /> : <EyeOff size={16} />}
-          </button>
+          </Button>
 
-          <input
-            type="range"
-            min="10"
-            max="50"
-            value={gridSize}
-            onChange={(e) => {
-              handleGridSizeChange(parseInt(e.target.value));
-            }}
+          <Slider
+            value={[gridSize]}
+            onValueChange={(value) => handleGridSizeChange(value[0])}
+            min={10}
+            max={50}
+            step={1}
             className="w-16"
             title={`Grid Size: ${gridSize}px`}
           />
         </div>
 
         {/* Horizontal Alignment */}
-        <div className="flex items-center space-x-1 pr-2 border-r border-gray-300">
-          <button
+        <div className="flex items-center space-x-1 pr-2">
+          <Button
             onClick={() => alignObjects(canvas, "left")}
             disabled={!hasSelection}
-            className="p-2 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            variant="ghost"
+            size="sm"
+            className="p-2 h-auto"
             title="Align Left"
           >
             <AlignLeft size={16} />
-          </button>
+          </Button>
 
-          <button
+          <Button
             onClick={() => alignObjects(canvas, "center")}
             disabled={!hasSelection}
-            className="p-2 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            variant="ghost"
+            size="sm"
+            className="p-2 h-auto"
             title="Center Horizontally"
           >
             <AlignCenter size={16} />
-          </button>
+          </Button>
 
-          <button
+          <Button
             onClick={() => alignObjects(canvas, "right")}
             disabled={!hasSelection}
-            className="p-2 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            variant="ghost"
+            size="sm"
+            className="p-2 h-auto"
             title="Align Right"
           >
             <AlignRight size={16} />
-          </button>
+          </Button>
+          <Separator orientation="vertical" className="h-6 mx-2" />
         </div>
 
         {/* Vertical Alignment */}
-        <div className="flex items-center space-x-1 pr-2 border-r border-gray-300">
-          <button
+        <div className="flex items-center space-x-1 pr-2">
+          <Button
             onClick={() => alignObjects(canvas, "top")}
             disabled={!hasSelection}
-            className="p-2 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            variant="ghost"
+            size="sm"
+            className="p-2 h-auto"
             title="Align Top"
           >
             <AlignStartVertical size={16} />
-          </button>
+          </Button>
 
-          <button
+          <Button
             onClick={() => alignObjects(canvas, "middle")}
             disabled={!hasSelection}
-            className="p-2 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            variant="ghost"
+            size="sm"
+            className="p-2 h-auto"
             title="Center Vertically"
           >
             <AlignCenterVertical size={16} />
-          </button>
+          </Button>
 
-          <button
+          <Button
             onClick={() => alignObjects(canvas, "bottom")}
             disabled={!hasSelection}
             className="p-2 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
             title="Align Bottom"
           >
             <AlignEndVertical size={16} />
-          </button>
+          </Button>
         </div>
 
         {/* Distribution */}
         <div className="flex items-center space-x-1 pr-2 border-r border-gray-300">
-          <button
+          <Button
             onClick={() => distributeObjects(canvas, "horizontal")}
             disabled={selectedObjects.length < 3}
             className="px-3 py-2 text-xs rounded text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
             title="Distribute Horizontally"
           >
             H-Dist
-          </button>
+          </Button>
 
-          <button
+          <Button
             onClick={() => distributeObjects(canvas, "vertical")}
             disabled={selectedObjects.length < 3}
             className="px-3 py-2 text-xs rounded text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
             title="Distribute Vertically"
           >
             V-Dist
-          </button>
+          </Button>
         </div>
 
         {/* Layer Controls */}
         <div className="flex items-center space-x-1">
-          <button
+          <Button
             onClick={bringToFront}
             disabled={!hasSelection}
             className="px-3 py-2 text-xs rounded text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
             title="Bring to Front"
           >
             Front
-          </button>
+          </Button>
 
-          <button
+          <Button
             onClick={bringForward}
             disabled={!hasSelection}
             className="px-3 py-2 text-xs rounded text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
             title="Bring Forward"
           >
             +1
-          </button>
+          </Button>
 
-          <button
+          <Button
             onClick={sendBackward}
             disabled={!hasSelection}
             className="px-3 py-2 text-xs rounded text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
             title="Send Backward"
           >
             -1
-          </button>
+          </Button>
 
-          <button
+          <Button
             onClick={sendToBack}
             disabled={!hasSelection}
             className="px-3 py-2 text-xs rounded text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
             title="Send to Back"
           >
             Back
-          </button>
+          </Button>
         </div>
       </div>
-    </div>
+    </Card>
   );
 };
 
