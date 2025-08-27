@@ -6,8 +6,7 @@ export const useCanvasOperations = (
   canvas: any,
   fabric: any,
   selectedObject: any,
-  setSelectedObject: (obj: any) => void,
-  saveToHistory: () => void
+  setSelectedObject: (obj: any) => void
 ) => {
   const [copiedObject, setCopiedObject] = useState<any>(null);
 
@@ -17,8 +16,7 @@ export const useCanvasOperations = (
     canvas.discardActiveObject();
     canvas.renderAll();
     setSelectedObject(null);
-    saveToHistory();
-  }, [canvas, selectedObject, saveToHistory, setSelectedObject]);
+  }, [canvas, selectedObject, setSelectedObject]);
 
   const handleCopy = useCallback(() => {
     if (!selectedObject) return;
@@ -375,12 +373,11 @@ export const useCanvasOperations = (
           canvas.add(img);
           canvas.setActiveObject(img);
           canvas.renderAll();
-          saveToHistory();
         },
         { crossOrigin: "anonymous" }
       );
     },
-    [canvas, fabric, saveToHistory]
+    [canvas, fabric]
   );
 
   const addStickyNote = useCallback(() => {
@@ -409,8 +406,7 @@ export const useCanvasOperations = (
     canvas.add(group);
     canvas.setActiveObject(group);
     canvas.renderAll();
-    saveToHistory();
-  }, [canvas, fabric, saveToHistory]);
+  }, [canvas, fabric]);
 
   const addTable = useCallback(
     (rows: number, cols: number) => {
@@ -454,9 +450,8 @@ export const useCanvasOperations = (
       canvas.add(group);
       canvas.setActiveObject(group);
       canvas.renderAll();
-      saveToHistory();
     },
-    [canvas, fabric, saveToHistory]
+    [canvas, fabric]
   );
 
   return {

@@ -2,11 +2,7 @@
 "use client";
 import { useCallback } from "react";
 
-export const useCanvasFrames = (
-  canvas: any,
-  fabric: any,
-  saveToHistory: () => void
-) => {
+export const useCanvasFrames = (canvas: any, fabric: any) => {
   const addSimpleFrame = useCallback(
     (options: { stroke?: string; strokeWidth?: number } = {}) => {
       if (!canvas || !fabric) return;
@@ -22,9 +18,8 @@ export const useCanvasFrames = (
       canvas.add(rect);
       canvas.setActiveObject(rect);
       canvas.renderAll();
-      saveToHistory();
     },
-    [canvas, fabric, saveToHistory]
+    [canvas, fabric]
   );
 
   const addDoubleFrame = useCallback(
@@ -55,9 +50,8 @@ export const useCanvasFrames = (
       canvas.add(group);
       canvas.setActiveObject(group);
       canvas.renderAll();
-      saveToHistory();
     },
-    [canvas, fabric, saveToHistory]
+    [canvas, fabric]
   );
 
   const addDecorativeFrame = useCallback(
@@ -119,9 +113,8 @@ export const useCanvasFrames = (
       canvas.add(group);
       canvas.setActiveObject(group);
       canvas.renderAll();
-      saveToHistory();
     },
-    [canvas, fabric, saveToHistory]
+    [canvas, fabric]
   );
 
   const addRoundedFrame = useCallback(
@@ -141,9 +134,8 @@ export const useCanvasFrames = (
       canvas.add(rect);
       canvas.setActiveObject(rect);
       canvas.renderAll();
-      saveToHistory();
     },
-    [canvas, fabric, saveToHistory]
+    [canvas, fabric]
   );
 
   return {

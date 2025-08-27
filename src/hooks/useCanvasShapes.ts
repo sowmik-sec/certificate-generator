@@ -1,13 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { useCallback } from "react";
-import { safeCanvasRender } from "@/lib/utils";
 
-export const useCanvasShapes = (
-  canvas: any,
-  fabric: any,
-  saveToHistory: () => void
-) => {
+export const useCanvasShapes = (canvas: any, fabric: any) => {
   const addSquare = useCallback(
     (options: { fill?: string } = {}) => {
       if (!canvas || !fabric) return;
@@ -32,9 +27,8 @@ export const useCanvasShapes = (
       canvas.setActiveObject(rect);
       rect.setCoords();
       canvas.renderAll();
-      saveToHistory();
     },
-    [canvas, fabric, saveToHistory]
+    [canvas, fabric]
   );
 
   const addCircle = useCallback(
@@ -60,9 +54,8 @@ export const useCanvasShapes = (
       canvas.setActiveObject(circle);
       circle.setCoords();
       canvas.renderAll();
-      saveToHistory();
     },
-    [canvas, fabric, saveToHistory]
+    [canvas, fabric]
   );
 
   const addTriangle = useCallback(
@@ -88,9 +81,8 @@ export const useCanvasShapes = (
       canvas.setActiveObject(triangle);
       triangle.setCoords();
       canvas.renderAll();
-      saveToHistory();
     },
-    [canvas, fabric, saveToHistory]
+    [canvas, fabric]
   );
 
   const addRectangle = useCallback(
@@ -116,9 +108,8 @@ export const useCanvasShapes = (
       canvas.setActiveObject(rect);
       rect.setCoords();
       canvas.renderAll();
-      saveToHistory();
     },
-    [canvas, fabric, saveToHistory]
+    [canvas, fabric]
   );
 
   const addEllipse = useCallback(
@@ -144,9 +135,8 @@ export const useCanvasShapes = (
       canvas.setActiveObject(ellipse);
       ellipse.setCoords();
       canvas.renderAll();
-      saveToHistory();
     },
-    [canvas, fabric, saveToHistory]
+    [canvas, fabric]
   );
 
   const addStar = useCallback(
@@ -164,9 +154,8 @@ export const useCanvasShapes = (
       canvas.add(star);
       canvas.setActiveObject(star);
       canvas.renderAll();
-      saveToHistory();
     },
-    [canvas, fabric, saveToHistory]
+    [canvas, fabric]
   );
 
   const addHeart = useCallback(
@@ -184,9 +173,8 @@ export const useCanvasShapes = (
       canvas.add(heart);
       canvas.setActiveObject(heart);
       canvas.renderAll();
-      saveToHistory();
     },
-    [canvas, fabric, saveToHistory]
+    [canvas, fabric]
   );
 
   const addHexagon = useCallback(
@@ -203,9 +191,8 @@ export const useCanvasShapes = (
       canvas.add(hexagon);
       canvas.setActiveObject(hexagon);
       canvas.renderAll();
-      saveToHistory();
     },
-    [canvas, fabric, saveToHistory]
+    [canvas, fabric]
   );
 
   const addPentagon = useCallback(
@@ -222,9 +209,8 @@ export const useCanvasShapes = (
       canvas.add(pentagon);
       canvas.setActiveObject(pentagon);
       canvas.renderAll();
-      saveToHistory();
     },
-    [canvas, fabric, saveToHistory]
+    [canvas, fabric]
   );
 
   const addDiamond = useCallback(
@@ -241,9 +227,8 @@ export const useCanvasShapes = (
       canvas.add(diamond);
       canvas.setActiveObject(diamond);
       canvas.renderAll();
-      saveToHistory();
     },
-    [canvas, fabric, saveToHistory]
+    [canvas, fabric]
   );
 
   const addArrowShape = useCallback(
@@ -261,9 +246,8 @@ export const useCanvasShapes = (
       canvas.add(arrow);
       canvas.setActiveObject(arrow);
       canvas.renderAll();
-      saveToHistory();
     },
-    [canvas, fabric, saveToHistory]
+    [canvas, fabric]
   );
 
   return {

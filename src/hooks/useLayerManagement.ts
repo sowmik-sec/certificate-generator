@@ -2,11 +2,7 @@
 "use client";
 import { useCallback } from "react";
 
-export const useLayerManagement = (
-  canvas: any,
-  fabric: any,
-  saveToHistory: () => void
-) => {
+export const useLayerManagement = (canvas: any, fabric: any) => {
   // Group selected objects
   const groupObjects = useCallback(() => {
     if (!canvas || !fabric) return;
@@ -26,8 +22,7 @@ export const useLayerManagement = (
     canvas.add(group);
     canvas.setActiveObject(group);
     canvas.renderAll();
-    saveToHistory();
-  }, [canvas, fabric, saveToHistory]);
+  }, [canvas, fabric]);
 
   // Ungroup selected group
   const ungroupObjects = useCallback(() => {
@@ -67,8 +62,7 @@ export const useLayerManagement = (
     }
 
     canvas.renderAll();
-    saveToHistory();
-  }, [canvas, fabric, saveToHistory]);
+  }, [canvas, fabric]);
 
   // Bring to front
   const bringToFront = useCallback(() => {

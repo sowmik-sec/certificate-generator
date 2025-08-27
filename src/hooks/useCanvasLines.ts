@@ -2,11 +2,7 @@
 "use client";
 import { useCallback } from "react";
 
-export const useCanvasLines = (
-  canvas: any,
-  fabric: any,
-  saveToHistory: () => void
-) => {
+export const useCanvasLines = (canvas: any, fabric: any) => {
   const addLine = useCallback(
     (options = {}) => {
       if (!canvas || !fabric) return;
@@ -35,9 +31,8 @@ export const useCanvasLines = (
       canvas.setActiveObject(line);
       line.setCoords();
       canvas.renderAll();
-      saveToHistory();
     },
-    [canvas, fabric, saveToHistory]
+    [canvas, fabric]
   );
 
   const addDashedLine = useCallback(
@@ -90,9 +85,8 @@ export const useCanvasLines = (
       canvas.setActiveObject(group);
       group.setCoords();
       canvas.renderAll();
-      saveToHistory();
     },
-    [canvas, fabric, saveToHistory]
+    [canvas, fabric]
   );
 
   const addZigzagLine = useCallback(
@@ -124,9 +118,8 @@ export const useCanvasLines = (
       canvas.setActiveObject(zigzag);
       zigzag.setCoords();
       canvas.renderAll();
-      saveToHistory();
     },
-    [canvas, fabric, saveToHistory]
+    [canvas, fabric]
   );
 
   const addWavyLine = useCallback(
@@ -157,9 +150,8 @@ export const useCanvasLines = (
       canvas.setActiveObject(wavy);
       wavy.setCoords();
       canvas.renderAll();
-      saveToHistory();
     },
-    [canvas, fabric, saveToHistory]
+    [canvas, fabric]
   );
 
   const addDottedLine = useCallback(
@@ -178,9 +170,8 @@ export const useCanvasLines = (
       canvas.add(line);
       canvas.setActiveObject(line);
       canvas.renderAll();
-      saveToHistory();
     },
-    [canvas, fabric, saveToHistory]
+    [canvas, fabric]
   );
 
   const addDoubleLine = useCallback(
@@ -201,9 +192,8 @@ export const useCanvasLines = (
       canvas.add(group);
       canvas.setActiveObject(group);
       canvas.renderAll();
-      saveToHistory();
     },
-    [canvas, fabric, saveToHistory]
+    [canvas, fabric]
   );
 
   const addCurvedLine = useCallback(
@@ -223,9 +213,8 @@ export const useCanvasLines = (
       canvas.add(curved);
       canvas.setActiveObject(curved);
       canvas.renderAll();
-      saveToHistory();
     },
-    [canvas, fabric, saveToHistory]
+    [canvas, fabric]
   );
 
   const addStepsLine = useCallback(
@@ -246,9 +235,8 @@ export const useCanvasLines = (
       canvas.add(steps);
       canvas.setActiveObject(steps);
       canvas.renderAll();
-      saveToHistory();
     },
-    [canvas, fabric, saveToHistory]
+    [canvas, fabric]
   );
 
   const addThickLine = useCallback(
@@ -266,9 +254,8 @@ export const useCanvasLines = (
       canvas.add(line);
       canvas.setActiveObject(line);
       canvas.renderAll();
-      saveToHistory();
     },
-    [canvas, fabric, saveToHistory]
+    [canvas, fabric]
   );
 
   const addDashDotLine = useCallback(
@@ -287,9 +274,8 @@ export const useCanvasLines = (
       canvas.add(line);
       canvas.setActiveObject(line);
       canvas.renderAll();
-      saveToHistory();
     },
-    [canvas, fabric, saveToHistory]
+    [canvas, fabric]
   );
 
   return {

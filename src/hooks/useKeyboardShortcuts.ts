@@ -84,8 +84,6 @@ export const useKeyboardShortcuts = (
 // Specific hook for common editor shortcuts
 export const useEditorShortcuts = (
   callbacks: {
-    onUndo?: () => void;
-    onRedo?: () => void;
     onCopy?: () => void;
     onPaste?: () => void;
     onDelete?: () => void;
@@ -99,29 +97,6 @@ export const useEditorShortcuts = (
   options: UseKeyboardShortcutsOptions = {}
 ) => {
   const shortcuts: Record<string, (e: KeyboardEvent) => void> = {};
-
-  if (callbacks.onUndo) {
-    shortcuts["ctrl+z"] = shortcuts["meta+z"] = (e) => {
-      if (!e.shiftKey) {
-        e.preventDefault();
-        e.stopPropagation();
-        callbacks.onUndo!();
-      }
-    };
-  }
-
-  if (callbacks.onRedo) {
-    shortcuts["ctrl+y"] = shortcuts["meta+y"] = (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      callbacks.onRedo!();
-    };
-    shortcuts["ctrl+shift+z"] = shortcuts["meta+shift+z"] = (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      callbacks.onRedo!();
-    };
-  }
 
   if (callbacks.onCopy) {
     shortcuts["ctrl+c"] = shortcuts["meta+c"] = (e) => {

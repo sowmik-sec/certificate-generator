@@ -34,7 +34,6 @@ import {
   Type,
   Palette,
 } from "lucide-react";
-import { useHistoryStore } from "@/stores/useHistoryStore";
 import { useCanvasStore } from "@/stores/useCanvasStore";
 import { alignmentUtils } from "@/lib/alignmentUtils";
 
@@ -52,7 +51,6 @@ const CanvaContextMenu: React.FC<CanvaContextMenuProps> = ({
   const [copiedObject, setCopiedObject] = useState<any>(null);
   const [copiedStyle, setCopiedStyle] = useState<any>(null);
 
-  const { saveToHistory } = useHistoryStore();
   const { fabric, setSelectedObject } = useCanvasStore();
 
   // Enhanced copy functionality like Canva
@@ -185,8 +183,7 @@ const CanvaContextMenu: React.FC<CanvaContextMenuProps> = ({
     canvas.discardActiveObject();
     setSelectedObject(null);
     canvas.renderAll();
-    saveToHistory(canvas);
-  }, [selectedObject, canvas, handleCopy, setSelectedObject, saveToHistory]);
+  }, [selectedObject, canvas, handleCopy, setSelectedObject]);
 
   const handlePaste = useCallback(() => {
     if (!canvas || !fabric) return;
@@ -357,7 +354,6 @@ const CanvaContextMenu: React.FC<CanvaContextMenuProps> = ({
           canvas.setActiveObject(cloned);
           setSelectedObject(cloned);
           canvas.renderAll();
-          saveToHistory(canvas);
         });
       } else {
         // Use stored data to recreate object
@@ -367,13 +363,12 @@ const CanvaContextMenu: React.FC<CanvaContextMenuProps> = ({
           canvas.setActiveObject(newObj);
           setSelectedObject(newObj);
           canvas.renderAll();
-          saveToHistory(canvas);
         }
       }
     } catch (error) {
       console.error("Failed to paste object:", error);
     }
-  }, [copiedObject, canvas, fabric, setSelectedObject, saveToHistory]);
+  }, [copiedObject, canvas, fabric, setSelectedObject]);
 
   const handlePasteStyle = useCallback(() => {
     if (!selectedObject) return;
@@ -423,11 +418,10 @@ const CanvaContextMenu: React.FC<CanvaContextMenuProps> = ({
 
       selectedObject.set(updates);
       canvas.renderAll();
-      saveToHistory(canvas);
     } catch (error) {
       console.error("Error applying style:", error);
     }
-  }, [selectedObject, canvas, copiedStyle, saveToHistory]);
+  }, [selectedObject, canvas, copiedStyle]);
 
   const handleDuplicate = useCallback(() => {
     if (!selectedObject || !canvas || !fabric) return;
@@ -652,7 +646,6 @@ const CanvaContextMenu: React.FC<CanvaContextMenuProps> = ({
           canvas.setActiveObject(cloned);
           setSelectedObject(cloned);
           canvas.renderAll();
-          saveToHistory(canvas);
         });
       } else {
         // Fallback to safe recreation method
@@ -663,7 +656,6 @@ const CanvaContextMenu: React.FC<CanvaContextMenuProps> = ({
           canvas.setActiveObject(newObj);
           setSelectedObject(newObj);
           canvas.renderAll();
-          saveToHistory(canvas);
         }
       }
     } catch (error) {
@@ -677,13 +669,12 @@ const CanvaContextMenu: React.FC<CanvaContextMenuProps> = ({
           canvas.setActiveObject(newObj);
           setSelectedObject(newObj);
           canvas.renderAll();
-          saveToHistory(canvas);
         }
       } catch (fallbackError) {
         console.error("All duplication methods failed:", fallbackError);
       }
     }
-  }, [selectedObject, canvas, fabric, setSelectedObject, saveToHistory]);
+  }, [selectedObject, canvas, fabric, setSelectedObject]);
 
   const handleDelete = useCallback(() => {
     if (!selectedObject || !canvas) return;
@@ -692,8 +683,7 @@ const CanvaContextMenu: React.FC<CanvaContextMenuProps> = ({
     canvas.discardActiveObject();
     setSelectedObject(null);
     canvas.renderAll();
-    saveToHistory(canvas);
-  }, [selectedObject, canvas, setSelectedObject, saveToHistory]);
+  }, [selectedObject, canvas, setSelectedObject]);
 
   const handleLockToggle = useCallback(() => {
     if (!selectedObject || !canvas) return;
@@ -712,74 +702,62 @@ const CanvaContextMenu: React.FC<CanvaContextMenuProps> = ({
     });
 
     canvas.renderAll();
-    saveToHistory(canvas);
-  }, [selectedObject, canvas, saveToHistory]);
+  }, [selectedObject, canvas]);
 
   const handleVisibilityToggle = useCallback(() => {
     if (!selectedObject || !canvas) return;
 
     selectedObject.set("visible", !selectedObject.visible);
     canvas.renderAll();
-    saveToHistory(canvas);
-  }, [selectedObject, canvas, saveToHistory]);
+  }, [selectedObject, canvas]);
 
   const handleBringToFront = useCallback(() => {
     if (!selectedObject || !canvas) return;
     canvas.bringToFront(selectedObject);
     canvas.renderAll();
-    saveToHistory(canvas);
-  }, [selectedObject, canvas, saveToHistory]);
+  }, [selectedObject, canvas]);
 
   const handleSendToBack = useCallback(() => {
     if (!selectedObject || !canvas) return;
     canvas.sendToBack(selectedObject);
     canvas.renderAll();
-    saveToHistory(canvas);
-  }, [selectedObject, canvas, saveToHistory]);
+  }, [selectedObject, canvas]);
 
   const handleBringForward = useCallback(() => {
     if (!selectedObject || !canvas) return;
     canvas.bringForward(selectedObject);
     canvas.renderAll();
-    saveToHistory(canvas);
-  }, [selectedObject, canvas, saveToHistory]);
+  }, [selectedObject, canvas]);
 
   const handleSendBackward = useCallback(() => {
     if (!selectedObject || !canvas) return;
     canvas.sendBackward(selectedObject);
     canvas.renderAll();
-    saveToHistory(canvas);
-  }, [selectedObject, canvas, saveToHistory]);
+  }, [selectedObject, canvas]);
 
   const handleAlignLeft = useCallback(() => {
     alignmentUtils.alignToLeft({ canvas, selectedObject });
-    saveToHistory(canvas);
-  }, [selectedObject, canvas, saveToHistory]);
+  }, [selectedObject, canvas]);
 
   const handleAlignCenter = useCallback(() => {
     alignmentUtils.alignToCenter({ canvas, selectedObject });
-    saveToHistory(canvas);
-  }, [selectedObject, canvas, saveToHistory]);
+  }, [selectedObject, canvas]);
 
   const handleAlignRight = useCallback(() => {
     alignmentUtils.alignToRight({ canvas, selectedObject });
-    saveToHistory(canvas);
-  }, [selectedObject, canvas, saveToHistory]);
+  }, [selectedObject, canvas]);
 
   const handleAlignTop = useCallback(() => {
     alignmentUtils.alignToTop({ canvas, selectedObject });
-    saveToHistory(canvas);
-  }, [selectedObject, canvas, saveToHistory]);
+  }, [selectedObject, canvas]);
 
   const handleAlignMiddle = useCallback(() => {
     alignmentUtils.alignToMiddle({ canvas, selectedObject });
-    saveToHistory(canvas);
-  }, [selectedObject, canvas, saveToHistory]);
+  }, [selectedObject, canvas]);
 
   const handleAlignBottom = useCallback(() => {
     alignmentUtils.alignToBottom({ canvas, selectedObject });
-    saveToHistory(canvas);
-  }, [selectedObject, canvas, saveToHistory]);
+  }, [selectedObject, canvas]);
 
   const handleAddLink = useCallback(() => {
     if (!selectedObject) return;
@@ -796,9 +774,8 @@ const CanvaContextMenu: React.FC<CanvaContextMenuProps> = ({
         selectedObject.set("strokeWidth", 0);
       }
       canvas.renderAll();
-      saveToHistory(canvas);
     }
-  }, [selectedObject, canvas, saveToHistory]);
+  }, [selectedObject, canvas]);
 
   const handleAltText = useCallback(() => {
     if (!selectedObject) return;
@@ -807,9 +784,8 @@ const CanvaContextMenu: React.FC<CanvaContextMenuProps> = ({
     if (alt !== null) {
       selectedObject.set("alt", alt);
       canvas.renderAll();
-      saveToHistory(canvas);
     }
-  }, [selectedObject, canvas, saveToHistory]);
+  }, [selectedObject, canvas]);
 
   const handleGroup = useCallback(() => {
     if (!canvas || !fabric) return;
@@ -820,8 +796,7 @@ const CanvaContextMenu: React.FC<CanvaContextMenuProps> = ({
     const group = activeSelection.toGroup();
     canvas.setActiveObject(group);
     canvas.renderAll();
-    saveToHistory(canvas);
-  }, [canvas, fabric, saveToHistory]);
+  }, [canvas, fabric]);
 
   const handleUngroup = useCallback(() => {
     if (!selectedObject || !canvas || !fabric) return;
@@ -829,9 +804,8 @@ const CanvaContextMenu: React.FC<CanvaContextMenuProps> = ({
     if (selectedObject.type === "group") {
       selectedObject.toActiveSelection();
       canvas.renderAll();
-      saveToHistory(canvas);
     }
-  }, [selectedObject, canvas, fabric, saveToHistory]);
+  }, [selectedObject, canvas, fabric]);
 
   // Add keyboard shortcuts support
   useEffect(() => {

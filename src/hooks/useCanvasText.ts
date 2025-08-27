@@ -2,11 +2,7 @@
 "use client";
 import { useCallback } from "react";
 
-export const useCanvasText = (
-  canvas: any,
-  fabric: any,
-  saveToHistory: () => void
-) => {
+export const useCanvasText = (canvas: any, fabric: any) => {
   const addText = useCallback(
     (text: string, options: any) => {
       if (!canvas || !fabric) return;
@@ -79,11 +75,10 @@ export const useCanvasText = (
       canvas.setActiveObject(textbox);
       textbox.setCoords();
       canvas.renderAll();
-      saveToHistory();
 
       return textbox;
     },
-    [canvas, fabric, saveToHistory]
+    [canvas, fabric]
   );
 
   const addHeading = useCallback(

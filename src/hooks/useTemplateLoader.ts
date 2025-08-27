@@ -25,11 +25,7 @@ const sanitizeTemplateData = (templateJson: any) => {
   };
 };
 
-export const useTemplateLoader = (
-  canvas: any,
-  canvasSize: CanvasSize,
-  saveToHistory: () => void
-) => {
+export const useTemplateLoader = (canvas: any, canvasSize: CanvasSize) => {
   const loadTemplate = useCallback(
     (templateJson: any) => {
       if (!canvas) return;
@@ -64,7 +60,6 @@ export const useTemplateLoader = (
             }
           });
           canvas.renderAll();
-          saveToHistory();
         });
         return;
       }
@@ -143,10 +138,9 @@ export const useTemplateLoader = (
           }
         });
         canvas.renderAll();
-        saveToHistory();
       });
     },
-    [canvas, canvasSize, saveToHistory]
+    [canvas, canvasSize]
   );
 
   const handleBackgroundImageUpload = useCallback(

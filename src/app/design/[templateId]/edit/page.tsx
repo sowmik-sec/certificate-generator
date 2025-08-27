@@ -20,7 +20,6 @@ import { getTemplate, isValidTemplateId } from "@/lib/templateMap";
 
 // Import custom hooks
 import { useFabricCanvas } from "@/hooks/useFabricCanvas";
-import { useCanvasHistory } from "@/hooks/useCanvasHistory";
 import { useCanvasShapes } from "@/hooks/useCanvasShapes";
 import { useCanvasLines } from "@/hooks/useCanvasLines";
 import { useCanvasText } from "@/hooks/useCanvasText";
@@ -81,12 +80,10 @@ export default function DesignEditorPage() {
   // Custom hooks
   const { handleSetCanvas } = useFabricCanvas();
 
-  const { saveToHistory, undo, redo } = useCanvasHistory(canvas);
-
-  const shapeHooks = useCanvasShapes(canvas, fabric, saveToHistory);
-  const lineHooks = useCanvasLines(canvas, fabric, saveToHistory);
-  const textHooks = useCanvasText(canvas, fabric, saveToHistory);
-  const frameHooks = useCanvasFrames(canvas, fabric, saveToHistory);
+  const shapeHooks = useCanvasShapes(canvas, fabric);
+  const lineHooks = useCanvasLines(canvas, fabric);
+  const textHooks = useCanvasText(canvas, fabric);
+  const frameHooks = useCanvasFrames(canvas, fabric);
 
   const {
     deleteSelected,
@@ -95,20 +92,13 @@ export default function DesignEditorPage() {
     addTable,
     handleCopy,
     handlePaste,
-  } = useCanvasOperations(
-    canvas,
-    fabric,
-    selectedObject,
-    setSelectedObject,
-    saveToHistory
-  );
+  } = useCanvasOperations(canvas, fabric, selectedObject, setSelectedObject);
 
-  const layerManagement = useLayerManagement(canvas, fabric, saveToHistory);
+  const layerManagement = useLayerManagement(canvas, fabric);
   const { exportAsPNG, exportAsPDF } = useCanvasExport(canvas, canvasSize);
   const { loadTemplate, handleBackgroundImageUpload } = useTemplateLoader(
     canvas,
-    canvasSize,
-    saveToHistory
+    canvasSize
   );
 
   // Load template on mount
@@ -144,26 +134,6 @@ export default function DesignEditorPage() {
 
   // Consolidated keyboard shortcuts for all canvas operations with improved text editing detection
   useEditorShortcuts({
-    onUndo: () => {
-      console.log(
-        "Undo shortcut triggered, text editing:",
-        isTextBeingEdited()
-      );
-      if (!isTextBeingEdited()) {
-        console.log("Calling undo function");
-        undo();
-      }
-    },
-    onRedo: () => {
-      console.log(
-        "Redo shortcut triggered, text editing:",
-        isTextBeingEdited()
-      );
-      if (!isTextBeingEdited()) {
-        console.log("Calling redo function");
-        redo();
-      }
-    },
     onCopy: () => {
       if (!isTextBeingEdited() && selectedObject) {
         handleCopy();
@@ -277,7 +247,7 @@ export default function DesignEditorPage() {
       manager.safeRender(() => {
         // This runs after safe rendering is complete
         console.log("Canvas rendered successfully, saving to history...");
-        saveToHistory();
+
         console.log("Canvas resize completed successfully");
       });
     });
