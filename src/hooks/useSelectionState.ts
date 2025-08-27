@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { FabricCanvas } from "@/types/fabric";
 
 export interface SelectionState {
@@ -14,6 +14,9 @@ export const useSelectionState = (canvas: FabricCanvas | null, fabric: any) => {
     object: null,
     tooltipPosition: null,
   });
+
+  // Track selection clearing timeout to prevent flickering
+  const selectionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const updateTooltipPosition = useCallback(
     (obj: any) => {
@@ -38,6 +41,12 @@ export const useSelectionState = (canvas: FabricCanvas | null, fabric: any) => {
     (object: any) => {
       if (!object || object.excludeFromExport) return;
 
+      // Clear any pending hide timeout
+      if (selectionTimeoutRef.current) {
+        clearTimeout(selectionTimeoutRef.current);
+        selectionTimeoutRef.current = null;
+      }
+
       const tooltipPosition = updateTooltipPosition(object);
       setSelectionState({
         visible: true,
@@ -49,11 +58,21 @@ export const useSelectionState = (canvas: FabricCanvas | null, fabric: any) => {
   );
 
   const hideSelection = useCallback(() => {
-    setSelectionState({
-      visible: false,
-      object: null,
-      tooltipPosition: null,
-    });
+    // Clear any pending timeout
+    if (selectionTimeoutRef.current) {
+      clearTimeout(selectionTimeoutRef.current);
+      selectionTimeoutRef.current = null;
+    }
+
+    // Use a small delay to prevent flickering when switching between objects
+    selectionTimeoutRef.current = setTimeout(() => {
+      setSelectionState({
+        visible: false,
+        object: null,
+        tooltipPosition: null,
+      });
+      selectionTimeoutRef.current = null;
+    }, 50);
   }, []);
 
   const updateTooltipPositionOnly = useCallback(() => {
@@ -73,14 +92,18 @@ export const useSelectionState = (canvas: FabricCanvas | null, fabric: any) => {
     const handleSelectionCreated = (e: any) => {
       const obj = e.selected?.[0];
       if (obj && !obj.excludeFromExport) {
-        setTimeout(() => showSelection(obj), 100); // Delay to ensure object is positioned
+        // Immediate selection change for smooth transition
+        showSelection(obj);
       }
     };
 
     const handleSelectionUpdated = (e: any) => {
       const obj = e.selected?.[0];
       if (obj && !obj.excludeFromExport) {
-        setTimeout(() => showSelection(obj), 100);
+        // Immediate selection change for smooth transition
+        showSelection(obj);
+      } else {
+        hideSelection();
       }
     };
 
@@ -89,12 +112,17 @@ export const useSelectionState = (canvas: FabricCanvas | null, fabric: any) => {
     };
 
     const handleObjectModified = () => {
-      setTimeout(updateTooltipPositionOnly, 100);
+      // Only update position if we have an active selection
+      if (selectionState.visible && selectionState.object) {
+        setTimeout(updateTooltipPositionOnly, 50);
+      }
     };
 
     // Handle canvas panning/zooming
     const handleCanvasMove = () => {
-      updateTooltipPositionOnly();
+      if (selectionState.visible && selectionState.object) {
+        updateTooltipPositionOnly();
+      }
     };
 
     canvas.on("selection:created", handleSelectionCreated);
@@ -110,7 +138,24 @@ export const useSelectionState = (canvas: FabricCanvas | null, fabric: any) => {
       canvas.off("object:modified", handleObjectModified);
       canvas.off("path:created", handleCanvasMove);
     };
-  }, [canvas, fabric, showSelection, hideSelection, updateTooltipPositionOnly]);
+  }, [
+    canvas,
+    fabric,
+    showSelection,
+    hideSelection,
+    updateTooltipPositionOnly,
+    selectionState.visible,
+    selectionState.object,
+  ]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (selectionTimeoutRef.current) {
+        clearTimeout(selectionTimeoutRef.current);
+      }
+    };
+  }, []);
 
   return {
     selectionState,

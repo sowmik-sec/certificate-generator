@@ -25,6 +25,7 @@ const SelectionOverlay: React.FC<SelectionOverlayProps> = ({
   const overlayRef = useRef<HTMLDivElement>(null);
 
   // Handle clicks outside canvas bounds to close selection
+  // Only close selection when clicking completely outside the canvas area
   useEffect(() => {
     if (!selectionState.visible) return;
 
@@ -44,51 +45,18 @@ const SelectionOverlay: React.FC<SelectionOverlayProps> = ({
         return;
       }
 
+      // Don't interfere with canvas interactions - let Fabric.js handle them
+      if (target.tagName === "CANVAS") {
+        return;
+      }
+
       if (canvas) {
         const canvasElement = canvas.getElement();
         const canvasContainer = canvasElement.parentNode as HTMLElement;
 
-        if (canvasContainer) {
-          const canvasRect = canvasContainer.getBoundingClientRect();
-          const clickX = e.clientX;
-          const clickY = e.clientY;
-
-          // Get actual canvas dimensions (considering zoom)
-          const actualCanvasWidth = canvas.getWidth();
-          const actualCanvasHeight = canvas.getHeight();
-
-          // Calculate canvas bounds within the container
-          const canvasCenterX = canvasRect.left + canvasRect.width / 2;
-          const canvasCenterY = canvasRect.top + canvasRect.height / 2;
-
-          const canvasLeft = canvasCenterX - actualCanvasWidth / 2;
-          const canvasRight = canvasCenterX + actualCanvasWidth / 2;
-          const canvasTop = canvasCenterY - actualCanvasHeight / 2;
-          const canvasBottom = canvasCenterY + actualCanvasHeight / 2;
-
-          // Check if click is outside the actual canvas bounds
-          if (
-            clickX < canvasLeft ||
-            clickX > canvasRight ||
-            clickY < canvasTop ||
-            clickY > canvasBottom
-          ) {
-            // Click is outside canvas bounds - clear selection
-            if (canvas.getActiveObject()) {
-              canvas.discardActiveObject();
-              canvas.renderAll();
-            }
-            onHideSelection();
-            return;
-          }
-        }
-
-        // If click is within canvas bounds, let fabric.js handle it normally
-        // Check if we clicked on empty canvas area
-        const target = canvas.findTarget(e as any);
-
-        if (!target) {
-          // Clicked on empty canvas area
+        // Only close selection if clicking completely outside the canvas container
+        if (canvasContainer && !canvasContainer.contains(target)) {
+          // Click is outside canvas container - clear selection
           if (canvas.getActiveObject()) {
             canvas.discardActiveObject();
             canvas.renderAll();
@@ -98,11 +66,11 @@ const SelectionOverlay: React.FC<SelectionOverlayProps> = ({
       }
     };
 
-    // Add event listener with high priority
-    document.addEventListener("mousedown", handleClickOutside, true);
+    // Use normal phase and lower priority to avoid interfering with Fabric.js
+    document.addEventListener("mousedown", handleClickOutside, false);
 
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside, true);
+      document.removeEventListener("mousedown", handleClickOutside, false);
     };
   }, [selectionState.visible, canvas, onHideSelection]);
 

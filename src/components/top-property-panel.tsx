@@ -757,12 +757,11 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
         {renderCommonControls()}
       </Card>
 
-      {/* Click outside handler for dropdowns */}
+      {/* Click outside handler for specific dropdowns only */}
       {(showOpacityCard || showAdvancedSettings) && (
         <div
           className="fixed inset-0 z-40"
           onClick={() => {
-            setShowOpacityCard(false);
             setShowOpacityCard(false);
             setShowAdvancedSettings(false);
           }}

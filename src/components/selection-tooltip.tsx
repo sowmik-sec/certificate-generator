@@ -476,98 +476,11 @@ const SelectionTooltip: React.FC<SelectionTooltipProps> = ({
       selectedObject.lockMovementX || selectedObject.lockMovementY;
 
     return (
-      <>
-        {/* Overlay to detect clicks outside */}
-        <div
-          className="fixed inset-0 z-40"
-          onClick={hideTooltip}
-          style={{ pointerEvents: "auto" }}
-        />
-
-        {/* Tooltip */}
-        <Card
-          className="fixed p-2 z-50 flex flex-row items-center gap-1 bg-white border shadow-lg"
-          style={{
-            left: position.x - 60, // Center horizontally
-            top: position.y - 45, // Position above
-            pointerEvents: "auto",
-          }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          {/* Lock/Unlock Button */}
-          <Button
-            onClick={handleLockToggle}
-            variant="ghost"
-            size="sm"
-            className={`p-2 h-auto ${
-              isLocked ? "text-red-600" : "text-gray-600"
-            }`}
-            title={isLocked ? "Unlock" : "Lock"}
-          >
-            {isLocked ? <Lock size={16} /> : <Unlock size={16} />}
-          </Button>
-
-          {/* Duplicate Button */}
-          <Button
-            onClick={handleDuplicate}
-            variant="ghost"
-            size="sm"
-            className="p-2 h-auto text-gray-600"
-            title="Duplicate"
-          >
-            <CopyPlus size={16} />
-          </Button>
-
-          {/* Delete Button */}
-          <Button
-            onClick={handleDelete}
-            variant="ghost"
-            size="sm"
-            className="p-2 h-auto text-red-600"
-            title="Delete"
-          >
-            <Trash2 size={16} />
-          </Button>
-
-          {/* Separator */}
-          <div className="w-px h-6 bg-gray-300 mx-1" />
-
-          {/* More Options Button */}
-          <Button
-            onClick={handleShowMore}
-            variant="ghost"
-            size="sm"
-            className="p-2 h-auto text-gray-600"
-            title="More options"
-          >
-            <MoreHorizontal size={16} />
-          </Button>
-        </Card>
-      </>
-    );
-  }
-
-  // Original logic for backward compatibility
-  if (!tooltipState.visible || !tooltipState.object) return null;
-
-  const isLocked =
-    tooltipState.object.lockMovementX || tooltipState.object.lockMovementY;
-
-  return (
-    <>
-      {/* Overlay to detect clicks outside */}
-      <div
-        className="fixed inset-0 z-40"
-        onClick={hideTooltip}
-        style={{ pointerEvents: tooltipState.visible ? "auto" : "none" }}
-      />
-
-      {/* Tooltip */}
       <Card
         className="fixed p-2 z-50 flex flex-row items-center gap-1 bg-white border shadow-lg"
         style={{
-          left: tooltipState.x - 60, // Center horizontally
-          top: tooltipState.y - 45, // Position above
+          left: position.x - 60, // Center horizontally
+          top: position.y - 45, // Position above
           pointerEvents: "auto",
         }}
         onClick={(e) => e.stopPropagation()}
@@ -621,7 +534,72 @@ const SelectionTooltip: React.FC<SelectionTooltipProps> = ({
           <MoreHorizontal size={16} />
         </Button>
       </Card>
-    </>
+    );
+  }
+
+  // Original logic for backward compatibility
+  if (!tooltipState.visible || !tooltipState.object) return null;
+
+  const isLocked =
+    tooltipState.object.lockMovementX || tooltipState.object.lockMovementY;
+
+  return (
+    <Card
+      className="fixed p-2 z-50 flex flex-row items-center gap-1 bg-white border shadow-lg"
+      style={{
+        left: tooltipState.x - 60, // Center horizontally
+        top: tooltipState.y - 45, // Position above
+        pointerEvents: "auto",
+      }}
+      onClick={(e) => e.stopPropagation()}
+    >
+      {/* Lock/Unlock Button */}
+      <Button
+        onClick={handleLockToggle}
+        variant="ghost"
+        size="sm"
+        className={`p-2 h-auto ${isLocked ? "text-red-600" : "text-gray-600"}`}
+        title={isLocked ? "Unlock" : "Lock"}
+      >
+        {isLocked ? <Lock size={16} /> : <Unlock size={16} />}
+      </Button>
+
+      {/* Duplicate Button */}
+      <Button
+        onClick={handleDuplicate}
+        variant="ghost"
+        size="sm"
+        className="p-2 h-auto text-gray-600"
+        title="Duplicate"
+      >
+        <CopyPlus size={16} />
+      </Button>
+
+      {/* Delete Button */}
+      <Button
+        onClick={handleDelete}
+        variant="ghost"
+        size="sm"
+        className="p-2 h-auto text-red-600"
+        title="Delete"
+      >
+        <Trash2 size={16} />
+      </Button>
+
+      {/* Separator */}
+      <div className="w-px h-6 bg-gray-300 mx-1" />
+
+      {/* More Options Button */}
+      <Button
+        onClick={handleShowMore}
+        variant="ghost"
+        size="sm"
+        className="p-2 h-auto text-gray-600"
+        title="More options"
+      >
+        <MoreHorizontal size={16} />
+      </Button>
+    </Card>
   );
 };
 
