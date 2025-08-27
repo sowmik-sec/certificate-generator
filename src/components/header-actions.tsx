@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { Trash2, Download, Share, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { UndoButton, RedoButton } from "@/components/history-toolbar";
 import { useParams } from "next/navigation";
 import { getTemplate } from "@/lib/templateMap";
 import {
@@ -62,6 +63,12 @@ const HeaderActions: React.FC<HeaderActionsProps> = ({
 
   return (
     <div className="flex items-center space-x-2">
+      {/* Undo/Redo Controls */}
+      <div className="flex items-center space-x-1 mr-2">
+        <UndoButton />
+        <RedoButton />
+      </div>
+
       {selectedObject && (
         <Button
           variant="ghost"
