@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { create } from 'zustand';
-import { subscribeWithSelector } from 'zustand/middleware';
-import { FabricModule, FabricObject, FabricCanvas } from '@/types/fabric';
+import { create } from "zustand";
+import { subscribeWithSelector } from "zustand/middleware";
+import { FabricModule, FabricObject, FabricCanvas } from "@/types/fabric";
 
 // Global Fabric.js loading state to prevent multiple loads
 let fabricLoadingPromise: Promise<any> | null = null;
@@ -55,7 +55,7 @@ export const useCanvasStore = create<CanvasState>()(
       }
 
       // Check if Fabric is already available globally
-      if (typeof window !== 'undefined' && (window as any).fabric) {
+      if (typeof window !== "undefined" && (window as any).fabric) {
         fabricInstance = (window as any).fabric;
         set({ fabric: fabricInstance });
         return fabricInstance;
@@ -63,8 +63,8 @@ export const useCanvasStore = create<CanvasState>()(
 
       // Start loading Fabric.js
       fabricLoadingPromise = new Promise((resolve, reject) => {
-        if (typeof window === 'undefined') {
-          reject(new Error('Cannot load Fabric.js on server side'));
+        if (typeof window === "undefined") {
+          reject(new Error("Cannot load Fabric.js on server side"));
           return;
         }
 
@@ -72,7 +72,7 @@ export const useCanvasStore = create<CanvasState>()(
         const existingScript = document.querySelector(
           'script[src*="fabric.min.js"]'
         );
-        
+
         if (existingScript) {
           // Wait a bit for the script to execute
           const checkFabric = () => {
@@ -88,25 +88,26 @@ export const useCanvasStore = create<CanvasState>()(
           return;
         }
 
-        const script = document.createElement('script');
-        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js';
+        const script = document.createElement("script");
+        script.src =
+          "https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js";
         script.async = true;
-        
+
         script.onload = () => {
           if ((window as any).fabric) {
             fabricInstance = (window as any).fabric;
             set({ fabric: fabricInstance });
             resolve(fabricInstance);
           } else {
-            reject(new Error('Fabric.js loaded but not available'));
+            reject(new Error("Fabric.js loaded but not available"));
           }
         };
-        
+
         script.onerror = () => {
           fabricLoadingPromise = null;
-          reject(new Error('Failed to load Fabric.js'));
+          reject(new Error("Failed to load Fabric.js"));
         };
-        
+
         document.head.appendChild(script);
       });
 
@@ -121,7 +122,7 @@ export const useCanvasStore = create<CanvasState>()(
 
     setCanvas: (canvas) => {
       set({ canvas });
-      
+
       // Setup event listeners when canvas is set
       if (canvas) {
         get().setupCanvasEventListeners(canvas);
@@ -137,24 +138,24 @@ export const useCanvasStore = create<CanvasState>()(
       const { setSelectedObject, setSelectedObjects } = get();
 
       // Set up selection tracking
-      canvasInstance.on('selection:created', (e: any) => {
+      canvasInstance.on("selection:created", (e: any) => {
         const selectedObjs = e.selected || [e.target].filter(Boolean);
         setSelectedObject(e.selected?.[0] || null);
         setSelectedObjects(selectedObjs);
       });
 
-      canvasInstance.on('selection:updated', (e: any) => {
+      canvasInstance.on("selection:updated", (e: any) => {
         const selectedObjs = e.selected || [e.target].filter(Boolean);
         setSelectedObject(e.selected?.[0] || null);
         setSelectedObjects(selectedObjs);
       });
 
-      canvasInstance.on('selection:cleared', () => {
+      canvasInstance.on("selection:cleared", () => {
         setSelectedObject(null);
         setSelectedObjects([]);
       });
 
-      canvasInstance.on('object:modified', () => canvasInstance.renderAll());
+      canvasInstance.on("object:modified", () => canvasInstance.renderAll());
     },
   }))
 );
