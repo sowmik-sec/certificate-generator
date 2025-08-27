@@ -30,6 +30,16 @@ import { useCanvasExport } from "@/hooks/useCanvasExport";
 import { useTemplateLoader } from "@/hooks/useTemplateLoader";
 import { useEditorShortcuts } from "@/hooks/useKeyboardShortcuts";
 
+// Import undo/redo system
+import {
+  initFabric,
+  restoreCanvasFromHistory,
+  setTemplateLoading,
+  isTemplateLoading,
+  clearHistoryAfterTemplateLoad,
+} from "@/lib/fabricHistory";
+import { useCanvasStore as useHistoryCanvasStore } from "@/hooks/useCanvasStore";
+
 // Import UI components
 import SidebarNavigation from "@/components/sidebar-navigation";
 import LeftPanel from "@/components/left-panel";
@@ -101,15 +111,73 @@ export default function DesignEditorPage() {
     canvasSize
   );
 
-  // Load template on mount
+  // Initialize undo/redo history system FIRST with better timing
   useEffect(() => {
-    if (canvas && isValidTemplateId(templateId)) {
-      const template = getTemplate(templateId);
-      if (template) {
-        loadTemplate(template.json);
-      }
+    if (canvas && fabric) {
+      console.log("🎯 Initializing undo/redo system for main app...");
+      // Add a small delay to ensure canvas is fully initialized
+      const timer = setTimeout(() => {
+        // Double-check canvas is still valid and has required methods
+        if (canvas && typeof canvas.getObjects === "function") {
+          try {
+            canvas.getObjects(); // Test that it actually works
+            initFabric(canvas);
+            console.log("✅ Undo/redo system initialized for main app");
+          } catch (error) {
+            console.warn("⏳ Canvas not ready, retrying in 100ms...", error);
+            setTimeout(() => {
+              if (canvas && typeof canvas.getObjects === "function") {
+                initFabric(canvas);
+                console.log(
+                  "✅ Undo/redo system initialized for main app (retry)"
+                );
+              }
+            }, 100);
+          }
+        }
+      }, 100);
+      return () => clearTimeout(timer);
     }
-  }, [canvas, templateId, loadTemplate]);
+  }, [canvas, fabric]);
+
+  // Load template on mount AFTER history system is ready
+  useEffect(() => {
+    if (canvas && fabric && isValidTemplateId(templateId)) {
+      // Wait a bit for history system to be fully initialized
+      setTimeout(() => {
+        const template = getTemplate(templateId);
+        if (template) {
+          console.log("📄 Loading template:", templateId);
+          // Set loading state to prevent auto-restore during template load
+          setTemplateLoading(true);
+
+          // Load the template
+          loadTemplate(template.json);
+
+          // Clear loading state after template is loaded
+          setTimeout(() => {
+            setTemplateLoading(false);
+
+            // Clear history to prevent initial undo state
+            clearHistoryAfterTemplateLoad();
+
+            console.log("✅ Template loading complete");
+          }, 500); // Give time for template to fully load
+        }
+      }, 200);
+    }
+  }, [canvas, fabric, templateId, loadTemplate]);
+
+  // Auto-restore canvas from history (for undo/redo) - but not during template loading
+  const { json } = useHistoryCanvasStore();
+  useEffect(() => {
+    if (canvas && json && !isTemplateLoading()) {
+      console.log("🔄 Restoring canvas from history in main app...");
+      restoreCanvasFromHistory(canvas, json);
+    } else if (isTemplateLoading()) {
+      console.log("⏭️ Skipping auto-restore - template is loading");
+    }
+  }, [canvas, json]);
 
   // Helper function to check if text is being edited
   const isTextBeingEdited = () => {
