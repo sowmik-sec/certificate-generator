@@ -149,7 +149,7 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
       {/* Bridge area to help with hover transition */}
       {activeMode && !editorMode && (
         <div
-          className="absolute left-16 w-8 z-15"
+          className="absolute left-16 w-8 z-65"
           style={{
             top: "64px",
             height: "calc(100vh - 100px)",
@@ -160,7 +160,7 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
       )}
 
       <aside
-        className={`absolute left-20 w-96 bg-white flex-shrink-0 z-20 transition-all duration-300 ease-out rounded-3xl shadow-2xl overflow-hidden ${
+        className={`absolute left-20 w-96 bg-white flex-shrink-0 z-70 transition-all duration-300 ease-out rounded-3xl shadow-2xl overflow-hidden ${
           activeMode
             ? "translate-x-0 opacity-100"
             : "-translate-x-full opacity-0"

@@ -98,7 +98,7 @@ const AdvancedSettingsPanel: React.FC<AdvancedSettingsPanelProps> = ({
   return (
     <div
       ref={panelRef}
-      className="absolute top-full -left-24 mt-3 w-72 rounded-lg border bg-white p-4 shadow-lg z-50"
+      className="absolute top-full -left-24 mt-3 w-72 rounded-lg border bg-white p-4 shadow-lg z-70"
     >
       <div className="space-y-4">
         <div className="">

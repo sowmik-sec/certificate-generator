@@ -312,7 +312,10 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
             </span>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="min-w-[160px] max-h-64">
+        <DropdownMenuContent
+          className="min-w-[160px] max-h-64"
+          style={{ zIndex: 70 }}
+        >
           {fontOptions.map((font) => (
             <DropdownMenuItem
               key={font}
@@ -687,7 +690,7 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
         </Button>
 
         {showOpacityCard && (
-          <Card className="absolute top-full left-1/2 transform -translate-x-1/2 mt-3 z-50 min-w-[150px]">
+          <Card className="absolute top-full left-1/2 transform -translate-x-1/2 mt-3 z-70 min-w-[150px]">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm text-gray-700 font-semibold">
                 Transparency
@@ -745,7 +748,7 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
   );
 
   return (
-    <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-50">
+    <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-60">
       <Toaster position="top-center" />
       <Card className="flex flex-row items-center gap-3 px-5 py-2 backdrop-blur-sm bg-white border shadow-lg">
         {/* Render controls based on object type */}
@@ -760,7 +763,7 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
       {/* Click outside handler for specific dropdowns only */}
       {(showOpacityCard || showAdvancedSettings) && (
         <div
-          className="fixed inset-0 z-40"
+          className="fixed inset-0 z-55"
           onClick={() => {
             setShowOpacityCard(false);
             setShowAdvancedSettings(false);
