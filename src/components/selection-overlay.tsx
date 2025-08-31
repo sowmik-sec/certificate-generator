@@ -6,6 +6,15 @@ import TopPropertyPanel from "./top-property-panel";
 import SelectionTooltip from "./selection-tooltip";
 import { EditorMode } from "./sidebar-navigation";
 import { SelectionState } from "@/hooks/useSelectionState";
+import { useResponsive } from "@/hooks/useResponsive";
+
+interface SelectionOverlayProps {
+  canvas: FabricCanvas;
+  fabric: any;
+  selectionState: SelectionState;
+  onHideSelection: () => void;
+  setEditorMode: (mode: EditorMode) => void;
+}
 
 interface SelectionOverlayProps {
   canvas: FabricCanvas;
@@ -23,6 +32,7 @@ const SelectionOverlay: React.FC<SelectionOverlayProps> = ({
   setEditorMode,
 }) => {
   const overlayRef = useRef<HTMLDivElement>(null);
+  const { isMobile } = useResponsive();
 
   // Handle clicks outside canvas bounds to close selection
   // Only close selection when clicking completely outside the canvas area
@@ -80,14 +90,16 @@ const SelectionOverlay: React.FC<SelectionOverlayProps> = ({
 
   return (
     <div ref={overlayRef} className="absolute inset-0 pointer-events-none z-40">
-      {/* Top Property Panel */}
-      <div className="pointer-events-auto" data-selection-ui>
-        <TopPropertyPanel
-          selectedObject={selectionState.object}
-          canvas={canvas}
-          setEditorMode={setEditorMode}
-        />
-      </div>
+      {/* Top Property Panel - Hide on mobile */}
+      {!isMobile && (
+        <div className="pointer-events-auto" data-selection-ui>
+          <TopPropertyPanel
+            selectedObject={selectionState.object}
+            canvas={canvas}
+            setEditorMode={setEditorMode}
+          />
+        </div>
+      )}
 
       {/* Selection Tooltip */}
       {selectionState.tooltipPosition && (
