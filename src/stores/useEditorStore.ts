@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
 import { EditorMode } from "@/components/sidebar-navigation";
@@ -12,6 +11,21 @@ interface EditorState {
   // Hover state for sidebar
   hoveredMode: EditorMode;
   setHoveredMode: (mode: EditorMode) => void;
+
+  // Mobile responsive states
+  isMobileView: boolean;
+  setIsMobileView: (isMobile: boolean) => void;
+
+  // Mobile panel states
+  showMobileBottomPanel: boolean;
+  setShowMobileBottomPanel: (show: boolean) => void;
+
+  showMobilePropertyPanel: boolean;
+  setShowMobilePropertyPanel: (show: boolean) => void;
+
+  // Mobile toolbar visibility (for auto-hide on scroll)
+  isMobileToolbarVisible: boolean;
+  setIsMobileToolbarVisible: (visible: boolean) => void;
 
   // Canvas size state
   canvasSize: CanvasSize;
@@ -42,10 +56,27 @@ export const useEditorStore = create<EditorState>()(
     pendingCanvasSize: null,
     hasCanvasObjects: false,
 
+    // Mobile responsive states
+    isMobileView: false,
+    showMobileBottomPanel: false,
+    showMobilePropertyPanel: false,
+    isMobileToolbarVisible: true,
+
     // Actions
     setEditorMode: (mode) => set({ editorMode: mode }),
 
     setHoveredMode: (mode) => set({ hoveredMode: mode }),
+
+    // Mobile actions
+    setIsMobileView: (isMobile) => set({ isMobileView: isMobile }),
+
+    setShowMobileBottomPanel: (show) => set({ showMobileBottomPanel: show }),
+
+    setShowMobilePropertyPanel: (show) =>
+      set({ showMobilePropertyPanel: show }),
+
+    setIsMobileToolbarVisible: (visible) =>
+      set({ isMobileToolbarVisible: visible }),
 
     setCanvasSize: (size) => set({ canvasSize: size }),
 
