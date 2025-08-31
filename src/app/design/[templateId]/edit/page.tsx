@@ -41,13 +41,26 @@ import {
 import { useCanvasStore as useHistoryCanvasStore } from "@/hooks/useCanvasStore";
 
 // Import UI components
-import SidebarNavigation from "@/components/sidebar-navigation";
+import SidebarNavigation, { EditorMode } from "@/components/sidebar-navigation";
 import LeftPanel from "@/components/left-panel";
+import TemplatesPanel from "@/components/templates-panel";
+import ElementsPanel from "@/components/elements-panel";
+import TextPanel from "@/components/text-panel";
+import ToolsPanel from "@/components/tools-panel";
+import AdvancedSettingsLeftPanel from "@/components/advanced-settings-left-panel";
+import PositionLeftPanel from "@/components/position-left-panel";
+import EffectsLeftPanel from "@/components/effects-left-panel";
 import { Button } from "@/components/ui/button";
 import HeaderActions from "@/components/header-actions";
 import { ConfirmModal } from "@/components/confirm-modal";
 import FabricPatchInitializer from "@/components/fabric-patch-initializer";
 import Breadcrumb from "@/components/breadcrumb";
+
+// Import mobile components
+import MobileToolbar from "@/components/mobile-toolbar";
+import MobileBottomPanel from "@/components/mobile-bottom-panel";
+import MobileHeader from "@/components/mobile-header";
+import { useResponsive, useScrollDirection } from "@/hooks/useResponsive";
 
 // Design Editor Page Component
 export default function DesignEditorPage() {
@@ -77,7 +90,19 @@ export default function DesignEditorPage() {
     setPendingCanvasSize,
     getShouldShowCanvasSize,
     setHasCanvasObjects,
+    // Mobile states
+    setIsMobileView,
+    showMobileBottomPanel,
+    setShowMobileBottomPanel,
+    showMobilePropertyPanel,
+    setShowMobilePropertyPanel,
+    isMobileToolbarVisible,
+    setIsMobileToolbarVisible,
   } = useEditorStore();
+
+  // Responsive hooks
+  const { isMobile } = useResponsive();
+  const { scrollDirection } = useScrollDirection();
 
   const { fabric, canvas, selectedObject, setSelectedObject } =
     useCanvasStore();
@@ -178,6 +203,168 @@ export default function DesignEditorPage() {
       console.log("⏭️ Skipping auto-restore - template is loading");
     }
   }, [canvas, json]);
+
+  // Sync mobile view state with responsive breakpoints
+  useEffect(() => {
+    setIsMobileView(isMobile);
+  }, [isMobile, setIsMobileView]);
+
+  // Handle mobile toolbar visibility based on scroll direction (disabled for now in full-screen app)
+  useEffect(() => {
+    if (!isMobile) return;
+
+    // For now, keep toolbar always visible in full-screen canvas app
+    // Future enhancement: detect canvas pan/zoom gestures instead of page scroll
+    setIsMobileToolbarVisible(true);
+
+    /* Scroll-based hiding - disabled for full-screen app
+    if (scrollDirection === 'down') {
+      setIsMobileToolbarVisible(false);
+    } else if (scrollDirection === 'up') {
+      setIsMobileToolbarVisible(true);
+    }
+    */
+  }, [scrollDirection, isMobile, setIsMobileToolbarVisible]);
+
+  // Handle mobile panel logic
+  useEffect(() => {
+    if (!isMobile) {
+      // Close mobile panels when switching to desktop
+      setShowMobileBottomPanel(false);
+      setShowMobilePropertyPanel(false);
+      return;
+    }
+
+    // Don't auto-control the bottom panel - let the toolbar handle it
+    // The showMobileBottomPanel state is controlled by handleMobileEditorModeChange
+  }, [isMobile, setShowMobileBottomPanel, setShowMobilePropertyPanel]);
+
+  // Handle mobile property panel when object is selected (with delay to allow dragging)
+  useEffect(() => {
+    if (!isMobile) return;
+
+    let isDragging = false;
+
+    if (canvas) {
+      const handleObjectMoving = () => {
+        isDragging = true;
+      };
+
+      const handleObjectMoved = () => {
+        // Reset dragging state after a short delay
+        setTimeout(() => {
+          isDragging = false;
+        }, 100);
+      };
+
+      canvas.on("object:moving", handleObjectMoving);
+      canvas.on("object:moved", handleObjectMoved);
+
+      if (selectedObject && !showMobilePropertyPanel) {
+        // Add a delay to prevent property panel from opening during drag operations
+        const timer = setTimeout(() => {
+          // Only open if the object is still selected and not being dragged
+          if (
+            selectedObject &&
+            !isDragging &&
+            !canvas.getActiveObject()?.isMoving
+          ) {
+            console.log(
+              "📱 Main Page: Opening mobile property panel after delay"
+            );
+            setShowMobilePropertyPanel(true);
+          }
+        }, 300); // Reduced delay to 300ms for better responsiveness
+
+        return () => {
+          clearTimeout(timer);
+          canvas.off("object:moving", handleObjectMoving);
+          canvas.off("object:moved", handleObjectMoved);
+        };
+      } else if (!selectedObject && showMobilePropertyPanel) {
+        setShowMobilePropertyPanel(false);
+      }
+
+      return () => {
+        canvas.off("object:moving", handleObjectMoving);
+        canvas.off("object:moved", handleObjectMoved);
+      };
+    }
+  }, [
+    isMobile,
+    selectedObject,
+    showMobilePropertyPanel,
+    setShowMobilePropertyPanel,
+    canvas,
+  ]);
+
+  // Coordinate mobile panels - close bottom panel when property panel opens for object editing
+  useEffect(() => {
+    if (!isMobile) return;
+
+    // If property panel opens for an object and we have a bottom panel open for object-specific modes
+    // (advanced-settings, position, effects), close the bottom panel
+    if (showMobilePropertyPanel && selectedObject && showMobileBottomPanel) {
+      if (
+        editorMode &&
+        ["advanced-settings", "position", "effects"].includes(editorMode)
+      ) {
+        console.log(
+          "📱 Main Page: Closing bottom panel as property panel opened for object editing"
+        );
+        setShowMobileBottomPanel(false);
+        setEditorMode(null);
+      }
+    }
+  }, [
+    isMobile,
+    showMobilePropertyPanel,
+    selectedObject,
+    showMobileBottomPanel,
+    editorMode,
+    setShowMobileBottomPanel,
+    setEditorMode,
+  ]);
+
+  // Mobile-specific editor mode handler
+  const handleMobileEditorModeChange = (mode: EditorMode) => {
+    console.log("📱 Main Page: Mobile editor mode change requested:", mode);
+
+    if (mode === editorMode) {
+      // If clicking the same mode, close panel
+      console.log("📱 Main Page: Closing same mode panel");
+      setEditorMode(null);
+      setShowMobileBottomPanel(false);
+    } else {
+      // Open new panel
+      console.log("📱 Main Page: Opening new panel for mode:", mode);
+      setEditorMode(mode);
+      setShowMobileBottomPanel(true);
+
+      // For modes that should replace the property panel (advanced, position, effects)
+      // close the property panel. For other modes (templates, elements, text, tools)
+      // keep the property panel open if an object is selected
+      if (mode && ["advanced-settings", "position", "effects"].includes(mode)) {
+        console.log(
+          "📱 Main Page: Closing property panel for specialized mode:",
+          mode
+        );
+        setShowMobilePropertyPanel(false);
+      }
+    }
+  };
+
+  // Mobile panel close handlers
+  const handleCloseMobileBottomPanel = () => {
+    console.log("📱 Main Page: Closing mobile bottom panel");
+    setShowMobileBottomPanel(false);
+    setEditorMode(null);
+  };
+
+  const handleCloseMobilePropertyPanel = () => {
+    console.log("📱 Main Page: Closing mobile property panel");
+    setShowMobilePropertyPanel(false);
+  };
 
   // Helper function to check if text is being edited
   const isTextBeingEdited = () => {
@@ -430,7 +617,9 @@ export default function DesignEditorPage() {
     <>
       <FabricPatchInitializer />
       <div
-        className="flex flex-col md:flex-row h-screen w-screen bg-gray-100 font-sans overflow-hidden relative"
+        className={`flex h-screen w-screen bg-gray-100 font-sans overflow-hidden relative ${
+          isMobile ? "flex-col" : "flex-col md:flex-row"
+        }`}
         suppressHydrationWarning={true}
         onClick={(e) => {
           // Close hover panel if clicking outside and it's not pinned
@@ -460,61 +649,77 @@ export default function DesignEditorPage() {
           onImageUpload={() => imageInputRef.current?.click()}
         />
 
-        {/* Left Panel - Tools */}
-        <LeftPanel
-          editorMode={editorMode}
-          hoveredMode={hoveredMode}
-          setHoveredMode={setHoveredMode}
-          setEditorMode={setEditorMode}
-          canvas={canvas}
-          fabric={fabric}
-          selectedObject={selectedObject}
-          onSelectTemplate={loadTemplate}
-          onImageUpload={handleBackgroundImageUpload}
-          {...shapeHooks}
-          {...lineHooks}
-          {...textHooks}
-          {...frameHooks}
-          addStickyNote={addStickyNote}
-          addTable={addTable}
-        />
+        {/* Left Panel - Tools - Hidden on mobile */}
+        {!isMobile && (
+          <LeftPanel
+            editorMode={editorMode}
+            hoveredMode={hoveredMode}
+            setHoveredMode={setHoveredMode}
+            setEditorMode={setEditorMode}
+            canvas={canvas}
+            fabric={fabric}
+            selectedObject={selectedObject}
+            onSelectTemplate={loadTemplate}
+            onImageUpload={handleBackgroundImageUpload}
+            {...shapeHooks}
+            {...lineHooks}
+            {...textHooks}
+            {...frameHooks}
+            addStickyNote={addStickyNote}
+            addTable={addTable}
+          />
+        )}
 
         {/* Main Content Area */}
         <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          {/* Header */}
-          <header className="bg-white shadow-md z-10 flex justify-between items-center p-2 space-x-2 flex-shrink-0">
-            <div className="flex items-center space-x-3">
-              <Breadcrumb />
-            </div>
-
-            {/* Center Controls - Canvas Size */}
-            <div className="flex items-center space-x-2">
-              <CanvasSizePanel
-                currentSize={canvasSize}
-                onSizeChange={handleCanvasSizeChange}
-                shouldShow={shouldShowCanvasSize}
-              />
-              {!shouldShowCanvasSize && (
-                <div className="text-sm text-gray-500 px-3 py-2 bg-gray-100 rounded-md">
-                  Canvas size locked while designing
-                </div>
-              )}
-            </div>
-
-            {/* Right side controls */}
-            <HeaderActions
+          {/* Mobile Header */}
+          {isMobile && (
+            <MobileHeader
               selectedObject={selectedObject}
               deleteSelected={deleteSelected}
               exportAsPNG={exportAsPNG}
               exportAsPDF={exportAsPDF}
             />
-          </header>
+          )}
+
+          {/* Desktop Header - Hide on mobile to maximize canvas space */}
+          {!isMobile && (
+            <header className="bg-white shadow-md z-10 flex justify-between items-center p-2 space-x-2 flex-shrink-0">
+              <div className="flex items-center space-x-3">
+                <Breadcrumb />
+              </div>
+
+              {/* Center Controls - Canvas Size */}
+              <div className="flex items-center space-x-2">
+                <CanvasSizePanel
+                  currentSize={canvasSize}
+                  onSizeChange={handleCanvasSizeChange}
+                  shouldShow={shouldShowCanvasSize}
+                />
+                {!shouldShowCanvasSize && (
+                  <div className="text-sm text-gray-500 px-3 py-2 bg-gray-100 rounded-md">
+                    Canvas size locked while designing
+                  </div>
+                )}
+              </div>
+
+              {/* Right side controls */}
+              <HeaderActions
+                selectedObject={selectedObject}
+                deleteSelected={deleteSelected}
+                exportAsPNG={exportAsPNG}
+                exportAsPDF={exportAsPDF}
+              />
+            </header>
+          )}
 
           {/* Canvas and Properties Panel Container */}
           <div className="flex-1 flex overflow-hidden">
             {/* Canvas Area */}
             <div
-              className="flex-1 flex items-center justify-center p-4 md:p-8 overflow-hidden min-w-0"
+              className={`flex-1 flex items-center justify-center overflow-hidden min-w-0 ${
+                isMobile ? "p-2 pb-20" : "p-4 md:p-8"
+              }`}
               style={{
                 backgroundImage: `
                    linear-gradient(45deg, #f0f0f0 25%, transparent 25%), 
@@ -573,6 +778,133 @@ export default function DesignEditorPage() {
           onConfirm={handleConfirmCanvasSizeChange}
           onCancel={handleCancelCanvasSizeChange}
         />
+
+        {/* Mobile Components */}
+        {isMobile && (
+          <>
+            {/* Mobile Bottom Toolbar */}
+            <MobileToolbar
+              editorMode={editorMode}
+              setEditorMode={handleMobileEditorModeChange}
+              onImageUpload={() => imageInputRef.current?.click()}
+              isVisible={isMobileToolbarVisible}
+            />
+
+            {/* Mobile Bottom Panel for Tools */}
+            <MobileBottomPanel
+              isOpen={showMobileBottomPanel}
+              onClose={handleCloseMobileBottomPanel}
+              title={
+                editorMode === "templates"
+                  ? "Design Templates"
+                  : editorMode === "elements"
+                  ? "Elements"
+                  : editorMode === "text"
+                  ? "Text Tools"
+                  : editorMode === "tools"
+                  ? "Tools"
+                  : editorMode === "advanced-settings"
+                  ? "Advanced Settings"
+                  : editorMode === "position"
+                  ? "Position & Layers"
+                  : editorMode === "effects"
+                  ? "Text Effects"
+                  : "Panel"
+              }
+              maxHeight="70vh"
+              enableSwipeGestures={true}
+            >
+              {(() => {
+                console.log(
+                  "🔍 MobileBottomPanel rendering with editorMode:",
+                  editorMode,
+                  "isOpen:",
+                  showMobileBottomPanel
+                );
+                return null;
+              })()}
+              {/* Mobile-optimized content rendering */}
+              <div className="p-4">
+                {editorMode === "templates" && (
+                  <TemplatesPanel
+                    onSelectTemplate={loadTemplate}
+                    onImageUpload={handleBackgroundImageUpload}
+                    canvas={canvas}
+                  />
+                )}
+
+                {editorMode === "elements" && (
+                  <ElementsPanel
+                    addSquare={shapeHooks.addSquare}
+                    addCircle={shapeHooks.addCircle}
+                    addTriangle={shapeHooks.addTriangle}
+                    addRectangle={shapeHooks.addRectangle}
+                    addEllipse={shapeHooks.addEllipse}
+                    addStar={shapeHooks.addStar}
+                    addHeart={shapeHooks.addHeart}
+                    addHexagon={shapeHooks.addHexagon}
+                    addPentagon={shapeHooks.addPentagon}
+                    addDiamond={shapeHooks.addDiamond}
+                    addArrowShape={shapeHooks.addArrowShape}
+                    addLine={lineHooks.addLine}
+                    addDashedLine={lineHooks.addDashedLine}
+                    addArrowLine={lineHooks.addArrowLine}
+                    addZigzagLine={lineHooks.addZigzagLine}
+                    addWavyLine={lineHooks.addWavyLine}
+                    addDottedLine={lineHooks.addDottedLine}
+                    addDoubleLine={lineHooks.addDoubleLine}
+                    addCurvedLine={lineHooks.addCurvedLine}
+                    addStepsLine={lineHooks.addStepsLine}
+                    addThickLine={lineHooks.addThickLine}
+                    addDashDotLine={lineHooks.addDashDotLine}
+                  />
+                )}
+
+                {editorMode === "text" && (
+                  <TextPanel
+                    addText={textHooks.addText}
+                    addHeading={textHooks.addHeading}
+                    addSubheading={textHooks.addSubheading}
+                    addBodyText={textHooks.addBodyText}
+                  />
+                )}
+
+                {editorMode === "tools" && (
+                  <ToolsPanel
+                    canvas={canvas}
+                    addStickyNote={addStickyNote}
+                    addTable={addTable}
+                    addSimpleFrame={frameHooks.addSimpleFrame}
+                    addDoubleFrame={frameHooks.addDoubleFrame}
+                    addDecorativeFrame={frameHooks.addDecorativeFrame}
+                    addRoundedFrame={frameHooks.addRoundedFrame}
+                  />
+                )}
+
+                {editorMode === "advanced-settings" && (
+                  <AdvancedSettingsLeftPanel />
+                )}
+
+                {editorMode === "position" && (
+                  <PositionLeftPanel
+                    canvas={canvas}
+                    selectedObject={selectedObject}
+                    onClose={handleCloseMobileBottomPanel}
+                  />
+                )}
+
+                {editorMode === "effects" && (
+                  <EffectsLeftPanel
+                    canvas={canvas}
+                    fabric={fabric}
+                    selectedObject={selectedObject}
+                    onClose={handleCloseMobileBottomPanel}
+                  />
+                )}
+              </div>
+            </MobileBottomPanel>
+          </>
+        )}
 
         {/* Debug: Force close button */}
         {showCanvasSizeModal && (
