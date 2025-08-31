@@ -29,19 +29,17 @@ const SelectionOverlay: React.FC<SelectionOverlayProps> = ({
   const { showMobilePropertyPanel, setShowMobilePropertyPanel } =
     useEditorStore();
 
-  // Auto-open mobile property panel when object is selected on mobile
+  // Don't auto-open mobile property panel - only show tooltip
+  // Mobile property panel will be opened manually via tooltip interaction
   useEffect(() => {
-    if (isMobile && selectionState.visible && selectionState.object) {
-      setShowMobilePropertyPanel(true);
-    } else if (!selectionState.visible) {
+    if (!isMobile) return;
+
+    // Only close the property panel if selection is lost
+    if (!selectionState.visible) {
       setShowMobilePropertyPanel(false);
     }
-  }, [
-    isMobile,
-    selectionState.visible,
-    selectionState.object,
-    setShowMobilePropertyPanel,
-  ]);
+    // Don't auto-open - let user choose via tooltip
+  }, [isMobile, selectionState.visible, setShowMobilePropertyPanel]);
 
   const handleMobilePropertyClose = () => {
     setShowMobilePropertyPanel(false);
@@ -119,8 +117,8 @@ const SelectionOverlay: React.FC<SelectionOverlayProps> = ({
         />
       </div>
 
-      {/* Selection Tooltip - Only show on desktop and tablets */}
-      {!isMobile && selectionState.tooltipPosition && (
+      {/* Selection Tooltip - Show on both mobile and desktop */}
+      {selectionState.tooltipPosition && (
         <div className="pointer-events-auto" data-selection-ui>
           <SelectionTooltip
             canvas={canvas}
@@ -128,6 +126,9 @@ const SelectionOverlay: React.FC<SelectionOverlayProps> = ({
             selectedObject={selectionState.object}
             position={selectionState.tooltipPosition}
             onHide={onHideSelection}
+            isMobile={isMobile}
+            setEditorMode={setEditorMode}
+            onOpenMobileProperties={() => setShowMobilePropertyPanel(true)}
           />
         </div>
       )}

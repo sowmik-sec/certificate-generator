@@ -651,26 +651,16 @@ const MobilePropertyPanel: React.FC<MobilePropertyPanelProps> = ({
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[100]">
+      <div className="fixed inset-0 z-[100] pointer-events-none">
         <Toaster position="top-center" />
 
-        {/* Backdrop */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
-          className="absolute inset-0 bg-black/20"
-          onClick={onClose}
-        />
-
-        {/* Canva-style Horizontal Property Panel - Higher z-index than mobile toolbar */}
+        {/* Canva-style Horizontal Property Panel - No backdrop, just the panel */}
         <motion.div
           initial={{ y: "100%" }}
           animate={{ y: 0 }}
           exit={{ y: "100%" }}
           transition={{ duration: 0.3, ease: "easeOut" }}
-          className="absolute bottom-0 left-0 right-0 bg-white shadow-2xl border-t border-gray-200 z-[110]"
+          className="absolute bottom-0 left-0 right-0 bg-white shadow-2xl border-t border-gray-200 z-[110] pointer-events-auto"
         >
           {/* Header with tabs - like Canva */}
           <div className="border-b border-gray-200">

@@ -11,6 +11,11 @@ interface SelectionTooltipProps {
   selectedObject: any;
   position?: { x: number; y: number };
   onHide?: () => void;
+  isMobile?: boolean;
+  setEditorMode?: (
+    mode: "context-menu" | "effects" | "position" | "advanced-settings"
+  ) => void;
+  onOpenMobileProperties?: () => void;
 }
 
 const SelectionTooltip: React.FC<SelectionTooltipProps> = ({
@@ -19,6 +24,9 @@ const SelectionTooltip: React.FC<SelectionTooltipProps> = ({
   selectedObject,
   position,
   onHide,
+  isMobile = false,
+  setEditorMode,
+  onOpenMobileProperties,
 }) => {
   const [tooltipState, setTooltipState] = useState({
     visible: false,
@@ -442,6 +450,15 @@ const SelectionTooltip: React.FC<SelectionTooltipProps> = ({
     const targetObject = position ? selectedObject : tooltipState.object;
     if (!targetObject || !canvas) return;
 
+    // On mobile, open context menu items as left panel instead of context menu
+    if (isMobile && setEditorMode) {
+      setEditorMode("context-menu");
+      // Completely hide the tooltip when opening left panel
+      hideTooltip();
+      return;
+    }
+
+    // Desktop behavior - show context menu
     // Find the CanvaContextMenu trigger element by looking for the canvas wrapper
     const canvasContainer = canvas.getElement().parentNode;
     if (!canvasContainer) return;
@@ -465,8 +482,10 @@ const SelectionTooltip: React.FC<SelectionTooltipProps> = ({
     // Dispatch to the ContextMenuTrigger element
     contextMenuTrigger.dispatchEvent(syntheticEvent);
 
-    // Hide the tooltip
-    hideTooltip();
+    // Hide the tooltip but keep selection for desktop context menu
+    if (!position) {
+      setTooltipState((prev) => ({ ...prev, visible: false }));
+    }
   };
   if (position) {
     // When position is provided, use selectedObject directly
@@ -528,7 +547,7 @@ const SelectionTooltip: React.FC<SelectionTooltipProps> = ({
           onClick={handleShowMore}
           variant="ghost"
           size="sm"
-          className="p-2 h-auto text-gray-600"
+          className="p-2 h-auto text-gray-600 focus:bg-transparent active:bg-transparent"
           title="More options"
         >
           <MoreHorizontal size={16} />
@@ -594,7 +613,7 @@ const SelectionTooltip: React.FC<SelectionTooltipProps> = ({
         onClick={handleShowMore}
         variant="ghost"
         size="sm"
-        className="p-2 h-auto text-gray-600"
+        className="p-2 h-auto text-gray-600 focus:bg-transparent active:bg-transparent"
         title="More options"
       >
         <MoreHorizontal size={16} />

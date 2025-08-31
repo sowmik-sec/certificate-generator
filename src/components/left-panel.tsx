@@ -8,6 +8,7 @@ import TextPanel from "@/components/text-panel";
 import AdvancedSettingsLeftPanel from "@/components/advanced-settings-left-panel";
 import PositionLeftPanel from "@/components/position-left-panel";
 import EffectsLeftPanel from "@/components/effects-left-panel";
+import ContextMenuLeftPanel from "@/components/context-menu-left-panel";
 import { EditorMode } from "./sidebar-navigation";
 
 interface LeftPanelProps {
@@ -259,6 +260,66 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
                   // If it's just hovered, clear the hover
                   setHoveredMode(null);
                 }
+              }}
+            />
+          )}
+
+          {activeMode === "context-menu" && (
+            <ContextMenuLeftPanel
+              canvas={canvas}
+              fabric={fabric}
+              selectedObject={
+                selectedObject || canvas?.getActiveObject?.() || null
+              }
+              onLayerAction={(action) => {
+                const targetObject =
+                  selectedObject || canvas?.getActiveObject?.();
+                if (!targetObject || !canvas) return;
+
+                // Handle layer management actions
+                switch (action) {
+                  case "bringToFront":
+                    canvas.bringToFront(targetObject);
+                    break;
+                  case "bringForward":
+                    canvas.bringForward(targetObject);
+                    break;
+                  case "sendBackward":
+                    canvas.sendBackward(targetObject);
+                    break;
+                  case "sendToBack":
+                    canvas.sendToBack(targetObject);
+                    break;
+                  case "group":
+                    const activeObjects = canvas.getActiveObjects?.() || [];
+                    if (activeObjects.length > 1) {
+                      // Use fabric from props instead of importing
+                      if (fabric && fabric.Group) {
+                        const group = new fabric.Group(activeObjects);
+                        activeObjects.forEach((obj: any) => canvas.remove(obj));
+                        canvas.add(group);
+                        canvas.setActiveObject(group);
+                      }
+                    }
+                    break;
+                  case "ungroup":
+                    if (
+                      targetObject.type === "group" &&
+                      targetObject.getObjects
+                    ) {
+                      const objects = targetObject.getObjects();
+                      targetObject.destroy();
+                      canvas.remove(targetObject);
+                      objects.forEach((obj: any) => {
+                        canvas.add(obj);
+                      });
+                      if (objects.length > 0) {
+                        canvas.setActiveObject(objects[0]);
+                      }
+                    }
+                    break;
+                }
+                canvas.renderAll();
               }}
             />
           )}

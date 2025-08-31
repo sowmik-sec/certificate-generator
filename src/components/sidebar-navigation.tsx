@@ -18,6 +18,7 @@ export type EditorMode =
   | "advanced-settings"
   | "position"
   | "effects"
+  | "context-menu"
   | null;
 
 interface SidebarNavigationProps {
