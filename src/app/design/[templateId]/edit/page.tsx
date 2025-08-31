@@ -304,16 +304,16 @@ export default function DesignEditorPage() {
 
     // If property panel opens for an object and we have a bottom panel open for object-specific modes
     // (advanced-settings, position, effects), close the bottom panel
+    // UNLESS the mode was triggered from the property panel itself (in which case both should coexist)
     if (showMobilePropertyPanel && selectedObject && showMobileBottomPanel) {
       if (
         editorMode &&
         ["advanced-settings", "position", "effects"].includes(editorMode)
       ) {
         console.log(
-          "📱 Main Page: Closing bottom panel as property panel opened for object editing"
+          "📱 Main Page: Both property panel and specialized mode panel are open - letting them coexist"
         );
-        setShowMobileBottomPanel(false);
-        setEditorMode(null);
+        // Don't close either panel - let them coexist when triggered from property panel
       }
     }
   }, [
@@ -342,14 +342,22 @@ export default function DesignEditorPage() {
       setShowMobileBottomPanel(true);
 
       // For modes that should replace the property panel (advanced, position, effects)
-      // close the property panel. For other modes (templates, elements, text, tools)
-      // keep the property panel open if an object is selected
+      // only close the property panel if there's no selected object
+      // If there's a selected object, let both panels coexist (property panel + specialized mode)
       if (mode && ["advanced-settings", "position", "effects"].includes(mode)) {
-        console.log(
-          "📱 Main Page: Closing property panel for specialized mode:",
-          mode
-        );
-        setShowMobilePropertyPanel(false);
+        if (!selectedObject) {
+          console.log(
+            "📱 Main Page: Closing property panel for specialized mode (no object selected):",
+            mode
+          );
+          setShowMobilePropertyPanel(false);
+        } else {
+          console.log(
+            "📱 Main Page: Keeping property panel open - specialized mode triggered for selected object:",
+            mode
+          );
+          // Keep property panel open when object is selected
+        }
       }
     }
   };
@@ -735,7 +743,9 @@ export default function DesignEditorPage() {
                     fabric={fabric}
                     selectionState={selectionState}
                     onHideSelection={hideSelection}
-                    setEditorMode={setEditorMode}
+                    setEditorMode={
+                      isMobile ? handleMobileEditorModeChange : setEditorMode
+                    }
                   />
 
                   <CanvasComponent

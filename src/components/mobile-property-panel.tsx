@@ -82,14 +82,14 @@ const MobilePropertyPanel: React.FC<MobilePropertyPanelProps> = ({
       return [
         { id: 0, name: "Fill", icon: Palette },
         { id: 1, name: "Stroke", icon: Settings },
-        { id: 2, name: "Effects", icon: Sparkles },
-        { id: 3, name: "Position", icon: Move },
+        { id: 2, name: "Position", icon: Move },
+        { id: 3, name: "Advanced", icon: Settings },
       ];
     } else if (isLineObject()) {
       return [
         { id: 0, name: "Style", icon: Settings },
-        { id: 1, name: "Effects", icon: Sparkles },
-        { id: 2, name: "Position", icon: Move },
+        { id: 1, name: "Position", icon: Move },
+        { id: 2, name: "Advanced", icon: Settings },
       ];
     }
     return [];
@@ -261,6 +261,27 @@ const MobilePropertyPanel: React.FC<MobilePropertyPanelProps> = ({
 
   // Handle tab change
   const handleTabChange = (tabIndex: number) => {
+    const tabs = getTabsForObjectType();
+    const selectedTab = tabs[tabIndex];
+
+    if (selectedTab) {
+      // Check if this tab should open a left panel directly
+      if (selectedTab.name === "Effects") {
+        // Effects tab only available for text objects - open effects panel
+        setEditorMode("effects");
+        return;
+      } else if (selectedTab.name === "Position") {
+        // Position tab available for all object types - open position panel
+        setEditorMode("position");
+        return;
+      } else if (selectedTab.name === "Advanced") {
+        // Advanced tab available for all object types - open advanced settings panel
+        setEditorMode("advanced-settings");
+        return;
+      }
+    }
+
+    // For regular tabs (Font, Format, Color, Fill, Stroke, Style), just change the tab
     setActiveTab(tabIndex);
   };
 
@@ -438,57 +459,6 @@ const MobilePropertyPanel: React.FC<MobilePropertyPanelProps> = ({
             </div>
           );
 
-        case 3: // Effects - opens effects panel
-          return (
-            <div className="flex items-center gap-3 px-4 overflow-x-auto">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setEditorMode("effects");
-                  onClose();
-                }}
-                className="h-10 px-4 whitespace-nowrap"
-              >
-                <Sparkles className="w-4 h-4 mr-2" />
-                Effects
-              </Button>
-            </div>
-          );
-
-        case 4: // Position - opens position panel
-          return (
-            <div className="flex items-center gap-3 px-4 overflow-x-auto">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setEditorMode("position");
-                  onClose();
-                }}
-                className="h-10 px-4 whitespace-nowrap"
-              >
-                <Move className="w-4 h-4 mr-2" />
-                Position
-              </Button>
-            </div>
-          );
-
-        case 5: // Advanced - opens advanced settings panel
-          return (
-            <div className="flex items-center gap-3 px-4 overflow-x-auto">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setEditorMode("advanced-settings");
-                  onClose();
-                }}
-                className="h-10 px-4 whitespace-nowrap"
-              >
-                <Settings className="w-4 h-4 mr-2" />
-                Advanced
-              </Button>
-            </div>
-          );
-
         default:
           return null;
       }
@@ -598,40 +568,6 @@ const MobilePropertyPanel: React.FC<MobilePropertyPanelProps> = ({
             </div>
           );
 
-        case 2: // Effects
-          return (
-            <div className="flex items-center gap-3 px-4 overflow-x-auto">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setEditorMode("effects");
-                  onClose();
-                }}
-                className="h-10 px-4 whitespace-nowrap"
-              >
-                <Sparkles className="w-4 h-4 mr-2" />
-                Effects
-              </Button>
-            </div>
-          );
-
-        case 3: // Position
-          return (
-            <div className="flex items-center gap-3 px-4 overflow-x-auto">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setEditorMode("position");
-                  onClose();
-                }}
-                className="h-10 px-4 whitespace-nowrap"
-              >
-                <Move className="w-4 h-4 mr-2" />
-                Position
-              </Button>
-            </div>
-          );
-
         default:
           return null;
       }
@@ -699,40 +635,6 @@ const MobilePropertyPanel: React.FC<MobilePropertyPanelProps> = ({
               >
                 <PaintRoller className="w-4 h-4 mr-1" />
                 Copy
-              </Button>
-            </div>
-          );
-
-        case 1: // Effects
-          return (
-            <div className="flex items-center gap-3 px-4 overflow-x-auto">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setEditorMode("effects");
-                  onClose();
-                }}
-                className="h-10 px-4 whitespace-nowrap"
-              >
-                <Sparkles className="w-4 h-4 mr-2" />
-                Effects
-              </Button>
-            </div>
-          );
-
-        case 2: // Position
-          return (
-            <div className="flex items-center gap-3 px-4 overflow-x-auto">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setEditorMode("position");
-                  onClose();
-                }}
-                className="h-10 px-4 whitespace-nowrap"
-              >
-                <Move className="w-4 h-4 mr-2" />
-                Position
               </Button>
             </div>
           );
