@@ -7,14 +7,7 @@ import SelectionTooltip from "./selection-tooltip";
 import { EditorMode } from "./sidebar-navigation";
 import { SelectionState } from "@/hooks/useSelectionState";
 import { useResponsive } from "@/hooks/useResponsive";
-
-interface SelectionOverlayProps {
-  canvas: FabricCanvas;
-  fabric: any;
-  selectionState: SelectionState;
-  onHideSelection: () => void;
-  setEditorMode: (mode: EditorMode) => void;
-}
+import { useEditorStore } from "@/stores/useEditorStore";
 
 interface SelectionOverlayProps {
   canvas: FabricCanvas;
@@ -33,6 +26,28 @@ const SelectionOverlay: React.FC<SelectionOverlayProps> = ({
 }) => {
   const overlayRef = useRef<HTMLDivElement>(null);
   const { isMobile } = useResponsive();
+  const { showMobilePropertyPanel, setShowMobilePropertyPanel } =
+    useEditorStore();
+
+  // Auto-open mobile property panel when object is selected on mobile
+  useEffect(() => {
+    if (isMobile && selectionState.visible && selectionState.object) {
+      setShowMobilePropertyPanel(true);
+    } else if (!selectionState.visible) {
+      setShowMobilePropertyPanel(false);
+    }
+  }, [
+    isMobile,
+    selectionState.visible,
+    selectionState.object,
+    setShowMobilePropertyPanel,
+  ]);
+
+  const handleMobilePropertyClose = () => {
+    setShowMobilePropertyPanel(false);
+    // Also hide the selection when closing mobile property panel
+    onHideSelection();
+  };
 
   // Handle clicks outside canvas bounds to close selection
   // Only close selection when clicking completely outside the canvas area
@@ -89,20 +104,23 @@ const SelectionOverlay: React.FC<SelectionOverlayProps> = ({
   }
 
   return (
-    <div ref={overlayRef} className="absolute inset-0 pointer-events-none z-40">
-      {/* Top Property Panel - Hide on mobile */}
-      {!isMobile && (
-        <div className="pointer-events-auto" data-selection-ui>
-          <TopPropertyPanel
-            selectedObject={selectionState.object}
-            canvas={canvas}
-            setEditorMode={setEditorMode}
-          />
-        </div>
-      )}
+    <div
+      ref={overlayRef}
+      className="absolute inset-0 pointer-events-none z-[120]"
+    >
+      {/* Top Property Panel - Always render, but mobile/desktop handled inside */}
+      <div className="pointer-events-auto" data-selection-ui>
+        <TopPropertyPanel
+          selectedObject={selectionState.object}
+          canvas={canvas}
+          setEditorMode={setEditorMode}
+          isMobilePropertyOpen={showMobilePropertyPanel}
+          onMobilePropertyClose={handleMobilePropertyClose}
+        />
+      </div>
 
-      {/* Selection Tooltip */}
-      {selectionState.tooltipPosition && (
+      {/* Selection Tooltip - Only show on desktop and tablets */}
+      {!isMobile && selectionState.tooltipPosition && (
         <div className="pointer-events-auto" data-selection-ui>
           <SelectionTooltip
             canvas={canvas}

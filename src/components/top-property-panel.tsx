@@ -6,6 +6,8 @@ import { FabricObject } from "fabric";
 import { usePropertiesStore } from "@/stores/usePropertiesStore";
 import { EditorMode } from "@/components/sidebar-navigation";
 import AdvancedSettingsPanel from "./advanced-settings-panel";
+import MobilePropertyPanel from "./mobile-property-panel";
+import { useResponsive } from "@/hooks/useResponsive";
 import { toast, Toaster } from "sonner";
 import {
   Bold,
@@ -40,13 +42,18 @@ interface TopPropertyPanelProps {
   selectedObject: FabricObject;
   canvas: FabricCanvas;
   setEditorMode: (mode: EditorMode) => void;
+  isMobilePropertyOpen?: boolean;
+  onMobilePropertyClose?: () => void;
 }
 
 const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
   selectedObject,
   canvas,
   setEditorMode,
+  isMobilePropertyOpen = false,
+  onMobilePropertyClose = () => {},
 }) => {
+  const { isMobile } = useResponsive();
   const {
     attributes,
     syncFromFabricObject,
@@ -747,6 +754,20 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
     </div>
   );
 
+  // If mobile, render the mobile property panel
+  if (isMobile) {
+    return (
+      <MobilePropertyPanel
+        selectedObject={selectedObject}
+        canvas={canvas}
+        setEditorMode={setEditorMode}
+        isOpen={isMobilePropertyOpen}
+        onClose={onMobilePropertyClose}
+      />
+    );
+  }
+
+  // Desktop version
   return (
     <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-60">
       <Toaster position="top-center" />

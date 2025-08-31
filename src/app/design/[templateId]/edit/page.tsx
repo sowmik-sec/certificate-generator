@@ -361,11 +361,6 @@ export default function DesignEditorPage() {
     setEditorMode(null);
   };
 
-  const handleCloseMobilePropertyPanel = () => {
-    console.log("📱 Main Page: Closing mobile property panel");
-    setShowMobilePropertyPanel(false);
-  };
-
   // Helper function to check if text is being edited
   const isTextBeingEdited = () => {
     if (!canvas) return false;
