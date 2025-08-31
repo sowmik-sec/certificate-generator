@@ -30,7 +30,6 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 
 interface MobilePropertyPanelProps {
@@ -64,8 +63,43 @@ const MobilePropertyPanel: React.FC<MobilePropertyPanelProps> = ({
     "none" | "bullet" | "number"
   >("none");
   const [activeTab, setActiveTab] = useState(0);
+  const [showColorPicker, setShowColorPicker] = useState<
+    "text" | "fill" | "stroke" | null
+  >(null);
+  const [colorPickerPosition, setColorPickerPosition] = useState({
+    x: 0,
+    y: 0,
+  });
 
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Common colors palette for mobile
+  const commonColors = [
+    "#000000",
+    "#FFFFFF",
+    "#FF0000",
+    "#00FF00",
+    "#0000FF",
+    "#FFFF00",
+    "#FF00FF",
+    "#00FFFF",
+    "#800000",
+    "#008000",
+    "#000080",
+    "#808000",
+    "#800080",
+    "#008080",
+    "#C0C0C0",
+    "#808080",
+    "#FF9999",
+    "#FFCC99",
+    "#FFFF99",
+    "#CCFF99",
+    "#99FFCC",
+    "#99CCFF",
+    "#CC99FF",
+    "#FF99CC",
+  ];
 
   // Define comprehensive tabs based on object type
   const getTabsForObjectType = () => {
@@ -126,8 +160,40 @@ const MobilePropertyPanel: React.FC<MobilePropertyPanelProps> = ({
     attributes.listType,
   ]);
 
+  // Close color picker when tab changes
+  useEffect(() => {
+    setShowColorPicker(null);
+  }, [activeTab]);
+
+  // Close color picker when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showColorPicker && event.target instanceof Element) {
+        const colorPicker = event.target.closest("[data-color-picker]");
+        if (!colorPicker) {
+          setShowColorPicker(null);
+        }
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showColorPicker]);
+
   const handlePropertyChange = (prop: keyof typeof attributes, value: any) => {
     applyToFabricObject(selectedObject, canvas, prop, value);
+  };
+
+  const handleColorPickerClick = (
+    type: "text" | "fill" | "stroke",
+    event: React.MouseEvent
+  ) => {
+    const rect = (event.target as HTMLElement).getBoundingClientRect();
+    setColorPickerPosition({
+      x: rect.left,
+      y: rect.top - 160, // Position above the button with some margin
+    });
+    setShowColorPicker(showColorPicker === type ? null : type);
   };
 
   const handleFontSizeChange = (increment: boolean) => {
@@ -419,20 +485,13 @@ const MobilePropertyPanel: React.FC<MobilePropertyPanelProps> = ({
                 <span className="text-sm text-gray-600 whitespace-nowrap">
                   Text
                 </span>
-                <Label className="cursor-pointer">
-                  <input
-                    type="color"
-                    value={attributes.fill || "#000000"}
-                    onChange={(e) =>
-                      handlePropertyChange("fill", e.target.value)
-                    }
-                    className="sr-only"
-                  />
-                  <div
-                    className="w-8 h-8 rounded border-2 border-gray-300"
+                <div className="relative" data-color-picker>
+                  <button
+                    onClick={(e) => handleColorPickerClick("text", e)}
+                    className="w-8 h-8 rounded border-2 border-gray-300 cursor-pointer"
                     style={{ backgroundColor: attributes.fill || "#000000" }}
                   />
-                </Label>
+                </div>
               </div>
 
               <div className="flex items-center gap-2 min-w-[120px]">
@@ -479,20 +538,13 @@ const MobilePropertyPanel: React.FC<MobilePropertyPanelProps> = ({
                 <span className="text-sm text-gray-600 whitespace-nowrap">
                   Fill
                 </span>
-                <Label className="cursor-pointer">
-                  <input
-                    type="color"
-                    value={attributes.fill || "#000000"}
-                    onChange={(e) =>
-                      handlePropertyChange("fill", e.target.value)
-                    }
-                    className="sr-only"
-                  />
-                  <div
-                    className="w-8 h-8 rounded border-2 border-gray-300"
+                <div className="relative" data-color-picker>
+                  <button
+                    onClick={(e) => handleColorPickerClick("fill", e)}
+                    className="w-8 h-8 rounded border-2 border-gray-300 cursor-pointer"
                     style={{ backgroundColor: attributes.fill || "#000000" }}
                   />
-                </Label>
+                </div>
               </div>
 
               <div className="flex items-center gap-2 min-w-[120px]">
@@ -534,20 +586,13 @@ const MobilePropertyPanel: React.FC<MobilePropertyPanelProps> = ({
                 <span className="text-sm text-gray-600 whitespace-nowrap">
                   Color
                 </span>
-                <Label className="cursor-pointer">
-                  <input
-                    type="color"
-                    value={attributes.stroke || "#000000"}
-                    onChange={(e) =>
-                      handlePropertyChange("stroke", e.target.value)
-                    }
-                    className="sr-only"
-                  />
-                  <div
+                <div className="relative" data-color-picker>
+                  <button
+                    onClick={(e) => handleColorPickerClick("stroke", e)}
                     className="w-8 h-8 rounded border-2"
                     style={{ borderColor: attributes.stroke || "#000000" }}
                   />
-                </Label>
+                </div>
               </div>
 
               <div className="flex items-center gap-1">
@@ -596,20 +641,13 @@ const MobilePropertyPanel: React.FC<MobilePropertyPanelProps> = ({
                 <span className="text-sm text-gray-600 whitespace-nowrap">
                   Color
                 </span>
-                <Label className="cursor-pointer">
-                  <input
-                    type="color"
-                    value={attributes.stroke || "#000000"}
-                    onChange={(e) =>
-                      handlePropertyChange("stroke", e.target.value)
-                    }
-                    className="sr-only"
-                  />
-                  <div
-                    className="w-8 h-8 rounded border-2 border-gray-300"
+                <div className="relative" data-color-picker>
+                  <button
+                    onClick={(e) => handleColorPickerClick("stroke", e)}
+                    className="w-8 h-8 rounded border-2 border-gray-300 cursor-pointer"
                     style={{ backgroundColor: attributes.stroke || "#000000" }}
                   />
-                </Label>
+                </div>
               </div>
 
               <div className="flex items-center gap-1">
@@ -690,6 +728,62 @@ const MobilePropertyPanel: React.FC<MobilePropertyPanelProps> = ({
     <AnimatePresence>
       <div className="fixed inset-0 z-[100] pointer-events-none">
         <Toaster position="top-center" />
+
+        {/* Color Picker Portal - Positioned absolutely to avoid clipping */}
+        {showColorPicker && (
+          <div
+            className="fixed bg-white border border-gray-300 rounded-lg shadow-lg p-2 z-[200] min-w-[180px] pointer-events-auto"
+            style={{
+              left: `${colorPickerPosition.x}px`,
+              top: `${colorPickerPosition.y}px`,
+            }}
+            data-color-picker
+          >
+            <div className="grid grid-cols-6 gap-1 mb-2">
+              {commonColors.slice(0, 18).map((color) => (
+                <button
+                  key={color}
+                  onClick={() => {
+                    if (
+                      showColorPicker === "text" ||
+                      showColorPicker === "fill"
+                    ) {
+                      handlePropertyChange("fill", color);
+                    } else if (showColorPicker === "stroke") {
+                      handlePropertyChange("stroke", color);
+                    }
+                    setShowColorPicker(null);
+                  }}
+                  className="w-5 h-5 rounded border border-gray-300 hover:scale-110 transition-transform"
+                  style={{ backgroundColor: color }}
+                />
+              ))}
+            </div>
+            <div className="flex items-center gap-1 pt-1 border-t border-gray-200">
+              <span className="text-xs text-gray-600">Custom:</span>
+              <input
+                type="color"
+                value={
+                  showColorPicker === "text" || showColorPicker === "fill"
+                    ? attributes.fill || "#000000"
+                    : attributes.stroke || "#000000"
+                }
+                onChange={(e) => {
+                  if (
+                    showColorPicker === "text" ||
+                    showColorPicker === "fill"
+                  ) {
+                    handlePropertyChange("fill", e.target.value);
+                  } else if (showColorPicker === "stroke") {
+                    handlePropertyChange("stroke", e.target.value);
+                  }
+                  setShowColorPicker(null);
+                }}
+                className="w-6 h-5 border border-gray-300 rounded cursor-pointer"
+              />
+            </div>
+          </div>
+        )}
 
         {/* Canva-style Horizontal Property Panel - No backdrop, just the panel */}
         <motion.div
