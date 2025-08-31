@@ -8,6 +8,7 @@ import {
   LayoutTemplate,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useResponsive } from "@/hooks/useResponsive";
 
 export type EditorMode =
   | "templates"
@@ -34,8 +35,13 @@ const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
   hoveredMode,
   setHoveredMode,
 }) => {
+  const { isMobile } = useResponsive();
+
   const handleMouseEnter = (mode: EditorMode) => {
-    setHoveredMode(mode);
+    // Disable hover on mobile
+    if (!isMobile) {
+      setHoveredMode(mode);
+    }
   };
 
   const handleClick = (mode: EditorMode) => {
@@ -46,6 +52,11 @@ const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
       setEditorMode(mode);
     }
   };
+
+  // Hide sidebar on mobile - will be replaced by bottom toolbar
+  if (isMobile) {
+    return null;
+  }
 
   return (
     <aside
