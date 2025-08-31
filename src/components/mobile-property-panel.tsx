@@ -17,7 +17,6 @@ import {
   AlignJustify,
   List,
   ListOrdered,
-  Droplets,
   Minus,
   Plus,
   Type,
@@ -32,6 +31,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Slider } from "@/components/ui/slider";
 
 interface MobilePropertyPanelProps {
   selectedObject: FabricObject;
@@ -435,17 +435,25 @@ const MobilePropertyPanel: React.FC<MobilePropertyPanelProps> = ({
                 </Label>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 min-w-[120px]">
                 <span className="text-sm text-gray-600 whitespace-nowrap">
                   Opacity
                 </span>
-                <Button
-                  variant="outline"
-                  className="h-10 px-3 whitespace-nowrap"
-                >
-                  <Droplets className="w-4 h-4 mr-1" />
-                  {Math.round((attributes.opacity || 1) * 100)}%
-                </Button>
+                <div className="flex items-center gap-2 flex-1">
+                  <Slider
+                    value={[Math.round((attributes.opacity || 1) * 100)]}
+                    onValueChange={([value]) =>
+                      handlePropertyChange("opacity", value / 100)
+                    }
+                    max={100}
+                    min={0}
+                    step={1}
+                    className="flex-1 min-w-[80px]"
+                  />
+                  <span className="text-xs text-gray-500 min-w-[35px] text-right">
+                    {Math.round((attributes.opacity || 1) * 100)}%
+                  </span>
+                </div>
               </div>
 
               <Button
@@ -487,17 +495,25 @@ const MobilePropertyPanel: React.FC<MobilePropertyPanelProps> = ({
                 </Label>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 min-w-[120px]">
                 <span className="text-sm text-gray-600 whitespace-nowrap">
                   Opacity
                 </span>
-                <Button
-                  variant="outline"
-                  className="h-10 px-3 whitespace-nowrap"
-                >
-                  <Droplets className="w-4 h-4 mr-1" />
-                  {Math.round((attributes.opacity || 1) * 100)}%
-                </Button>
+                <div className="flex items-center gap-2 flex-1">
+                  <Slider
+                    value={[Math.round((attributes.opacity || 1) * 100)]}
+                    onValueChange={([value]) =>
+                      handlePropertyChange("opacity", value / 100)
+                    }
+                    max={100}
+                    min={0}
+                    step={1}
+                    className="flex-1 min-w-[80px]"
+                  />
+                  <span className="text-xs text-gray-500 min-w-[35px] text-right">
+                    {Math.round((attributes.opacity || 1) * 100)}%
+                  </span>
+                </div>
               </div>
 
               <Button
@@ -626,6 +642,27 @@ const MobilePropertyPanel: React.FC<MobilePropertyPanelProps> = ({
                 >
                   <Plus className="w-4 h-4" />
                 </Button>
+              </div>
+
+              <div className="flex items-center gap-2 min-w-[120px]">
+                <span className="text-sm text-gray-600 whitespace-nowrap">
+                  Opacity
+                </span>
+                <div className="flex items-center gap-2 flex-1">
+                  <Slider
+                    value={[Math.round((attributes.opacity || 1) * 100)]}
+                    onValueChange={([value]) =>
+                      handlePropertyChange("opacity", value / 100)
+                    }
+                    max={100}
+                    min={0}
+                    step={1}
+                    className="flex-1 min-w-[80px]"
+                  />
+                  <span className="text-xs text-gray-500 min-w-[35px] text-right">
+                    {Math.round((attributes.opacity || 1) * 100)}%
+                  </span>
+                </div>
               </div>
 
               <Button
