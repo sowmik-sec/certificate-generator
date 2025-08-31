@@ -13,6 +13,9 @@ const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
   fabric,
 }) => {
   const alignmentLinesRef = useRef<any[]>([]);
+  const guideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isDraggingRef = useRef(false);
+  const cleanupIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const {
     showAlignmentGuides,
@@ -24,12 +27,42 @@ const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
   const clearAlignmentLines = useCallback(() => {
     if (!canvas) return;
 
+    // Clear any pending timeout
+    if (guideTimeoutRef.current) {
+      clearTimeout(guideTimeoutRef.current);
+      guideTimeoutRef.current = null;
+    }
+
     alignmentLinesRef.current.forEach((line: any) => {
       if (canvas.contains(line)) {
         canvas.remove(line);
       }
     });
     alignmentLinesRef.current = [];
+  }, [canvas]);
+
+  // Force clear all alignment lines (even orphaned ones)
+  const forceClearAlignmentLines = useCallback(() => {
+    if (!canvas) return;
+
+    // Clear any pending timeout
+    if (guideTimeoutRef.current) {
+      clearTimeout(guideTimeoutRef.current);
+      guideTimeoutRef.current = null;
+    }
+
+    // Remove all objects with alignment-line id
+    const allObjects = canvas.getObjects();
+    const alignmentLines = allObjects.filter(
+      (obj: any) => obj.id === "alignment-line"
+    );
+
+    alignmentLines.forEach((line: any) => {
+      canvas.remove(line);
+    });
+
+    alignmentLinesRef.current = [];
+    isDraggingRef.current = false; // Reset dragging state
   }, [canvas]);
 
   const createAlignmentLine = useCallback(
@@ -52,7 +85,10 @@ const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
 
   const drawAlignmentGuides = useCallback(
     (movingObject: any) => {
-      if (!canvas || !showAlignmentGuides || !snapToObjects) return;
+      if (!canvas || !showAlignmentGuides || !snapToObjects) {
+        clearAlignmentLines();
+        return;
+      }
 
       clearAlignmentLines();
 
@@ -186,6 +222,19 @@ const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
       if (guides.length > 0) {
         canvas.renderAll();
       }
+
+      // Auto-clear guides after a short delay to handle cases where events don't fire
+      if (isDraggingRef.current) {
+        if (guideTimeoutRef.current) {
+          clearTimeout(guideTimeoutRef.current);
+        }
+        guideTimeoutRef.current = setTimeout(() => {
+          if (!isDraggingRef.current) {
+            forceClearAlignmentLines();
+            canvas.renderAll();
+          }
+        }, 100);
+      }
     },
     [
       canvas,
@@ -194,53 +243,111 @@ const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
       snapTolerance,
       clearAlignmentLines,
       createAlignmentLine,
+      forceClearAlignmentLines,
     ]
   );
 
   useEffect(() => {
     if (!canvas || !fabric) return;
 
+    // Set up periodic cleanup to ensure alignment lines never get stuck
+    cleanupIntervalRef.current = setInterval(() => {
+      if (!isDraggingRef.current) {
+        // Only force clear if there are orphaned alignment lines
+        const allObjects = canvas.getObjects();
+        const hasAlignmentLines = allObjects.some(
+          (obj: any) => obj.id === "alignment-line"
+        );
+        if (hasAlignmentLines) {
+          forceClearAlignmentLines();
+          canvas.renderAll();
+        }
+      }
+    }, 500); // Check every 500ms
+
+    const handleMouseDown = () => {
+      isDraggingRef.current = true;
+    };
+
+    const handleMouseUp = () => {
+      isDraggingRef.current = false;
+      // Force clear alignment guides when mouse is released
+      setTimeout(() => {
+        forceClearAlignmentLines();
+        canvas.renderAll();
+      }, 50);
+    };
+
     const handleObjectMoving = (e: any) => {
       if (showAlignmentGuides && snapToObjects) {
-        // Throttle guide updates to prevent excessive rendering
-        if (!e.target._guideUpdateThrottle) {
-          e.target._guideUpdateThrottle = true;
-          requestAnimationFrame(() => {
-            drawAlignmentGuides(e.target);
-            e.target._guideUpdateThrottle = false;
-          });
-        }
+        isDraggingRef.current = true;
+        // Remove throttling to ensure more reliable guide updates
+        drawAlignmentGuides(e.target);
       }
     };
 
     const handleObjectModified = () => {
-      clearAlignmentLines();
+      isDraggingRef.current = false;
+      forceClearAlignmentLines();
       canvas.renderAll();
     };
 
     const handleSelectionCleared = () => {
-      clearAlignmentLines();
+      isDraggingRef.current = false;
+      forceClearAlignmentLines();
       canvas.renderAll();
     };
 
     const handleSelectionCreated = () => {
-      clearAlignmentLines();
+      forceClearAlignmentLines();
+      canvas.renderAll();
+    };
+
+    const handlePathCreated = () => {
+      forceClearAlignmentLines();
+      canvas.renderAll();
+    };
+
+    const handleObjectAdded = () => {
+      forceClearAlignmentLines();
+      canvas.renderAll();
+    };
+
+    const handleObjectRemoved = () => {
+      forceClearAlignmentLines();
       canvas.renderAll();
     };
 
     // Add event listeners
+    canvas.on("mouse:down", handleMouseDown);
+    canvas.on("mouse:up", handleMouseUp);
     canvas.on("object:moving", handleObjectMoving);
     canvas.on("object:modified", handleObjectModified);
     canvas.on("selection:cleared", handleSelectionCleared);
     canvas.on("selection:created", handleSelectionCreated);
+    canvas.on("path:created", handlePathCreated);
+    canvas.on("object:added", handleObjectAdded);
+    canvas.on("object:removed", handleObjectRemoved);
 
     return () => {
       // Cleanup
-      clearAlignmentLines();
+      forceClearAlignmentLines();
+
+      // Clear interval
+      if (cleanupIntervalRef.current) {
+        clearInterval(cleanupIntervalRef.current);
+        cleanupIntervalRef.current = null;
+      }
+
+      canvas.off("mouse:down", handleMouseDown);
+      canvas.off("mouse:up", handleMouseUp);
       canvas.off("object:moving", handleObjectMoving);
       canvas.off("object:modified", handleObjectModified);
       canvas.off("selection:cleared", handleSelectionCleared);
       canvas.off("selection:created", handleSelectionCreated);
+      canvas.off("path:created", handlePathCreated);
+      canvas.off("object:added", handleObjectAdded);
+      canvas.off("object:removed", handleObjectRemoved);
     };
   }, [
     canvas,
@@ -251,6 +358,7 @@ const AlignmentGuides: React.FC<AlignmentGuidesProps> = ({
     alignmentGuideColor,
     drawAlignmentGuides,
     clearAlignmentLines,
+    forceClearAlignmentLines,
   ]);
 
   // This component doesn't render anything visible itself
