@@ -10,14 +10,39 @@ export const useCanvasExport = (canvas: any, canvasSize: CanvasSize) => {
 
   const exportAsPNG = useCallback(() => {
     if (!canvas) return;
-    const dataURL = canvas.toDataURL({ format: "png", quality: 1 });
+
+    // Calculate multiplier for high-quality export on mobile devices
+    const devicePixelRatio = window.devicePixelRatio || 1;
+    const isMobile = window.innerWidth <= 768;
+    const multiplier = isMobile
+      ? Math.max(devicePixelRatio * 2, 3)
+      : devicePixelRatio * 2;
+
+    const dataURL = canvas.toDataURL({
+      format: "png",
+      quality: 1,
+      multiplier: multiplier,
+    });
+
     downloadFile(dataURL, "certificate.png");
   }, [canvas, downloadFile]);
 
   const exportAsPDF = useCallback(() => {
     if (!canvas) return;
 
-    const dataURL = canvas.toDataURL({ format: "png", quality: 1 });
+    // Calculate multiplier for high-quality export on mobile devices
+    const devicePixelRatio = window.devicePixelRatio || 1;
+    const isMobile = window.innerWidth <= 768;
+    const multiplier = isMobile
+      ? Math.max(devicePixelRatio * 2, 3)
+      : devicePixelRatio * 2;
+
+    const dataURL = canvas.toDataURL({
+      format: "png",
+      quality: 1,
+      multiplier: multiplier,
+    });
+
     const orientation =
       canvasSize.orientation === "portrait" ? "portrait" : "landscape";
     const pdf = new jsPDF({ orientation });

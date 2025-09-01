@@ -79,8 +79,8 @@ const CanvasComponent: React.FC<CanvasComponentProps> = ({
       width: canvasWidth,
       height: canvasHeight,
       backgroundColor: "#ffffff",
-      // Improve performance and reduce jitter
-      enableRetinaScaling: false,
+      // Enable retina scaling for high-quality exports on mobile
+      enableRetinaScaling: true,
       stateful: true,
       renderOnAddRemove: false,
     });
