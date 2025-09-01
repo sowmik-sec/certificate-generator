@@ -54,7 +54,7 @@ const MobileHeader: React.FC<MobileHeaderProps> = ({
       {/* Right side - Actions */}
       <div className="flex items-center gap-2">
         {/* Quick Export */}
-        <Button
+        {/* <Button
           variant="ghost"
           size="icon"
           onClick={exportAsPNG}
@@ -62,7 +62,7 @@ const MobileHeader: React.FC<MobileHeaderProps> = ({
           title="Export as PNG"
         >
           <Download className="h-5 w-5" />
-        </Button>
+        </Button> */}
 
         {/* More actions menu */}
         <DropdownMenu>
