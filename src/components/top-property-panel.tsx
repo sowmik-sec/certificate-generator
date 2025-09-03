@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { FabricCanvas } from "@/types/fabric";
 import { FabricObject } from "fabric";
 import { usePropertiesStore } from "@/stores/usePropertiesStore";
@@ -47,6 +47,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { HexColorPicker } from "react-colorful";
 
 interface TopPropertyPanelProps {
   selectedObject: FabricObject;
@@ -72,6 +73,84 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
     isShapeObject,
     isLineObject,
   } = usePropertiesStore();
+
+  const [textColorPickerOpen, setTextColorPickerOpen] = useState(false);
+  const [shapeFillColorPickerOpen, setShapeFillColorPickerOpen] =
+    useState(false);
+  const [shapeStrokeColorPickerOpen, setShapeStrokeColorPickerOpen] =
+    useState(false);
+  const [lineColorPickerOpen, setLineColorPickerOpen] = useState(false);
+
+  // Refs for color picker containers
+  const textColorPickerRef = useRef<HTMLDivElement>(null);
+  const shapeFillColorPickerRef = useRef<HTMLDivElement>(null);
+  const shapeStrokeColorPickerRef = useRef<HTMLDivElement>(null);
+  const lineColorPickerRef = useRef<HTMLDivElement>(null);
+
+  // Custom handlers to prevent dropdown from closing when interacting with color picker
+  const handleTextColorPickerOpenChange = (open: boolean) => {
+    setTextColorPickerOpen(open);
+  };
+
+  const handleShapeFillColorPickerOpenChange = (open: boolean) => {
+    setShapeFillColorPickerOpen(open);
+  };
+
+  const handleShapeStrokeColorPickerOpenChange = (open: boolean) => {
+    setShapeStrokeColorPickerOpen(open);
+  };
+
+  const handleLineColorPickerOpenChange = (open: boolean) => {
+    setLineColorPickerOpen(open);
+  };
+
+  // Handle clicks outside to close dropdowns
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        textColorPickerRef.current &&
+        !textColorPickerRef.current.contains(event.target as Node)
+      ) {
+        setTextColorPickerOpen(false);
+      }
+      if (
+        shapeFillColorPickerRef.current &&
+        !shapeFillColorPickerRef.current.contains(event.target as Node)
+      ) {
+        setShapeFillColorPickerOpen(false);
+      }
+      if (
+        shapeStrokeColorPickerRef.current &&
+        !shapeStrokeColorPickerRef.current.contains(event.target as Node)
+      ) {
+        setShapeStrokeColorPickerOpen(false);
+      }
+      if (
+        lineColorPickerRef.current &&
+        !lineColorPickerRef.current.contains(event.target as Node)
+      ) {
+        setLineColorPickerOpen(false);
+      }
+    };
+
+    if (
+      textColorPickerOpen ||
+      shapeFillColorPickerOpen ||
+      shapeStrokeColorPickerOpen ||
+      lineColorPickerOpen
+    ) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [
+    textColorPickerOpen,
+    shapeFillColorPickerOpen,
+    shapeStrokeColorPickerOpen,
+    lineColorPickerOpen,
+  ]);
 
   const [isUpperCase, setIsUpperCase] = useState(false);
   const [currentAlignment, setCurrentAlignment] = useState("left");
@@ -305,24 +384,44 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
       <div className="flex items-center">
         <Tooltip>
           <TooltipTrigger asChild>
-            <Label className="flex items-center cursor-pointer group">
-              <div className="w-10 h-10 flex flex-col items-center justify-center relative">
-                {/* Text "A" icon above color */}
-                <span className="font-bold text-base text-[var(--color-foreground)]">
-                  A
-                </span>
+            <DropdownMenu
+              modal={false}
+              open={textColorPickerOpen}
+              onOpenChange={handleTextColorPickerOpenChange}
+            >
+              <DropdownMenuTrigger asChild>
+                <Label className="flex items-center cursor-pointer group">
+                  <div className="w-10 h-10 flex flex-col items-center justify-center relative">
+                    {/* Text "A" icon above color */}
+                    <span className="font-bold text-base text-[var(--color-foreground)]">
+                      A
+                    </span>
+                    <div
+                      className="w-6 h-1 rounded-sm transition-colors shadow-sm"
+                      style={{ backgroundColor: attributes.fill || "#000000" }}
+                    />
+                  </div>
+                </Label>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="p-3" align="start">
                 <div
-                  className="w-6 h-1 rounded-sm transition-colors shadow-sm"
-                  style={{ backgroundColor: attributes.fill || "#000000" }}
-                />
-              </div>
-              <input
-                type="color"
-                value={attributes.fill || "#000000"}
-                onChange={(e) => handlePropertyChange("fill", e.target.value)}
-                className="sr-only"
-              />
-            </Label>
+                  ref={textColorPickerRef}
+                  className="color-picker-container"
+                  onClick={(e) => e.stopPropagation()}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onMouseUp={(e) => e.stopPropagation()}
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onPointerUp={(e) => e.stopPropagation()}
+                  onTouchStart={(e) => e.stopPropagation()}
+                  onTouchEnd={(e) => e.stopPropagation()}
+                >
+                  <HexColorPicker
+                    color={attributes.fill || "#000000"}
+                    onChange={(color) => handlePropertyChange("fill", color)}
+                  />
+                </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </TooltipTrigger>
           <TooltipContent>
             <p>Text Color</p>
@@ -657,20 +756,40 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
       <div className="flex items-center">
         <Tooltip>
           <TooltipTrigger asChild>
-            <Label className="flex items-center cursor-pointer group">
-              <div className="w-10 h-10 flex items-center justify-center">
+            <DropdownMenu
+              modal={false}
+              open={shapeFillColorPickerOpen}
+              onOpenChange={handleShapeFillColorPickerOpenChange}
+            >
+              <DropdownMenuTrigger asChild>
+                <Label className="flex items-center cursor-pointer group">
+                  <div className="w-10 h-10 flex items-center justify-center">
+                    <div
+                      className="w-7 h-7 rounded border-2 border-[var(--color-border)] group-hover:border-[var(--color-border)] transition-colors shadow-md"
+                      style={{ backgroundColor: attributes.fill || "#000000" }}
+                    />
+                  </div>
+                </Label>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="p-3" align="start">
                 <div
-                  className="w-7 h-7 rounded border-2 border-[var(--color-border)] group-hover:border-[var(--color-border)] transition-colors shadow-md"
-                  style={{ backgroundColor: attributes.fill || "#000000" }}
-                />
-              </div>
-              <input
-                type="color"
-                value={attributes.fill || "#000000"}
-                onChange={(e) => handlePropertyChange("fill", e.target.value)}
-                className="sr-only"
-              />
-            </Label>
+                  ref={shapeFillColorPickerRef}
+                  className="color-picker-container"
+                  onClick={(e) => e.stopPropagation()}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onMouseUp={(e) => e.stopPropagation()}
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onPointerUp={(e) => e.stopPropagation()}
+                  onTouchStart={(e) => e.stopPropagation()}
+                  onTouchEnd={(e) => e.stopPropagation()}
+                >
+                  <HexColorPicker
+                    color={attributes.fill || "#000000"}
+                    onChange={(color) => handlePropertyChange("fill", color)}
+                  />
+                </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </TooltipTrigger>
           <TooltipContent>
             <p>Shape Color</p>
@@ -682,23 +801,43 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
       <div className="flex items-center">
         <Tooltip>
           <TooltipTrigger asChild>
-            <label className="flex items-center cursor-pointer group">
-              <div className="w-10 h-10 flex items-center justify-center">
+            <DropdownMenu
+              modal={false}
+              open={shapeStrokeColorPickerOpen}
+              onOpenChange={handleShapeStrokeColorPickerOpenChange}
+            >
+              <DropdownMenuTrigger asChild>
+                <label className="flex items-center cursor-pointer group">
+                  <div className="w-10 h-10 flex items-center justify-center">
+                    <div
+                      className="w-7 h-7 rounded border-2 group-hover:border-[var(--color-border)] transition-colors shadow-md"
+                      style={{
+                        borderColor: attributes.stroke || "#333333",
+                        backgroundColor: "transparent",
+                      }}
+                    />
+                  </div>
+                </label>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="p-3" align="start">
                 <div
-                  className="w-7 h-7 rounded border-2 group-hover:border-[var(--color-border)] transition-colors shadow-md"
-                  style={{
-                    borderColor: attributes.stroke || "#333333",
-                    backgroundColor: "transparent",
-                  }}
-                />
-              </div>
-              <input
-                type="color"
-                value={attributes.stroke || "#333333"}
-                onChange={(e) => handlePropertyChange("stroke", e.target.value)}
-                className="sr-only"
-              />
-            </label>
+                  ref={shapeStrokeColorPickerRef}
+                  className="color-picker-container"
+                  onClick={(e) => e.stopPropagation()}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onMouseUp={(e) => e.stopPropagation()}
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onPointerUp={(e) => e.stopPropagation()}
+                  onTouchStart={(e) => e.stopPropagation()}
+                  onTouchEnd={(e) => e.stopPropagation()}
+                >
+                  <HexColorPicker
+                    color={attributes.stroke || "#333333"}
+                    onChange={(color) => handlePropertyChange("stroke", color)}
+                  />
+                </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </TooltipTrigger>
           <TooltipContent>
             <p>Border Color</p>
@@ -757,20 +896,42 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
       <div className="flex items-center">
         <Tooltip>
           <TooltipTrigger asChild>
-            <label className="flex items-center cursor-pointer group">
-              <div className="w-10 h-10 flex items-center justify-center">
+            <DropdownMenu
+              modal={false}
+              open={lineColorPickerOpen}
+              onOpenChange={handleLineColorPickerOpenChange}
+            >
+              <DropdownMenuTrigger asChild>
+                <label className="flex items-center cursor-pointer group">
+                  <div className="w-10 h-10 flex items-center justify-center">
+                    <div
+                      className="w-7 h-7 rounded border-2 border-[var(--color-border)] group-hover:border-[var(--color-border)] transition-colors shadow-md"
+                      style={{
+                        backgroundColor: attributes.stroke || "#000000",
+                      }}
+                    />
+                  </div>
+                </label>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="p-3" align="start">
                 <div
-                  className="w-7 h-7 rounded border-2 border-[var(--color-border)] group-hover:border-[var(--color-border)] transition-colors shadow-md"
-                  style={{ backgroundColor: attributes.stroke || "#000000" }}
-                />
-              </div>
-              <input
-                type="color"
-                value={attributes.stroke || "#000000"}
-                onChange={(e) => handlePropertyChange("stroke", e.target.value)}
-                className="sr-only"
-              />
-            </label>
+                  ref={lineColorPickerRef}
+                  className="color-picker-container"
+                  onClick={(e) => e.stopPropagation()}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onMouseUp={(e) => e.stopPropagation()}
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onPointerUp={(e) => e.stopPropagation()}
+                  onTouchStart={(e) => e.stopPropagation()}
+                  onTouchEnd={(e) => e.stopPropagation()}
+                >
+                  <HexColorPicker
+                    color={attributes.stroke || "#000000"}
+                    onChange={(color) => handlePropertyChange("stroke", color)}
+                  />
+                </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </TooltipTrigger>
           <TooltipContent>
             <p>Line Color</p>
