@@ -124,6 +124,8 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
 }) => {
   // Timeout ref to manage closing delays
   const closeTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+  // Track if mouse is over the panel
+  const isMouseOverRef = React.useRef(false);
 
   // Icon mapping for different modes
   const modeIcons: Record<
@@ -151,6 +153,7 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
 
   const handleMouseEnter = () => {
     // Clear any pending close timeout when entering the panel
+    isMouseOverRef.current = true;
     if (closeTimeoutRef.current) {
       clearTimeout(closeTimeoutRef.current);
       closeTimeoutRef.current = null;
@@ -158,6 +161,7 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
   };
 
   const handleMouseLeave = () => {
+    isMouseOverRef.current = false;
     // Only close if it's a hovered mode (not clicked/pinned)
     if (!editorMode && hoveredMode) {
       // Clear existing timeout
@@ -167,11 +171,22 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
 
       // Set new timeout with longer delay
       closeTimeoutRef.current = setTimeout(() => {
-        if (!editorMode && hoveredMode) {
+        // Double-check that mouse is still not over before closing
+        if (!isMouseOverRef.current && !editorMode && hoveredMode) {
           setHoveredMode(null);
         }
         closeTimeoutRef.current = null;
       }, 300);
+    }
+  };
+
+  const handleClick = (e: React.MouseEvent) => {
+    // Prevent event bubbling and clear any pending close timeout when clicking inside the panel
+    e.stopPropagation();
+    isMouseOverRef.current = true;
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = null;
     }
   };
 
@@ -185,8 +200,32 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
             top: "64px",
             height: "calc(100vh - 100px)",
           }}
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
+          onMouseEnter={() => {
+            isMouseOverRef.current = true;
+            if (closeTimeoutRef.current) {
+              clearTimeout(closeTimeoutRef.current);
+              closeTimeoutRef.current = null;
+            }
+          }}
+          onMouseLeave={() => {
+            isMouseOverRef.current = false;
+            // Only close if it's a hovered mode (not clicked/pinned)
+            if (!editorMode && hoveredMode) {
+              // Clear existing timeout
+              if (closeTimeoutRef.current) {
+                clearTimeout(closeTimeoutRef.current);
+              }
+
+              // Set new timeout with longer delay
+              closeTimeoutRef.current = setTimeout(() => {
+                // Double-check that mouse is still not over before closing
+                if (!isMouseOverRef.current && !editorMode && hoveredMode) {
+                  setHoveredMode(null);
+                }
+                closeTimeoutRef.current = null;
+              }, 300);
+            }
+          }}
         />
       )}
 
@@ -208,6 +247,7 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
         }}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
+        onClick={handleClick}
         data-left-panel
       >
         <CardContent className="p-0 h-full flex flex-col">
