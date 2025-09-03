@@ -224,103 +224,13 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
     }
   };
 
-  const handleCopyStyle = () => {
-    if (!selectedObject) return;
-
-    // Build a safe copy of the object (minimal properties to recreate)
-    const createSafeCopy = (obj: any) => {
-      const safeCopy: any = {
-        type: obj.type,
-        left: obj.left || 0,
-        top: obj.top || 0,
-        width: obj.width,
-        height: obj.height,
-        scaleX: obj.scaleX || 1,
-        scaleY: obj.scaleY || 1,
-        angle: obj.angle || 0,
-        opacity: obj.opacity || 1,
-        visible: obj.visible !== false,
-        flipX: obj.flipX || false,
-        flipY: obj.flipY || false,
-        skewX: obj.skewX || 0,
-        skewY: obj.skewY || 0,
-      };
-
-      switch (obj.type) {
-        case "textbox":
-        case "text":
-          safeCopy.text = obj.text || "Text";
-          safeCopy.fontSize = obj.fontSize || 20;
-          safeCopy.fontFamily = obj.fontFamily || "Arial";
-          safeCopy.fontWeight = obj.fontWeight || "normal";
-          safeCopy.fontStyle = obj.fontStyle || "normal";
-          safeCopy.fill = obj.fill || "#000000";
-          safeCopy.textAlign = obj.textAlign || "left";
-          safeCopy.lineHeight = obj.lineHeight || 1.16;
-          if (obj.type === "textbox") {
-            safeCopy.width = obj.width || 200;
-          }
-          break;
-        case "rect":
-        case "triangle":
-        case "circle":
-        case "ellipse":
-          safeCopy.fill = obj.fill || "#000000";
-          safeCopy.stroke = obj.stroke;
-          safeCopy.strokeWidth = obj.strokeWidth || 1;
-          if (obj.type === "circle") {
-            safeCopy.radius = obj.radius || 50;
-          }
-          if (obj.type === "ellipse") {
-            safeCopy.rx = obj.rx || 50;
-            safeCopy.ry = obj.ry || 30;
-          }
-          break;
-        case "line":
-          safeCopy.x1 = obj.x1 || 0;
-          safeCopy.y1 = obj.y1 || 0;
-          safeCopy.x2 = obj.x2 || 100;
-          safeCopy.y2 = obj.y2 || 0;
-          safeCopy.stroke = obj.stroke || "#000000";
-          safeCopy.strokeWidth = obj.strokeWidth || 1;
-          safeCopy.strokeDashArray = obj.strokeDashArray;
-          break;
-        case "image":
-          safeCopy.src = obj.getSrc ? obj.getSrc() : obj.src;
-          break;
-      }
-
-      return safeCopy;
-    };
-
-    try {
-      const safe = createSafeCopy(selectedObject);
-      // Store in localStorage so other components (context menu / paste handler) can access
-      localStorage.setItem("copiedObject", JSON.stringify(safe));
-
-      // Also write a plain-text clipboard entry so system paste works when possible
-      const payload = `CERT-COPY:${JSON.stringify(safe)}`;
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(payload).catch(() => {
-          // ignore failures (may require secure context/permission)
-        });
-      }
-
-      // Provide quick feedback
-      console.log("Style/object copied to clipboard and localStorage");
-      toast.success("Style copied to chipboard");
-    } catch (err) {
-      console.error("Failed to copy style/object:", err);
-    }
-  };
-
   const renderTextControls = () => (
     <div className="flex items-center gap-3">
       {/* Font Family Dropdown */}
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Tooltip>
-            <TooltipTrigger asChild>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
                 className="flex items-center gap-1 px-2 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:cursor-pointer rounded-md transition-colors max-w-[100px]"
@@ -329,32 +239,32 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
                   {attributes.fontFamily || "Poppins"}
                 </span>
               </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Font Family</p>
-            </TooltipContent>
-          </Tooltip>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent
-          className="min-w-[160px] max-h-64"
-          style={{ zIndex: 70 }}
-        >
-          {fontOptions.map((font) => (
-            <DropdownMenuItem
-              key={font}
-              onClick={() => handlePropertyChange("fontFamily", font)}
-              className={`cursor-pointer ${
-                attributes.fontFamily === font
-                  ? "bg-blue-50 text-blue-600"
-                  : "text-gray-700"
-              }`}
-              style={{ fontFamily: font }}
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              className="min-w-[160px] max-h-64"
+              style={{ zIndex: 70 }}
             >
-              {font}
-            </DropdownMenuItem>
-          ))}
-        </DropdownMenuContent>
-      </DropdownMenu>
+              {fontOptions.map((font) => (
+                <DropdownMenuItem
+                  key={font}
+                  onClick={() => handlePropertyChange("fontFamily", font)}
+                  className={`cursor-pointer ${
+                    attributes.fontFamily === font
+                      ? "bg-blue-50 text-blue-600"
+                      : "text-gray-700"
+                  }`}
+                  style={{ fontFamily: font }}
+                >
+                  {font}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>Font Family</p>
+        </TooltipContent>
+      </Tooltip>
 
       {/* Font Size Controls */}
       <div className="flex items-center gap-1">
@@ -583,10 +493,10 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
       </Tooltip>
 
       {/* Advanced Settings - Only for Text */}
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Tooltip>
-            <TooltipTrigger asChild>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
                 size="icon"
@@ -595,127 +505,130 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
                 <Type className="w-4 h-3" />
                 <MoveHorizontal className="w-6 h-3" />
               </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Advanced Settings</p>
-            </TooltipContent>
-          </Tooltip>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-72 p-4" align="start">
-          <DropdownMenuLabel className="text-sm font-medium text-gray-700 mb-3">
-            Advanced Text Settings
-          </DropdownMenuLabel>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-72 p-4" align="start">
+              <DropdownMenuLabel className="text-sm font-medium text-gray-700 mb-3">
+                Advanced Text Settings
+              </DropdownMenuLabel>
 
-          {/* Letter Spacing */}
-          <div className="space-y-2 mb-4">
-            <label className="text-sm font-medium text-gray-700">
-              Letter spacing
-            </label>
-            <div className="flex items-center gap-3">
-              <Slider
-                min={-200}
-                max={800}
-                step={1}
-                value={[attributes.charSpacing || 0]}
-                onValueChange={(val) =>
-                  handlePropertyChange("charSpacing", val[0])
-                }
-                className="flex-1"
-              />
-              <Input
-                type="number"
-                min={-200}
-                max={800}
-                value={attributes.charSpacing || 0}
-                onChange={(e) =>
-                  handlePropertyChange("charSpacing", Number(e.target.value))
-                }
-                className="w-16 h-8"
-              />
-            </div>
-          </div>
+              {/* Letter Spacing */}
+              <div className="space-y-2 mb-4">
+                <label className="text-sm font-medium text-gray-700">
+                  Letter spacing
+                </label>
+                <div className="flex items-center gap-3">
+                  <Slider
+                    min={-200}
+                    max={800}
+                    step={1}
+                    value={[attributes.charSpacing || 0]}
+                    onValueChange={(val) =>
+                      handlePropertyChange("charSpacing", val[0])
+                    }
+                    className="flex-1"
+                  />
+                  <Input
+                    type="number"
+                    min={-200}
+                    max={800}
+                    value={attributes.charSpacing || 0}
+                    onChange={(e) =>
+                      handlePropertyChange(
+                        "charSpacing",
+                        Number(e.target.value)
+                      )
+                    }
+                    className="w-16 h-8"
+                  />
+                </div>
+              </div>
 
-          {/* Line Spacing */}
-          <div className="space-y-2 mb-4">
-            <label className="text-sm font-medium text-gray-700">
-              Line spacing
-            </label>
-            <div className="flex items-center gap-3">
-              <Slider
-                min={0.5}
-                max={3}
-                step={0.01}
-                value={[attributes.lineHeight || 1.16]}
-                onValueChange={(val) =>
-                  handlePropertyChange("lineHeight", val[0])
-                }
-                className="flex-1"
-              />
-              <Input
-                type="number"
-                min={0.5}
-                max={3}
-                step={0.01}
-                value={attributes.lineHeight || 1.16}
-                onChange={(e) =>
-                  handlePropertyChange("lineHeight", Number(e.target.value))
-                }
-                className="w-16 h-8"
-              />
-            </div>
-          </div>
+              {/* Line Spacing */}
+              <div className="space-y-2 mb-4">
+                <label className="text-sm font-medium text-gray-700">
+                  Line spacing
+                </label>
+                <div className="flex items-center gap-3">
+                  <Slider
+                    min={0.5}
+                    max={3}
+                    step={0.01}
+                    value={[attributes.lineHeight || 1.16]}
+                    onValueChange={(val) =>
+                      handlePropertyChange("lineHeight", val[0])
+                    }
+                    className="flex-1"
+                  />
+                  <Input
+                    type="number"
+                    min={0.5}
+                    max={3}
+                    step={0.01}
+                    value={attributes.lineHeight || 1.16}
+                    onChange={(e) =>
+                      handlePropertyChange("lineHeight", Number(e.target.value))
+                    }
+                    className="w-16 h-8"
+                  />
+                </div>
+              </div>
 
-          {/* Text Alignment */}
-          <div className="space-y-2 mb-4">
-            <label className="text-sm font-medium text-gray-700">
-              Text alignment
-            </label>
-            <div className="flex items-center gap-1">
+              {/* Text Alignment */}
+              <div className="space-y-2 mb-4">
+                <label className="text-sm font-medium text-gray-700">
+                  Text alignment
+                </label>
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant={
+                      attributes.textAlign === "left" ? "secondary" : "ghost"
+                    }
+                    size="sm"
+                    className="px-2 py-1 h-8"
+                    onClick={() => handlePropertyChange("textAlign", "left")}
+                  >
+                    <AlignStartVertical className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant={
+                      attributes.textAlign === "center" ? "secondary" : "ghost"
+                    }
+                    size="sm"
+                    className="px-2 py-1 h-8"
+                    onClick={() => handlePropertyChange("textAlign", "center")}
+                  >
+                    <AlignCenterVertical className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant={
+                      attributes.textAlign === "right" ? "secondary" : "ghost"
+                    }
+                    size="sm"
+                    className="px-2 py-1 h-8"
+                    onClick={() => handlePropertyChange("textAlign", "right")}
+                  >
+                    <AlignEndVertical className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+
+              <DropdownMenuSeparator />
+
+              {/* More Settings Button */}
               <Button
-                variant={
-                  attributes.textAlign === "left" ? "secondary" : "ghost"
-                }
-                size="sm"
-                className="px-2 py-1 h-8"
-                onClick={() => handlePropertyChange("textAlign", "left")}
+                className="w-full mt-2 hover:cursor-pointer font-semibold"
+                variant="secondary"
+                onClick={() => setEditorMode("advanced-settings")}
               >
-                <AlignStartVertical className="h-4 w-4" />
+                More Settings
               </Button>
-              <Button
-                variant={
-                  attributes.textAlign === "center" ? "secondary" : "ghost"
-                }
-                size="sm"
-                className="px-2 py-1 h-8"
-                onClick={() => handlePropertyChange("textAlign", "center")}
-              >
-                <AlignCenterVertical className="h-4 w-4" />
-              </Button>
-              <Button
-                variant={
-                  attributes.textAlign === "right" ? "secondary" : "ghost"
-                }
-                size="sm"
-                className="px-2 py-1 h-8"
-                onClick={() => handlePropertyChange("textAlign", "right")}
-              >
-                <AlignEndVertical className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-
-          <DropdownMenuSeparator />
-
-          {/* More Settings Button */}
-          <Button
-            className="w-full mt-2 hover:cursor-pointer font-semibold"
-            variant="secondary"
-            onClick={() => setEditorMode("advanced-settings")}
-          >
-            More Settings
-          </Button>
-        </DropdownMenuContent>
-      </DropdownMenu>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>Advanced Settings</p>
+        </TooltipContent>
+      </Tooltip>
       {/* Separator */}
       <Separator orientation="vertical" className="h-7 mx-1" />
 
@@ -916,10 +829,10 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
       <Separator orientation="vertical" className="h-7 mx-1" />
 
       {/* Transparency */}
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Tooltip>
-            <TooltipTrigger asChild>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
                 size="icon"
@@ -927,31 +840,33 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
               >
                 <Droplets className="w-5 h-5" />
               </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Transparency</p>
-            </TooltipContent>
-          </Tooltip>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-64 p-4" align="start">
-          <DropdownMenuLabel className="text-sm font-medium text-gray-700 mb-3">
-            Transparency
-          </DropdownMenuLabel>
-          <div className="flex items-center gap-3">
-            <Slider
-              min={0}
-              max={1}
-              step={0.01}
-              value={[attributes.opacity || 1]}
-              onValueChange={(val) => handlePropertyChange("opacity", val[0])}
-              className="flex-1"
-            />
-            <span className="text-sm text-gray-700 font-semibold min-w-[35px] text-center">
-              {Math.round((attributes.opacity || 1) * 100)}%
-            </span>
-          </div>
-        </DropdownMenuContent>
-      </DropdownMenu>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-64 p-4" align="start">
+              <DropdownMenuLabel className="text-sm font-medium text-gray-700 mb-3">
+                Transparency
+              </DropdownMenuLabel>
+              <div className="flex items-center gap-3">
+                <Slider
+                  min={0}
+                  max={1}
+                  step={0.01}
+                  value={[attributes.opacity || 1]}
+                  onValueChange={(val) =>
+                    handlePropertyChange("opacity", val[0])
+                  }
+                  className="flex-1"
+                />
+                <span className="text-sm text-gray-700 font-semibold min-w-[35px] text-center">
+                  {Math.round((attributes.opacity || 1) * 100)}%
+                </span>
+              </div>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>Transparency</p>
+        </TooltipContent>
+      </Tooltip>
 
       {/* Separator */}
       <Separator orientation="vertical" className="h-7 mx-1" />
@@ -969,26 +884,6 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
         </TooltipTrigger>
         <TooltipContent>
           <p>Position</p>
-        </TooltipContent>
-      </Tooltip>
-
-      {/* Separator */}
-      <Separator orientation="vertical" className="h-7 mx-1" />
-
-      {/* Copy Style */}
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleCopyStyle}
-            className="w-10 h-10 flex items-center justify-center hover:cursor-pointer rounded-md transition-colors hover:bg-gray-100 text-gray-800 border border-transparent"
-          >
-            <PaintRoller className="w-5 h-5" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p>Copy Style</p>
         </TooltipContent>
       </Tooltip>
     </div>
