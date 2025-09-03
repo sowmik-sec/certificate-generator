@@ -50,9 +50,9 @@ const TemplatesPanel: React.FC<TemplatesPanelProps> = ({
 
   return (
     <div>
-      <Card className="mb-6 bg-blue-50 border-blue-200">
+      <Card className="mb-6 bg-[var(--color-primary)] border-[var(--color-primary)]">
         <CardContent className="p-3">
-          <h3 className="font-semibold text-blue-800 mb-2">
+          <h3 className="font-semibold text-[var(--color-primary-foreground)] mb-2">
             ✨ Use Your Own Template
           </h3>
           <input
@@ -60,11 +60,11 @@ const TemplatesPanel: React.FC<TemplatesPanelProps> = ({
             accept="image/*"
             ref={fileInputRef}
             onChange={onImageUpload}
-            className="hidden text-gray-700"
+            className="hidden text-[var(--color-muted-foreground)]"
           />
           <Button
             onClick={() => fileInputRef.current?.click()}
-            className="w-full bg-purple-400 hover:bg-purple-800 hover:cursor-pointer flex items-center justify-center space-x-2"
+            className="w-full bg-secondary text-secondary-foreground hover:bg-secondary/80 hover:cursor-pointer flex items-center justify-center space-x-2"
           >
             <ImageIcon size={16} />
             <span>Upload an Image</span>
@@ -73,9 +73,9 @@ const TemplatesPanel: React.FC<TemplatesPanelProps> = ({
       </Card>
 
       {/* Background Color Selector */}
-      <Card className="mb-6 bg-purple-50 border-purple-200">
+      <Card className="mb-6 bg-[var(--color-secondary)] border-[var(--color-accent)]">
         <CardContent className="p-3">
-          <h3 className="font-semibold text-purple-800 mb-2 flex items-center">
+          <h3 className="font-semibold text-[var(--color-accent-foreground)] mb-2 flex items-center">
             <Palette size={16} className="mr-2" />
             Background Color
           </h3>
@@ -107,8 +107,8 @@ const TemplatesPanel: React.FC<TemplatesPanelProps> = ({
                   variant="outline"
                   className={`w-8 h-8 p-0 rounded border-2 ${
                     backgroundColor === color
-                      ? "border-purple-500"
-                      : "border-gray-300"
+                      ? "border-[var(--color-primary)]"
+                      : "border-[var(--color-border)]"
                   }`}
                   style={{ backgroundColor: color }}
                   title={color}
@@ -130,10 +130,10 @@ const TemplatesPanel: React.FC<TemplatesPanelProps> = ({
             onClick={() => handleTemplateSelect(template.json, template.id)}
           >
             <div
-              className={`h-24 flex items-center justify-center text-gray-500 rounded text-xs ${
+              className={`h-24 flex items-center justify-center text-[var(--color-muted-foreground)] rounded text-xs ${
                 template.id === "blank"
-                  ? "bg-gray-100 border-2 border-dashed border-gray-300"
-                  : "bg-gray-300"
+                  ? "bg-[var(--color-muted)] border-2 border-dashed border-[var(--color-border)]"
+                  : "bg-[var(--color-secondary)]"
               }`}
             >
               {template.id === "blank" ? (
@@ -148,7 +148,7 @@ const TemplatesPanel: React.FC<TemplatesPanelProps> = ({
                 </div>
               )}
             </div>
-            <p className="text-center mt-1 text-xs text-gray-800 font-medium truncate">
+            <p className="text-center mt-1 text-xs text-[var(--color-foreground)] font-medium truncate">
               {template.name}
             </p>
           </Card>
