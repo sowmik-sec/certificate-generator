@@ -7,7 +7,6 @@ import { usePropertiesStore } from "@/stores/usePropertiesStore";
 import { EditorMode } from "@/components/sidebar-navigation";
 import MobilePropertyPanel from "./mobile-property-panel";
 import { useResponsive } from "@/hooks/useResponsive";
-import { toast, Toaster } from "sonner";
 import {
   Bold,
   Italic,
@@ -24,7 +23,6 @@ import {
   Plus,
   Type,
   MoveHorizontal,
-  PaintRoller,
   AlignStartVertical,
   AlignCenterVertical,
   AlignEndVertical,
@@ -233,7 +231,7 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
-                className="flex items-center gap-1 px-2 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:cursor-pointer rounded-md transition-colors max-w-[100px]"
+                className="flex items-center gap-1 px-2 py-1.5 text-sm font-medium text-[var(--color-foreground)] hover:bg-[var(--color-accent)] hover:cursor-pointer rounded-md transition-colors max-w-[100px]"
               >
                 <span className="font-medium truncate">
                   {attributes.fontFamily || "Poppins"}
@@ -250,8 +248,8 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
                   onClick={() => handlePropertyChange("fontFamily", font)}
                   className={`cursor-pointer ${
                     attributes.fontFamily === font
-                      ? "bg-blue-50 text-blue-600"
-                      : "text-gray-700"
+                      ? "bg-[var(--color-accent)] text-[var(--color-primary)]"
+                      : "text-[var(--color-foreground)]"
                   }`}
                   style={{ fontFamily: font }}
                 >
@@ -274,7 +272,7 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
               variant="ghost"
               size="icon"
               onClick={() => handleFontSizeChange(false)}
-              className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 hover:cursor-pointer rounded-md transition-colors"
+              className="w-10 h-10 flex items-center justify-center hover:bg-[var(--color-accent)] hover:cursor-pointer rounded-md transition-colors"
             >
               <Minus className="w-4 h-4 font-bold" />
             </Button>
@@ -292,7 +290,7 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
               variant="ghost"
               size="icon"
               onClick={() => handleFontSizeChange(true)}
-              className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 hover:cursor-pointer rounded-md transition-colors"
+              className="w-10 h-10 flex items-center justify-center hover:bg-[var(--color-accent)] hover:cursor-pointer rounded-md transition-colors"
             >
               <Plus className="w-4 h-4 font-bold" />
             </Button>
@@ -310,7 +308,9 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
             <Label className="flex items-center cursor-pointer group">
               <div className="w-10 h-10 flex flex-col items-center justify-center relative">
                 {/* Text "A" icon above color */}
-                <span className="font-bold text-base text-gray-800">A</span>
+                <span className="font-bold text-base text-[var(--color-foreground)]">
+                  A
+                </span>
                 <div
                   className="w-6 h-1 rounded-sm transition-colors shadow-sm"
                   style={{ backgroundColor: attributes.fill || "#000000" }}
@@ -344,8 +344,8 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
               }}
               className={`w-10 h-10 flex items-center justify-center hover:cursor-pointer rounded-md transition-colors ${
                 attributes.fontWeight === "bold"
-                  ? "bg-blue-100 text-blue-700 border border-blue-200"
-                  : "hover:bg-gray-100 text-gray-800 border border-transparent"
+                  ? "bg-[var(--color-accent)] text-[var(--color-primary)] border border-[var(--color-border)]"
+                  : "hover:bg-[var(--color-accent)] text-[var(--color-foreground)] border border-transparent"
               }`}
             >
               <Bold className="w-5 h-5 font-bold" />
@@ -368,8 +368,8 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
               }}
               className={`w-10 h-10 flex items-center justify-center hover:cursor-pointer rounded-md transition-colors ${
                 attributes.fontStyle === "italic"
-                  ? "bg-blue-100 text-blue-700 border border-blue-200"
-                  : "hover:bg-gray-100 text-gray-800 border border-transparent"
+                  ? "bg-[var(--color-accent)] text-[var(--color-primary)] border border-[var(--color-border)]"
+                  : "hover:bg-[var(--color-accent)] text-[var(--color-foreground)] border border-transparent"
               }`}
             >
               <Italic className="w-5 h-5 font-bold" />
@@ -390,8 +390,8 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
               }
               className={`w-10 h-10 flex items-center justify-center hover:cursor-pointer rounded-md transition-colors ${
                 attributes.underline
-                  ? "bg-blue-100 text-blue-700 border border-blue-200"
-                  : "hover:bg-gray-100 text-gray-800 border border-transparent"
+                  ? "bg-[var(--color-accent)] text-[var(--color-primary)] border border-[var(--color-border)]"
+                  : "hover:bg-[var(--color-accent)] text-[var(--color-foreground)] border border-transparent"
               }`}
             >
               <Underline className="w-5 h-5 font-bold" />
@@ -413,8 +413,8 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
               }}
               className={`w-10 h-10 flex items-center justify-center hover:cursor-pointer rounded-md transition-colors ${
                 attributes.linethrough
-                  ? "bg-blue-100 text-blue-700 border border-blue-200"
-                  : "hover:bg-gray-100 text-gray-800 border border-transparent"
+                  ? "bg-[var(--color-accent)] text-[var(--color-primary)] border border-[var(--color-border)]"
+                  : "hover:bg-[var(--color-accent)] text-[var(--color-foreground)] border border-transparent"
               }`}
             >
               <Strikethrough className="w-5 h-5 font-bold" />
@@ -435,8 +435,8 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
             onClick={handleTextCaseToggle}
             className={`w-10 h-10 flex items-center justify-center hover:cursor-pointer text-sm font-bold rounded-md transition-colors ${
               isUpperCase
-                ? "bg-blue-100 text-blue-700 border border-blue-200"
-                : "hover:bg-gray-100 text-gray-800 border border-transparent"
+                ? "bg-[var(--color-accent)] text-[var(--color-primary)] border border-[var(--color-border)]"
+                : "hover:bg-[var(--color-accent)] text-[var(--color-foreground)] border border-transparent"
             }`}
           >
             aA
@@ -454,7 +454,7 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
             variant="ghost"
             size="icon"
             onClick={handleAlignmentClick}
-            className="w-10 h-10 flex items-center justify-center hover:cursor-pointer rounded-md transition-colors hover:bg-gray-100 text-gray-800 border border-transparent"
+            className="w-10 h-10 flex items-center justify-center hover:cursor-pointer rounded-md transition-colors hover:bg-[var(--color-accent)] text-[var(--color-foreground)] border border-transparent"
           >
             {getAlignmentIcon()}
           </Button>
@@ -473,8 +473,8 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
             onClick={handleListTypeToggle}
             className={`w-10 h-10 flex items-center justify-center hover:cursor-pointer rounded-md transition-colors ${
               currentListType !== "none"
-                ? "bg-blue-100 text-blue-700 border border-blue-200"
-                : "hover:bg-gray-100 text-gray-800 border border-transparent"
+                ? "bg-[var(--color-accent)] text-[var(--color-primary)] border border-[var(--color-border)]"
+                : "hover:bg-[var(--color-accent)] text-[var(--color-foreground)] border border-transparent"
             }`}
           >
             {getListIcon()}
@@ -500,20 +500,20 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
               <Button
                 variant="ghost"
                 size="icon"
-                className="w-10 h-10 flex flex-col items-center justify-center hover:cursor-pointer rounded-md transition-colors hover:bg-gray-100 text-gray-800 border border-transparent"
+                className="w-10 h-10 flex flex-col items-center justify-center hover:cursor-pointer rounded-md transition-colors hover:bg-[var(--color-accent)] text-[var(--color-foreground)] border border-transparent"
               >
                 <Type className="w-4 h-3" />
                 <MoveHorizontal className="w-6 h-3" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-72 p-4" align="start">
-              <DropdownMenuLabel className="text-sm font-medium text-gray-700 mb-3">
+              <DropdownMenuLabel className="text-sm font-medium text-[var(--color-foreground)] mb-3">
                 Advanced Text Settings
               </DropdownMenuLabel>
 
               {/* Letter Spacing */}
               <div className="space-y-2 mb-4">
-                <label className="text-sm font-medium text-gray-700">
+                <label className="text-sm font-medium text-[var(--color-foreground)]">
                   Letter spacing
                 </label>
                 <div className="flex items-center gap-3">
@@ -545,7 +545,7 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
 
               {/* Line Spacing */}
               <div className="space-y-2 mb-4">
-                <label className="text-sm font-medium text-gray-700">
+                <label className="text-sm font-medium text-[var(--color-foreground)]">
                   Line spacing
                 </label>
                 <div className="flex items-center gap-3">
@@ -575,7 +575,7 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
 
               {/* Text Alignment */}
               <div className="space-y-2 mb-4">
-                <label className="text-sm font-medium text-gray-700">
+                <label className="text-sm font-medium text-[var(--color-foreground)]">
                   Text alignment
                 </label>
                 <div className="flex items-center gap-1">
@@ -638,7 +638,7 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
           <Button
             variant="ghost"
             onClick={() => setEditorMode("effects")}
-            className="px-2 h-10 flex items-center justify-center hover:cursor-pointer rounded-md transition-colors hover:bg-gray-100 text-gray-800 border border-transparent"
+            className="px-2 h-10 flex items-center justify-center hover:cursor-pointer rounded-md transition-colors hover:bg-[var(--color-accent)] text-[var(--color-foreground)] border border-transparent"
           >
             {/* <Sparkles className="w-5 h-5" />*/}
             Effects
@@ -660,7 +660,7 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
             <Label className="flex items-center cursor-pointer group">
               <div className="w-10 h-10 flex items-center justify-center">
                 <div
-                  className="w-7 h-7 rounded border-2 border-gray-300 group-hover:border-gray-400 transition-colors shadow-md"
+                  className="w-7 h-7 rounded border-2 border-[var(--color-border)] group-hover:border-[var(--color-border)] transition-colors shadow-md"
                   style={{ backgroundColor: attributes.fill || "#000000" }}
                 />
               </div>
@@ -685,7 +685,7 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
             <label className="flex items-center cursor-pointer group">
               <div className="w-10 h-10 flex items-center justify-center">
                 <div
-                  className="w-7 h-7 rounded border-3 group-hover:border-gray-400 transition-colors shadow-md"
+                  className="w-7 h-7 rounded border-2 group-hover:border-[var(--color-border)] transition-colors shadow-md"
                   style={{
                     borderColor: attributes.stroke || "#333333",
                     backgroundColor: "transparent",
@@ -717,7 +717,7 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
                 const newWidth = Math.max(0, (attributes.strokeWidth || 1) - 1);
                 handlePropertyChange("strokeWidth", newWidth);
               }}
-              className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 hover:cursor-pointer rounded-md transition-colors"
+              className="w-10 h-10 flex items-center justify-center hover:bg-[var(--color-accent)] hover:cursor-pointer rounded-md transition-colors"
             >
               <Minus className="w-4 h-4 font-bold" />
             </Button>
@@ -738,7 +738,7 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
                 const newWidth = (attributes.strokeWidth || 1) + 1;
                 handlePropertyChange("strokeWidth", newWidth);
               }}
-              className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 hover:cursor-pointer rounded-md transition-colors"
+              className="w-10 h-10 flex items-center justify-center hover:bg-[var(--color-accent)] hover:cursor-pointer rounded-md transition-colors"
             >
               <Plus className="w-4 h-4 font-bold" />
             </Button>
@@ -760,7 +760,7 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
             <label className="flex items-center cursor-pointer group">
               <div className="w-10 h-10 flex items-center justify-center">
                 <div
-                  className="w-7 h-7 rounded border-2 border-gray-300 group-hover:border-gray-400 transition-colors shadow-md"
+                  className="w-7 h-7 rounded border-2 border-[var(--color-border)] group-hover:border-[var(--color-border)] transition-colors shadow-md"
                   style={{ backgroundColor: attributes.stroke || "#000000" }}
                 />
               </div>
@@ -789,7 +789,7 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
                 const newWidth = Math.max(1, (attributes.strokeWidth || 1) - 1);
                 handlePropertyChange("strokeWidth", newWidth);
               }}
-              className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 hover:cursor-pointer rounded-md transition-colors"
+              className="w-10 h-10 flex items-center justify-center hover:bg-[var(--color-accent)] hover:cursor-pointer rounded-md transition-colors"
             >
               <Minus className="w-4 h-4 font-bold" />
             </Button>
@@ -810,7 +810,7 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
                 const newWidth = (attributes.strokeWidth || 1) + 1;
                 handlePropertyChange("strokeWidth", newWidth);
               }}
-              className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 hover:cursor-pointer rounded-md transition-colors"
+              className="w-10 h-10 flex items-center justify-center hover:bg-[var(--color-accent)] hover:cursor-pointer rounded-md transition-colors"
             >
               <Plus className="w-4 h-4 font-bold" />
             </Button>
@@ -836,13 +836,13 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
               <Button
                 variant="ghost"
                 size="icon"
-                className="w-10 h-10 flex items-center justify-center hover:cursor-pointer rounded-md transition-colors hover:bg-gray-100 text-gray-800 border border-transparent"
+                className="w-10 h-10 flex items-center justify-center hover:cursor-pointer rounded-md transition-colors hover:bg-[var(--color-accent)] text-[var(--color-foreground)] border border-transparent"
               >
                 <Droplets className="w-5 h-5" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-64 p-4" align="start">
-              <DropdownMenuLabel className="text-sm font-medium text-gray-700 mb-3">
+              <DropdownMenuLabel className="text-sm font-medium text-[var(--color-foreground)] mb-3">
                 Transparency
               </DropdownMenuLabel>
               <div className="flex items-center gap-3">
@@ -856,7 +856,7 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
                   }
                   className="flex-1"
                 />
-                <span className="text-sm text-gray-700 font-semibold min-w-[35px] text-center">
+                <span className="text-sm text-[var(--color-foreground)] font-semibold min-w-[35px] text-center">
                   {Math.round((attributes.opacity || 1) * 100)}%
                 </span>
               </div>
@@ -877,7 +877,7 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
           <Button
             variant="ghost"
             onClick={() => setEditorMode("position")}
-            className="px-2 h-10 flex items-center justify-center hover:cursor-pointer rounded-md transition-colors hover:bg-gray-100 text-gray-800 border border-transparent"
+            className="px-2 h-10 flex items-center justify-center hover:cursor-pointer rounded-md transition-colors hover:bg-[var(--color-accent)] text-[var(--color-foreground)] border border-transparent"
           >
             Position
           </Button>
@@ -906,8 +906,7 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
   return (
     <TooltipProvider>
       <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-60">
-        <Toaster position="top-center" />
-        <Card className="flex flex-row items-center gap-3 px-5 py-2 backdrop-blur-sm bg-white border shadow-lg">
+        <Card className="flex flex-row items-center gap-3 px-5 py-2 backdrop-blur-sm bg-[var(--color-card)] border shadow-lg">
           {/* Render controls based on object type */}
           {isTextObject() && renderTextControls()}
           {isShapeObject() && renderShapeControls()}
