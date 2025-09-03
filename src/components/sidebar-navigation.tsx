@@ -64,7 +64,9 @@ const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
       className="w-full md:w-20 flex md:flex-col items-center p-2 md:py-4 flex-shrink-0 relative z-30"
       data-sidebar-nav
     >
-      <div className="text-2xl font-bold mr-auto md:mr-0 md:mb-8">CG</div>
+      <div className="text-2xl font-bold mr-auto md:mr-0 md:mb-8 text-[var(--color-sidebar-foreground)]">
+        CG
+      </div>
       <nav className="flex flex-row md:flex-col space-x-2 md:space-x-0 md:space-y-6">
         <div className="flex items-center justify-center flex-col">
           <Button
@@ -74,10 +76,10 @@ const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
             size="icon"
             className={`p-2 rounded-lg hover:cursor-pointer transition-all duration-200 ${
               editorMode === "templates"
-                ? "bg-blue-500 shadow-md text-white hover:bg-blue-500"
+                ? "bg-[var(--color-chart-1)] shadow-md text-[var(--color-sidebar-primary-foreground)] hover:bg-[var(--color-chart-1)]"
                 : hoveredMode === "templates"
-                ? "bg-blue-400 shadow-sm text-white hover:bg-blue-400"
-                : "hover:bg-gray-700 text-white"
+                ? "bg-[var(--color-sidebar-accent)] shadow-sm text-[var(--color-sidebar-accent-foreground)] hover:bg-[var(--color-sidebar-accent)]"
+                : "hover:bg-[var(--color-muted)] text-[var(--color-sidebar-foreground)]"
             }`}
             title="Templates"
           >
@@ -93,10 +95,10 @@ const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
             size="icon"
             className={`p-2 rounded-lg hover:cursor-pointer transition-all duration-200 ${
               editorMode === "elements"
-                ? "bg-green-500 shadow-md text-white hover:bg-green-500"
+                ? "bg-[var(--color-chart-2)] shadow-md text-[var(--color-sidebar-primary-foreground)] hover:bg-[var(--color-chart-2)]"
                 : hoveredMode === "elements"
-                ? "bg-green-400 shadow-sm text-white hover:bg-green-400"
-                : "hover:bg-gray-700 text-white"
+                ? "bg-[var(--color-sidebar-accent)] shadow-sm text-[var(--color-sidebar-accent-foreground)] hover:bg-[var(--color-sidebar-accent)]"
+                : "hover:bg-[var(--color-muted)] text-[var(--color-sidebar-foreground)]"
             }`}
             title="Elements"
           >
@@ -113,10 +115,10 @@ const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
             size="icon"
             className={`p-2 rounded-lg hover:cursor-pointer transition-all duration-200 ${
               editorMode === "text"
-                ? "bg-yellow-500 shadow-md text-white hover:bg-yellow-500"
+                ? "bg-[var(--color-chart-3)] shadow-md text-[var(--color-sidebar-primary-foreground)] hover:bg-[var(--color-chart-3)]"
                 : hoveredMode === "text"
-                ? "bg-yellow-400 shadow-sm text-white hover:bg-yellow-400"
-                : "hover:bg-gray-700 text-white"
+                ? "bg-[var(--color-sidebar-accent)] shadow-sm text-[var(--color-sidebar-accent-foreground)] hover:bg-[var(--color-sidebar-accent)]"
+                : "hover:bg-[var(--color-muted)] text-[var(--color-sidebar-foreground)]"
             }`}
             title="Add Text"
           >
@@ -132,10 +134,10 @@ const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
             size="icon"
             className={`p-2 rounded-lg hover:cursor-pointer transition-all duration-200 ${
               editorMode === "tools"
-                ? "bg-indigo-500 shadow-md text-white hover:bg-indigo-500"
+                ? "bg-[var(--color-chart-4)] shadow-md text-[var(--color-sidebar-primary-foreground)] hover:bg-[var(--color-chart-4)]"
                 : hoveredMode === "tools"
-                ? "bg-indigo-400 shadow-sm text-white hover:bg-indigo-400"
-                : "hover:bg-gray-700 text-white"
+                ? "bg-[var(--color-sidebar-accent)] shadow-sm text-[var(--color-sidebar-accent-foreground)] hover:bg-[var(--color-sidebar-accent)]"
+                : "hover:bg-[var(--color-muted)] text-[var(--color-sidebar-foreground)]"
             }`}
             title="Tools"
           >
@@ -148,7 +150,7 @@ const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
             onClick={onImageUpload}
             variant="ghost"
             size="icon"
-            className="p-2 rounded-lg hover:cursor-pointer hover:bg-gray-700 transition-all duration-200 text-white"
+            className="p-2 rounded-lg hover:cursor-pointer hover:bg-[var(--color-muted)] transition-all duration-200 text-[var(--color-sidebar-foreground)]"
             title="Add Image"
           >
             <ImageIcon size={24} />
