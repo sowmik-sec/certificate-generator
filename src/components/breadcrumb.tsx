@@ -2,7 +2,13 @@
 import React from "react";
 import { useRouter, useParams } from "next/navigation";
 import { ChevronRight, Home } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import {
+  Breadcrumb as ShadBreadcrumb,
+  BreadcrumbList,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 import { getTemplate } from "@/lib/templateMap";
 
 const Breadcrumb: React.FC = () => {
@@ -14,25 +20,40 @@ const Breadcrumb: React.FC = () => {
   if (!template) return null;
 
   return (
-    <nav className="flex items-center space-x-2 text-sm text-gray-600">
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => router.push("/")}
-        className="flex items-center space-x-1 px-2 py-1 hover:bg-gray-100 rounded-md transition-colors"
-      >
-        <Home size={14} />
-        <span>Templates</span>
-      </Button>
+    <ShadBreadcrumb className="text-sm text-muted-foreground">
+      <BreadcrumbList className="flex items-center space-x-2">
+        <BreadcrumbItem>
+          <BreadcrumbLink
+            onClick={() => router.push("/")}
+            className="flex items-center space-x-1 px-2 py-1 rounded-md hover:bg-accent/5"
+          >
+            <Home size={14} />
+            <span>Templates</span>
+          </BreadcrumbLink>
+          <BreadcrumbSeparator>
+            <ChevronRight size={14} className="text-muted-foreground" />
+          </BreadcrumbSeparator>
+        </BreadcrumbItem>
 
-      <ChevronRight size={14} className="text-gray-400" />
+        <BreadcrumbItem>
+          <BreadcrumbLink
+            className="font-medium text-foreground pointer-events-none"
+            aria-current="page"
+          >
+            {template.name}
+          </BreadcrumbLink>
+          <BreadcrumbSeparator>
+            <ChevronRight size={14} className="text-muted-foreground" />
+          </BreadcrumbSeparator>
+        </BreadcrumbItem>
 
-      <span className="font-medium text-gray-900">{template.name}</span>
-
-      <ChevronRight size={14} className="text-gray-400" />
-
-      <span className="text-gray-500">Edit</span>
-    </nav>
+        <BreadcrumbItem>
+          <BreadcrumbLink className="text-muted-foreground pointer-events-none">
+            Edit
+          </BreadcrumbLink>
+        </BreadcrumbItem>
+      </BreadcrumbList>
+    </ShadBreadcrumb>
   );
 };
 
