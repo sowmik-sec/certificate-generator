@@ -43,6 +43,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface TopPropertyPanelProps {
   selectedObject: FabricObject;
@@ -313,15 +319,21 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
       {/* Font Family Dropdown */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button
-            variant="ghost"
-            className="flex items-center gap-1 px-2 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:cursor-pointer rounded-md transition-colors max-w-[100px]"
-            title="Font Family"
-          >
-            <span className="font-medium truncate">
-              {attributes.fontFamily || "Poppins"}
-            </span>
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                className="flex items-center gap-1 px-2 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:cursor-pointer rounded-md transition-colors max-w-[100px]"
+              >
+                <span className="font-medium truncate">
+                  {attributes.fontFamily || "Poppins"}
+                </span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Font Family</p>
+            </TooltipContent>
+          </Tooltip>
         </DropdownMenuTrigger>
         <DropdownMenuContent
           className="min-w-[160px] max-h-64"
@@ -346,183 +358,248 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
 
       {/* Font Size Controls */}
       <div className="flex items-center gap-1">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => handleFontSizeChange(false)}
-          className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 hover:cursor-pointer rounded-md transition-colors"
-          title="Decrease Font Size"
-        >
-          <Minus className="w-4 h-4 font-bold" />
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => handleFontSizeChange(false)}
+              className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 hover:cursor-pointer rounded-md transition-colors"
+            >
+              <Minus className="w-4 h-4 font-bold" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Decrease Font Size</p>
+          </TooltipContent>
+        </Tooltip>
         <span className="px-3 py-2 text-base font-semibold min-w-[40px] text-center h-10 flex items-center justify-center">
           {Math.round(attributes.fontSize || 14)}
         </span>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => handleFontSizeChange(true)}
-          className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 hover:cursor-pointer rounded-md transition-colors"
-          title="Increase Font Size"
-        >
-          <Plus className="w-4 h-4 font-bold" />
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => handleFontSizeChange(true)}
+              className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 hover:cursor-pointer rounded-md transition-colors"
+            >
+              <Plus className="w-4 h-4 font-bold" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Increase Font Size</p>
+          </TooltipContent>
+        </Tooltip>
       </div>
 
       {/* Font Color */}
       <div className="flex items-center">
-        <Label
-          className="flex items-center cursor-pointer group"
-          title="Text Color"
-        >
-          <div className="w-10 h-10 flex flex-col items-center justify-center relative">
-            {/* Text "A" icon above color */}
-            <span className="font-bold text-base text-gray-800">A</span>
-            <div
-              className="w-6 h-1 rounded-sm transition-colors shadow-sm"
-              style={{ backgroundColor: attributes.fill || "#000000" }}
-            />
-          </div>
-          <input
-            type="color"
-            value={attributes.fill || "#000000"}
-            onChange={(e) => handlePropertyChange("fill", e.target.value)}
-            className="sr-only"
-          />
-        </Label>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Label className="flex items-center cursor-pointer group">
+              <div className="w-10 h-10 flex flex-col items-center justify-center relative">
+                {/* Text "A" icon above color */}
+                <span className="font-bold text-base text-gray-800">A</span>
+                <div
+                  className="w-6 h-1 rounded-sm transition-colors shadow-sm"
+                  style={{ backgroundColor: attributes.fill || "#000000" }}
+                />
+              </div>
+              <input
+                type="color"
+                value={attributes.fill || "#000000"}
+                onChange={(e) => handlePropertyChange("fill", e.target.value)}
+                className="sr-only"
+              />
+            </Label>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Text Color</p>
+          </TooltipContent>
+        </Tooltip>
       </div>
 
       {/* Text Formatting */}
       <div className="flex items-center gap-0.5">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => {
-            const newWeight =
-              attributes.fontWeight === "bold" ? "normal" : "bold";
-            handlePropertyChange("fontWeight", newWeight);
-          }}
-          className={`w-10 h-10 flex items-center justify-center hover:cursor-pointer rounded-md transition-colors ${
-            attributes.fontWeight === "bold"
-              ? "bg-blue-100 text-blue-700 border border-blue-200"
-              : "hover:bg-gray-100 text-gray-800 border border-transparent"
-          }`}
-          title="Bold"
-        >
-          <Bold className="w-5 h-5 font-bold" />
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => {
+                const newWeight =
+                  attributes.fontWeight === "bold" ? "normal" : "bold";
+                handlePropertyChange("fontWeight", newWeight);
+              }}
+              className={`w-10 h-10 flex items-center justify-center hover:cursor-pointer rounded-md transition-colors ${
+                attributes.fontWeight === "bold"
+                  ? "bg-blue-100 text-blue-700 border border-blue-200"
+                  : "hover:bg-gray-100 text-gray-800 border border-transparent"
+              }`}
+            >
+              <Bold className="w-5 h-5 font-bold" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Bold</p>
+          </TooltipContent>
+        </Tooltip>
 
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => {
-            const newStyle =
-              attributes.fontStyle === "italic" ? "normal" : "italic";
-            handlePropertyChange("fontStyle", newStyle);
-          }}
-          className={`w-10 h-10 flex items-center justify-center hover:cursor-pointer rounded-md transition-colors ${
-            attributes.fontStyle === "italic"
-              ? "bg-blue-100 text-blue-700 border border-blue-200"
-              : "hover:bg-gray-100 text-gray-800 border border-transparent"
-          }`}
-          title="Italic"
-        >
-          <Italic className="w-5 h-5 font-bold" />
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => {
+                const newStyle =
+                  attributes.fontStyle === "italic" ? "normal" : "italic";
+                handlePropertyChange("fontStyle", newStyle);
+              }}
+              className={`w-10 h-10 flex items-center justify-center hover:cursor-pointer rounded-md transition-colors ${
+                attributes.fontStyle === "italic"
+                  ? "bg-blue-100 text-blue-700 border border-blue-200"
+                  : "hover:bg-gray-100 text-gray-800 border border-transparent"
+              }`}
+            >
+              <Italic className="w-5 h-5 font-bold" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Italic</p>
+          </TooltipContent>
+        </Tooltip>
 
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() =>
-            handlePropertyChange("underline", !attributes.underline)
-          }
-          className={`w-10 h-10 flex items-center justify-center hover:cursor-pointer rounded-md transition-colors ${
-            attributes.underline
-              ? "bg-blue-100 text-blue-700 border border-blue-200"
-              : "hover:bg-gray-100 text-gray-800 border border-transparent"
-          }`}
-          title="Underline"
-        >
-          <Underline className="w-5 h-5 font-bold" />
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() =>
+                handlePropertyChange("underline", !attributes.underline)
+              }
+              className={`w-10 h-10 flex items-center justify-center hover:cursor-pointer rounded-md transition-colors ${
+                attributes.underline
+                  ? "bg-blue-100 text-blue-700 border border-blue-200"
+                  : "hover:bg-gray-100 text-gray-800 border border-transparent"
+              }`}
+            >
+              <Underline className="w-5 h-5 font-bold" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Underline</p>
+          </TooltipContent>
+        </Tooltip>
 
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => {
-            handlePropertyChange("linethrough", !attributes.linethrough);
-            setHasStrikethrough(!hasStrikethrough);
-          }}
-          className={`w-10 h-10 flex items-center justify-center hover:cursor-pointer rounded-md transition-colors ${
-            attributes.linethrough
-              ? "bg-blue-100 text-blue-700 border border-blue-200"
-              : "hover:bg-gray-100 text-gray-800 border border-transparent"
-          }`}
-          title="Strikethrough"
-        >
-          <Strikethrough className="w-5 h-5 font-bold" />
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => {
+                handlePropertyChange("linethrough", !attributes.linethrough);
+                setHasStrikethrough(!hasStrikethrough);
+              }}
+              className={`w-10 h-10 flex items-center justify-center hover:cursor-pointer rounded-md transition-colors ${
+                attributes.linethrough
+                  ? "bg-blue-100 text-blue-700 border border-blue-200"
+                  : "hover:bg-gray-100 text-gray-800 border border-transparent"
+              }`}
+            >
+              <Strikethrough className="w-5 h-5 font-bold" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Strikethrough</p>
+          </TooltipContent>
+        </Tooltip>
       </div>
 
       {/* Text Case Toggle */}
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={handleTextCaseToggle}
-        className={`w-10 h-10 flex items-center justify-center hover:cursor-pointer text-sm font-bold rounded-md transition-colors ${
-          isUpperCase
-            ? "bg-blue-100 text-blue-700 border border-blue-200"
-            : "hover:bg-gray-100 text-gray-800 border border-transparent"
-        }`}
-        title="Toggle Text Case"
-      >
-        aA
-      </Button>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleTextCaseToggle}
+            className={`w-10 h-10 flex items-center justify-center hover:cursor-pointer text-sm font-bold rounded-md transition-colors ${
+              isUpperCase
+                ? "bg-blue-100 text-blue-700 border border-blue-200"
+                : "hover:bg-gray-100 text-gray-800 border border-transparent"
+            }`}
+          >
+            aA
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>Toggle Text Case</p>
+        </TooltipContent>
+      </Tooltip>
 
       {/* Text Alignment */}
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={handleAlignmentClick}
-        className="w-10 h-10 flex items-center justify-center hover:cursor-pointer rounded-md transition-colors hover:bg-gray-100 text-gray-800 border border-transparent"
-        title="Text Alignment"
-      >
-        {getAlignmentIcon()}
-      </Button>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleAlignmentClick}
+            className="w-10 h-10 flex items-center justify-center hover:cursor-pointer rounded-md transition-colors hover:bg-gray-100 text-gray-800 border border-transparent"
+          >
+            {getAlignmentIcon()}
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>Text Alignment</p>
+        </TooltipContent>
+      </Tooltip>
 
       {/* List Toggle */}
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={handleListTypeToggle}
-        className={`w-10 h-10 flex items-center justify-center hover:cursor-pointer rounded-md transition-colors ${
-          currentListType !== "none"
-            ? "bg-blue-100 text-blue-700 border border-blue-200"
-            : "hover:bg-gray-100 text-gray-800 border border-transparent"
-        }`}
-        title={`List Style: ${
-          currentListType === "none"
-            ? "None"
-            : currentListType === "bullet"
-            ? "Bullet"
-            : "Numbered"
-        }`}
-      >
-        {getListIcon()}
-      </Button>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleListTypeToggle}
+            className={`w-10 h-10 flex items-center justify-center hover:cursor-pointer rounded-md transition-colors ${
+              currentListType !== "none"
+                ? "bg-blue-100 text-blue-700 border border-blue-200"
+                : "hover:bg-gray-100 text-gray-800 border border-transparent"
+            }`}
+          >
+            {getListIcon()}
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>
+            List Style:{" "}
+            {currentListType === "none"
+              ? "None"
+              : currentListType === "bullet"
+              ? "Bullet"
+              : "Numbered"}
+          </p>
+        </TooltipContent>
+      </Tooltip>
 
       {/* Advanced Settings - Only for Text */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="w-10 h-10 flex flex-col items-center justify-center hover:cursor-pointer rounded-md transition-colors hover:bg-gray-100 text-gray-800 border border-transparent"
-            title="Advanced Settings"
-          >
-            <Type className="w-4 h-3" />
-            <MoveHorizontal className="w-6 h-3" />
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="w-10 h-10 flex flex-col items-center justify-center hover:cursor-pointer rounded-md transition-colors hover:bg-gray-100 text-gray-800 border border-transparent"
+              >
+                <Type className="w-4 h-3" />
+                <MoveHorizontal className="w-6 h-3" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Advanced Settings</p>
+            </TooltipContent>
+          </Tooltip>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-72 p-4" align="start">
           <DropdownMenuLabel className="text-sm font-medium text-gray-700 mb-3">
@@ -643,15 +720,21 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
       <Separator orientation="vertical" className="h-7 mx-1" />
 
       {/* Effects */}
-      <Button
-        variant="ghost"
-        onClick={() => setEditorMode("effects")}
-        className="px-2 h-10 flex items-center justify-center hover:cursor-pointer rounded-md transition-colors hover:bg-gray-100 text-gray-800 border border-transparent"
-        title="Effects"
-      >
-        {/* <Sparkles className="w-5 h-5" />*/}
-        Effects
-      </Button>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="ghost"
+            onClick={() => setEditorMode("effects")}
+            className="px-2 h-10 flex items-center justify-center hover:cursor-pointer rounded-md transition-colors hover:bg-gray-100 text-gray-800 border border-transparent"
+          >
+            {/* <Sparkles className="w-5 h-5" />*/}
+            Effects
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>Effects</p>
+        </TooltipContent>
+      </Tooltip>
     </div>
   );
 
@@ -659,78 +742,98 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
     <div className="flex items-center gap-3">
       {/* Shape Color */}
       <div className="flex items-center">
-        <Label
-          className="flex items-center cursor-pointer group"
-          title="Shape Color"
-        >
-          <div className="w-10 h-10 flex items-center justify-center">
-            <div
-              className="w-7 h-7 rounded border-2 border-gray-300 group-hover:border-gray-400 transition-colors shadow-md"
-              style={{ backgroundColor: attributes.fill || "#000000" }}
-            />
-          </div>
-          <input
-            type="color"
-            value={attributes.fill || "#000000"}
-            onChange={(e) => handlePropertyChange("fill", e.target.value)}
-            className="sr-only"
-          />
-        </Label>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Label className="flex items-center cursor-pointer group">
+              <div className="w-10 h-10 flex items-center justify-center">
+                <div
+                  className="w-7 h-7 rounded border-2 border-gray-300 group-hover:border-gray-400 transition-colors shadow-md"
+                  style={{ backgroundColor: attributes.fill || "#000000" }}
+                />
+              </div>
+              <input
+                type="color"
+                value={attributes.fill || "#000000"}
+                onChange={(e) => handlePropertyChange("fill", e.target.value)}
+                className="sr-only"
+              />
+            </Label>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Shape Color</p>
+          </TooltipContent>
+        </Tooltip>
       </div>
 
       {/* Stroke Color */}
       <div className="flex items-center">
-        <label
-          className="flex items-center cursor-pointer group"
-          title="Border Color"
-        >
-          <div className="w-10 h-10 flex items-center justify-center">
-            <div
-              className="w-7 h-7 rounded border-3 group-hover:border-gray-400 transition-colors shadow-md"
-              style={{
-                borderColor: attributes.stroke || "#333333",
-                backgroundColor: "transparent",
-              }}
-            />
-          </div>
-          <input
-            type="color"
-            value={attributes.stroke || "#333333"}
-            onChange={(e) => handlePropertyChange("stroke", e.target.value)}
-            className="sr-only"
-          />
-        </label>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <label className="flex items-center cursor-pointer group">
+              <div className="w-10 h-10 flex items-center justify-center">
+                <div
+                  className="w-7 h-7 rounded border-3 group-hover:border-gray-400 transition-colors shadow-md"
+                  style={{
+                    borderColor: attributes.stroke || "#333333",
+                    backgroundColor: "transparent",
+                  }}
+                />
+              </div>
+              <input
+                type="color"
+                value={attributes.stroke || "#333333"}
+                onChange={(e) => handlePropertyChange("stroke", e.target.value)}
+                className="sr-only"
+              />
+            </label>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Border Color</p>
+          </TooltipContent>
+        </Tooltip>
       </div>
 
       {/* Stroke Width */}
       <div className="flex items-center gap-1">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => {
-            const newWidth = Math.max(0, (attributes.strokeWidth || 1) - 1);
-            handlePropertyChange("strokeWidth", newWidth);
-          }}
-          className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 hover:cursor-pointer rounded-md transition-colors"
-          title="Decrease Border Width"
-        >
-          <Minus className="w-4 h-4 font-bold" />
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => {
+                const newWidth = Math.max(0, (attributes.strokeWidth || 1) - 1);
+                handlePropertyChange("strokeWidth", newWidth);
+              }}
+              className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 hover:cursor-pointer rounded-md transition-colors"
+            >
+              <Minus className="w-4 h-4 font-bold" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Decrease Border Width</p>
+          </TooltipContent>
+        </Tooltip>
         <span className="px-3 py-2 text-base font-semibold min-w-[32px] text-center h-10 flex items-center justify-center">
           {Math.round(attributes.strokeWidth || 1)}
         </span>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => {
-            const newWidth = (attributes.strokeWidth || 1) + 1;
-            handlePropertyChange("strokeWidth", newWidth);
-          }}
-          className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 hover:cursor-pointer rounded-md transition-colors"
-          title="Increase Border Width"
-        >
-          <Plus className="w-4 h-4 font-bold" />
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => {
+                const newWidth = (attributes.strokeWidth || 1) + 1;
+                handlePropertyChange("strokeWidth", newWidth);
+              }}
+              className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 hover:cursor-pointer rounded-md transition-colors"
+            >
+              <Plus className="w-4 h-4 font-bold" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Increase Border Width</p>
+          </TooltipContent>
+        </Tooltip>
       </div>
     </div>
   );
@@ -739,54 +842,70 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
     <div className="flex items-center gap-3">
       {/* Line Color */}
       <div className="flex items-center">
-        <label
-          className="flex items-center cursor-pointer group"
-          title="Line Color"
-        >
-          <div className="w-10 h-10 flex items-center justify-center">
-            <div
-              className="w-7 h-7 rounded border-2 border-gray-300 group-hover:border-gray-400 transition-colors shadow-md"
-              style={{ backgroundColor: attributes.stroke || "#000000" }}
-            />
-          </div>
-          <input
-            type="color"
-            value={attributes.stroke || "#000000"}
-            onChange={(e) => handlePropertyChange("stroke", e.target.value)}
-            className="sr-only"
-          />
-        </label>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <label className="flex items-center cursor-pointer group">
+              <div className="w-10 h-10 flex items-center justify-center">
+                <div
+                  className="w-7 h-7 rounded border-2 border-gray-300 group-hover:border-gray-400 transition-colors shadow-md"
+                  style={{ backgroundColor: attributes.stroke || "#000000" }}
+                />
+              </div>
+              <input
+                type="color"
+                value={attributes.stroke || "#000000"}
+                onChange={(e) => handlePropertyChange("stroke", e.target.value)}
+                className="sr-only"
+              />
+            </label>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Line Color</p>
+          </TooltipContent>
+        </Tooltip>
       </div>
 
       {/* Line Width */}
       <div className="flex items-center gap-1">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => {
-            const newWidth = Math.max(1, (attributes.strokeWidth || 1) - 1);
-            handlePropertyChange("strokeWidth", newWidth);
-          }}
-          className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 hover:cursor-pointer rounded-md transition-colors"
-          title="Decrease Line Width"
-        >
-          <Minus className="w-4 h-4 font-bold" />
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => {
+                const newWidth = Math.max(1, (attributes.strokeWidth || 1) - 1);
+                handlePropertyChange("strokeWidth", newWidth);
+              }}
+              className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 hover:cursor-pointer rounded-md transition-colors"
+            >
+              <Minus className="w-4 h-4 font-bold" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Decrease Line Width</p>
+          </TooltipContent>
+        </Tooltip>
         <span className="px-3 py-2 text-base font-semibold min-w-[32px] text-center h-10 flex items-center justify-center">
           {Math.round(attributes.strokeWidth || 1)}
         </span>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => {
-            const newWidth = (attributes.strokeWidth || 1) + 1;
-            handlePropertyChange("strokeWidth", newWidth);
-          }}
-          className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 hover:cursor-pointer rounded-md transition-colors"
-          title="Increase Line Width"
-        >
-          <Plus className="w-4 h-4 font-bold" />
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => {
+                const newWidth = (attributes.strokeWidth || 1) + 1;
+                handlePropertyChange("strokeWidth", newWidth);
+              }}
+              className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 hover:cursor-pointer rounded-md transition-colors"
+            >
+              <Plus className="w-4 h-4 font-bold" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Increase Line Width</p>
+          </TooltipContent>
+        </Tooltip>
       </div>
     </div>
   );
@@ -799,14 +918,20 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
       {/* Transparency */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="w-10 h-10 flex items-center justify-center hover:cursor-pointer rounded-md transition-colors hover:bg-gray-100 text-gray-800 border border-transparent"
-            title="Transparency"
-          >
-            <Droplets className="w-5 h-5" />
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="w-10 h-10 flex items-center justify-center hover:cursor-pointer rounded-md transition-colors hover:bg-gray-100 text-gray-800 border border-transparent"
+              >
+                <Droplets className="w-5 h-5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Transparency</p>
+            </TooltipContent>
+          </Tooltip>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-64 p-4" align="start">
           <DropdownMenuLabel className="text-sm font-medium text-gray-700 mb-3">
@@ -832,28 +957,40 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
       <Separator orientation="vertical" className="h-7 mx-1" />
 
       {/* Position (open only on click) */}
-      <Button
-        variant="ghost"
-        onClick={() => setEditorMode("position")}
-        className="px-2 h-10 flex items-center justify-center hover:cursor-pointer rounded-md transition-colors hover:bg-gray-100 text-gray-800 border border-transparent"
-        title="Position"
-      >
-        Position
-      </Button>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="ghost"
+            onClick={() => setEditorMode("position")}
+            className="px-2 h-10 flex items-center justify-center hover:cursor-pointer rounded-md transition-colors hover:bg-gray-100 text-gray-800 border border-transparent"
+          >
+            Position
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>Position</p>
+        </TooltipContent>
+      </Tooltip>
 
       {/* Separator */}
       <Separator orientation="vertical" className="h-7 mx-1" />
 
       {/* Copy Style */}
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={handleCopyStyle}
-        className="w-10 h-10 flex items-center justify-center hover:cursor-pointer rounded-md transition-colors hover:bg-gray-100 text-gray-800 border border-transparent"
-        title="Copy Style"
-      >
-        <PaintRoller className="w-5 h-5" />
-      </Button>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleCopyStyle}
+            className="w-10 h-10 flex items-center justify-center hover:cursor-pointer rounded-md transition-colors hover:bg-gray-100 text-gray-800 border border-transparent"
+          >
+            <PaintRoller className="w-5 h-5" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>Copy Style</p>
+        </TooltipContent>
+      </Tooltip>
     </div>
   );
 
@@ -872,18 +1009,20 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
 
   // Desktop version
   return (
-    <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-60">
-      <Toaster position="top-center" />
-      <Card className="flex flex-row items-center gap-3 px-5 py-2 backdrop-blur-sm bg-white border shadow-lg">
-        {/* Render controls based on object type */}
-        {isTextObject() && renderTextControls()}
-        {isShapeObject() && renderShapeControls()}
-        {isLineObject() && renderLineControls()}
+    <TooltipProvider>
+      <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-60">
+        <Toaster position="top-center" />
+        <Card className="flex flex-row items-center gap-3 px-5 py-2 backdrop-blur-sm bg-white border shadow-lg">
+          {/* Render controls based on object type */}
+          {isTextObject() && renderTextControls()}
+          {isShapeObject() && renderShapeControls()}
+          {isLineObject() && renderLineControls()}
 
-        {/* Common controls */}
-        {renderCommonControls()}
-      </Card>
-    </div>
+          {/* Common controls */}
+          {renderCommonControls()}
+        </Card>
+      </div>
+    </TooltipProvider>
   );
 };
 
