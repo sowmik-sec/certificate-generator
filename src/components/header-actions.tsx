@@ -76,23 +76,8 @@ const HeaderActions: React.FC<HeaderActionsProps> = ({
     <div className="flex items-center space-x-2">
       {/* Undo/Redo Controls */}
       <div className="flex items-center space-x-1 mr-2">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <div>
-              <UndoButton />
-            </div>
-          </TooltipTrigger>
-          <TooltipContent sideOffset={4}>Undo</TooltipContent>
-        </Tooltip>
-
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <div>
-              <RedoButton />
-            </div>
-          </TooltipTrigger>
-          <TooltipContent sideOffset={4}>Redo</TooltipContent>
-        </Tooltip>
+        <UndoButton />
+        <RedoButton />
       </div>
 
       {selectedObject && (
@@ -102,7 +87,7 @@ const HeaderActions: React.FC<HeaderActionsProps> = ({
               variant="ghost"
               size="icon"
               onClick={deleteSelected}
-              className="p-2 text-gray-600 hover:bg-red-100 hover:text-red-600 rounded-lg transition-colors"
+              className="p-2 text-muted-foreground hover:bg-destructive/10 hover:text-destructive rounded-lg transition-colors"
             >
               <Trash2 size={20} />
             </Button>
@@ -115,7 +100,7 @@ const HeaderActions: React.FC<HeaderActionsProps> = ({
         <Button
           variant="ghost"
           onClick={handleShare}
-          className="flex items-center space-x-2 px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+          className="flex items-center space-x-2 px-3 py-2 text-muted-foreground hover:bg-muted rounded-lg transition-colors"
         >
           {copied ? <Check size={16} /> : <Share size={16} />}
           <span className="text-sm">{copied ? "Copied!" : "Share"}</span>
@@ -125,7 +110,7 @@ const HeaderActions: React.FC<HeaderActionsProps> = ({
       <div className="flex items-center space-x-2">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button className="flex items-center space-x-2 bg-gradient-to-r hover:cursor-pointer from-purple-600 to-blue-600 text-white px-6 py-2.5 rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all duration-200 shadow-lg hover:shadow-xl font-medium">
+            <Button className="flex items-center space-x-2 bg-gradient-to-r hover:cursor-pointer from-primary to-chart-2 text-primary-foreground px-6 py-2.5 rounded-lg hover:from-primary/90 hover:to-chart-2/90 transition-all duration-200 shadow-lg hover:shadow-xl font-medium">
               <Download size={18} />
               <span>Export</span>
               <svg
@@ -149,17 +134,16 @@ const HeaderActions: React.FC<HeaderActionsProps> = ({
             sideOffset={6}
             style={{ zIndex: 70 }}
           >
-            <div className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-100 mb-1">
+            <div className="px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border mb-1">
               Export Options
             </div>
-
             <DropdownMenuItem
               onClick={exportAsPNG}
-              className="w-full flex items-center hover:cursor-pointer space-x-3 px-3 py-3 rounded-lg hover:bg-gray-50 transition-colors"
+              className="w-full flex items-center hover:cursor-pointer space-x-3 px-3 py-3 rounded-lg hover:bg-muted transition-colors"
             >
-              <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center transition-colors">
+              <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center transition-colors">
                 <svg
-                  className="w-4 h-4 text-blue-600"
+                  className="w-4 h-4 text-primary"
                   fill="currentColor"
                   viewBox="0 0 20 20"
                 >
@@ -171,21 +155,20 @@ const HeaderActions: React.FC<HeaderActionsProps> = ({
                 </svg>
               </div>
               <div className="flex-1 text-left">
-                <div className="font-medium text-gray-900">PNG Image</div>
-                <div className="text-sm text-gray-500">
+                <div className="font-medium text-foreground">PNG Image</div>
+                <div className="text-sm text-muted-foreground">
                   High quality image format
                 </div>
               </div>
-              <Download size={16} className="text-gray-400" />
-            </DropdownMenuItem>
-
+              <Download size={16} className="text-muted-foreground" />
+            </DropdownMenuItem>{" "}
             <DropdownMenuItem
               onClick={exportAsPDF}
-              className="w-full flex items-center hover:cursor-pointer space-x-3 px-3 py-3 rounded-lg hover:bg-gray-50 transition-colors"
+              className="w-full flex items-center hover:cursor-pointer space-x-3 px-3 py-3 rounded-lg hover:bg-muted transition-colors"
             >
-              <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center transition-colors">
+              <div className="w-8 h-8 bg-destructive/10 rounded-lg flex items-center justify-center transition-colors">
                 <svg
-                  className="w-4 h-4 text-red-600"
+                  className="w-4 h-4 text-destructive"
                   fill="currentColor"
                   viewBox="0 0 20 20"
                 >
@@ -197,12 +180,12 @@ const HeaderActions: React.FC<HeaderActionsProps> = ({
                 </svg>
               </div>
               <div className="flex-1 text-left">
-                <div className="font-medium text-gray-900">PDF Document</div>
-                <div className="text-sm text-gray-500">
+                <div className="font-medium text-foreground">PDF Document</div>
+                <div className="text-sm text-muted-foreground">
                   Perfect for printing
                 </div>
               </div>
-              <Download size={16} className="text-gray-400" />
+              <Download size={16} className="text-muted-foreground" />
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
