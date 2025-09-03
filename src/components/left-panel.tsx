@@ -10,6 +10,20 @@ import PositionLeftPanel from "@/components/position-left-panel";
 import EffectsLeftPanel from "@/components/effects-left-panel";
 import ContextMenuLeftPanel from "@/components/context-menu-left-panel";
 import { EditorMode } from "./sidebar-navigation";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+import {
+  LayoutTemplate,
+  Shapes,
+  Type,
+  Wrench,
+  Settings,
+  Move,
+  Sparkles,
+  Menu,
+} from "lucide-react";
 
 interface LeftPanelProps {
   editorMode: EditorMode;
@@ -111,8 +125,24 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
   // Timeout ref to manage closing delays
   const closeTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
+  // Icon mapping for different modes
+  const modeIcons: Record<
+    string,
+    React.ComponentType<{ className?: string }>
+  > = {
+    templates: LayoutTemplate,
+    elements: Shapes,
+    text: Type,
+    tools: Wrench,
+    "advanced-settings": Settings,
+    position: Move,
+    effects: Sparkles,
+    "context-menu": Menu,
+  };
+
   // Determine which mode to show - prioritize editorMode, then hoveredMode
   const activeMode = editorMode || hoveredMode;
+  const IconComponent = activeMode ? modeIcons[activeMode] : null;
 
   // Don't render if no active mode
   if (!activeMode) {
@@ -150,7 +180,7 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
       {/* Bridge area to help with hover transition */}
       {activeMode && !editorMode && (
         <div
-          className="absolute left-16 w-8 z-65"
+          className="absolute left-16 w-8 z-[65]"
           style={{
             top: "64px",
             height: "calc(100vh - 100px)",
@@ -160,12 +190,16 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
         />
       )}
 
-      <aside
-        className={`absolute left-20 w-96 bg-white flex-shrink-0 z-70 transition-all duration-300 ease-out rounded-3xl shadow-2xl overflow-hidden ${
+      <Card
+        className={cn(
+          "absolute left-20 w-96 flex-shrink-0 z-[70]",
+          "rounded-3xl border-border/10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60",
+          "shadow-2xl transition-all duration-300 ease-out",
+          "hover:shadow-3xl hover:bg-background/100",
           activeMode
-            ? "translate-x-0 opacity-100"
-            : "-translate-x-full opacity-0"
-        }`}
+            ? "translate-x-0 opacity-100 scale-100"
+            : "-translate-x-full opacity-0 scale-95"
+        )}
         style={{
           top: "64px", // Start at the top of the Design item
           height: "calc(100vh - 100px)", // Leave minimal space at bottom
@@ -176,155 +210,183 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
         onMouseLeave={handleMouseLeave}
         data-left-panel
       >
-        <div className="w-full h-full overflow-y-auto p-4 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-gray-300 hover:scrollbar-thumb-gray-400">
-          {activeMode === "templates" && (
-            <TemplatesPanel
-              onSelectTemplate={onSelectTemplate}
-              onImageUpload={onImageUpload}
-              canvas={canvas}
-            />
-          )}
+        <CardContent className="p-0 h-full flex flex-col">
+          {/* Header with current mode */}
+          <CardHeader className="py-3 px-4 border-b border-border/50 bg-muted/30 rounded-t-3xl">
+            <CardTitle className="text-base font-semibold capitalize flex items-center gap-3 text-foreground/90">
+              {IconComponent && <IconComponent className="h-4 w-4" />}
+              {activeMode?.replace("-", " ")}
+              {!editorMode && hoveredMode && (
+                <Badge
+                  variant="secondary"
+                  className="text-xs font-normal ml-auto"
+                >
+                  Preview
+                </Badge>
+              )}
+            </CardTitle>
+          </CardHeader>
 
-          {activeMode === "elements" && (
-            <ElementsPanel
-              addSquare={addSquare}
-              addCircle={addCircle}
-              addTriangle={addTriangle}
-              addRectangle={addRectangle}
-              addEllipse={addEllipse}
-              addStar={addStar}
-              addHeart={addHeart}
-              addHexagon={addHexagon}
-              addPentagon={addPentagon}
-              addDiamond={addDiamond}
-              addArrowShape={addArrowShape}
-              addLine={addLine}
-              addDashedLine={addDashedLine}
-              addArrowLine={addArrowLine}
-              addZigzagLine={addZigzagLine}
-              addWavyLine={addWavyLine}
-              addDottedLine={addDottedLine}
-              addDoubleLine={addDoubleLine}
-              addCurvedLine={addCurvedLine}
-              addStepsLine={addStepsLine}
-              addThickLine={addThickLine}
-              addDashDotLine={addDashDotLine}
-            />
-          )}
-          {activeMode === "text" && (
-            <TextPanel
-              addText={addText}
-              addHeading={addHeading}
-              addSubheading={addSubheading}
-              addBodyText={addBodyText}
-              canvas={canvas}
-            />
-          )}
-          {activeMode === "tools" && (
-            <ToolsPanel
-              canvas={canvas}
-              addStickyNote={addStickyNote}
-              addTable={addTable}
-              addSimpleFrame={addSimpleFrame}
-              addDoubleFrame={addDoubleFrame}
-              addDecorativeFrame={addDecorativeFrame}
-              addRoundedFrame={addRoundedFrame}
-            />
-          )}
-          {activeMode === "advanced-settings" && <AdvancedSettingsLeftPanel />}
-          {activeMode === "position" && (
-            <PositionLeftPanel
-              canvas={canvas}
-              selectedObject={selectedObject}
-              onClose={() => {
-                if (editorMode === "position") {
-                  // If position mode is pinned, clear it
-                  setEditorMode(null);
-                } else {
-                  // If it's just hovered, clear the hover
-                  setHoveredMode(null);
-                }
-              }}
-            />
-          )}
-          {activeMode === "effects" && (
-            <EffectsLeftPanel
-              canvas={canvas}
-              fabric={fabric}
-              selectedObject={selectedObject}
-              onClose={() => {
-                if (editorMode === "effects") {
-                  // If effects mode is pinned, clear it
-                  setEditorMode(null);
-                } else {
-                  // If it's just hovered, clear the hover
-                  setHoveredMode(null);
-                }
-              }}
-            />
-          )}
+          {/* Scrollable content */}
+          <div className="flex-1 min-h-0">
+            <ScrollArea className="h-full">
+              <div className="p-4 space-y-2">
+                {activeMode === "templates" && (
+                  <TemplatesPanel
+                    onSelectTemplate={onSelectTemplate}
+                    onImageUpload={onImageUpload}
+                    canvas={canvas}
+                  />
+                )}
 
-          {activeMode === "context-menu" && (
-            <ContextMenuLeftPanel
-              canvas={canvas}
-              fabric={fabric}
-              selectedObject={
-                selectedObject || canvas?.getActiveObject?.() || null
-              }
-              onLayerAction={(action) => {
-                const targetObject =
-                  selectedObject || canvas?.getActiveObject?.();
-                if (!targetObject || !canvas) return;
-
-                // Handle layer management actions
-                switch (action) {
-                  case "bringToFront":
-                    canvas.bringToFront(targetObject);
-                    break;
-                  case "bringForward":
-                    canvas.bringForward(targetObject);
-                    break;
-                  case "sendBackward":
-                    canvas.sendBackward(targetObject);
-                    break;
-                  case "sendToBack":
-                    canvas.sendToBack(targetObject);
-                    break;
-                  case "group":
-                    const activeObjects = canvas.getActiveObjects?.() || [];
-                    if (activeObjects.length > 1) {
-                      // Use fabric from props instead of importing
-                      if (fabric && fabric.Group) {
-                        const group = new fabric.Group(activeObjects);
-                        activeObjects.forEach((obj: any) => canvas.remove(obj));
-                        canvas.add(group);
-                        canvas.setActiveObject(group);
+                {activeMode === "elements" && (
+                  <ElementsPanel
+                    addSquare={addSquare}
+                    addCircle={addCircle}
+                    addTriangle={addTriangle}
+                    addRectangle={addRectangle}
+                    addEllipse={addEllipse}
+                    addStar={addStar}
+                    addHeart={addHeart}
+                    addHexagon={addHexagon}
+                    addPentagon={addPentagon}
+                    addDiamond={addDiamond}
+                    addArrowShape={addArrowShape}
+                    addLine={addLine}
+                    addDashedLine={addDashedLine}
+                    addArrowLine={addArrowLine}
+                    addZigzagLine={addZigzagLine}
+                    addWavyLine={addWavyLine}
+                    addDottedLine={addDottedLine}
+                    addDoubleLine={addDoubleLine}
+                    addCurvedLine={addCurvedLine}
+                    addStepsLine={addStepsLine}
+                    addThickLine={addThickLine}
+                    addDashDotLine={addDashDotLine}
+                  />
+                )}
+                {activeMode === "text" && (
+                  <TextPanel
+                    addText={addText}
+                    addHeading={addHeading}
+                    addSubheading={addSubheading}
+                    addBodyText={addBodyText}
+                    canvas={canvas}
+                  />
+                )}
+                {activeMode === "tools" && (
+                  <ToolsPanel
+                    canvas={canvas}
+                    addStickyNote={addStickyNote}
+                    addTable={addTable}
+                    addSimpleFrame={addSimpleFrame}
+                    addDoubleFrame={addDoubleFrame}
+                    addDecorativeFrame={addDecorativeFrame}
+                    addRoundedFrame={addRoundedFrame}
+                  />
+                )}
+                {activeMode === "advanced-settings" && (
+                  <AdvancedSettingsLeftPanel />
+                )}
+                {activeMode === "position" && (
+                  <PositionLeftPanel
+                    canvas={canvas}
+                    selectedObject={selectedObject}
+                    onClose={() => {
+                      if (editorMode === "position") {
+                        // If position mode is pinned, clear it
+                        setEditorMode(null);
+                      } else {
+                        // If it's just hovered, clear the hover
+                        setHoveredMode(null);
                       }
-                    }
-                    break;
-                  case "ungroup":
-                    if (
-                      targetObject.type === "group" &&
-                      targetObject.getObjects
-                    ) {
-                      const objects = targetObject.getObjects();
-                      targetObject.destroy();
-                      canvas.remove(targetObject);
-                      objects.forEach((obj: any) => {
-                        canvas.add(obj);
-                      });
-                      if (objects.length > 0) {
-                        canvas.setActiveObject(objects[0]);
+                    }}
+                  />
+                )}
+                {activeMode === "effects" && (
+                  <EffectsLeftPanel
+                    canvas={canvas}
+                    fabric={fabric}
+                    selectedObject={selectedObject}
+                    onClose={() => {
+                      if (editorMode === "effects") {
+                        // If effects mode is pinned, clear it
+                        setEditorMode(null);
+                      } else {
+                        // If it's just hovered, clear the hover
+                        setHoveredMode(null);
                       }
+                    }}
+                  />
+                )}
+
+                {activeMode === "context-menu" && (
+                  <ContextMenuLeftPanel
+                    canvas={canvas}
+                    fabric={fabric}
+                    selectedObject={
+                      selectedObject || canvas?.getActiveObject?.() || null
                     }
-                    break;
-                }
-                canvas.renderAll();
-              }}
-            />
-          )}
-        </div>
-      </aside>
+                    onLayerAction={(action) => {
+                      const targetObject =
+                        selectedObject || canvas?.getActiveObject?.();
+                      if (!targetObject || !canvas) return;
+
+                      // Handle layer management actions
+                      switch (action) {
+                        case "bringToFront":
+                          canvas.bringToFront(targetObject);
+                          break;
+                        case "bringForward":
+                          canvas.bringForward(targetObject);
+                          break;
+                        case "sendBackward":
+                          canvas.sendBackward(targetObject);
+                          break;
+                        case "sendToBack":
+                          canvas.sendToBack(targetObject);
+                          break;
+                        case "group":
+                          const activeObjects =
+                            canvas.getActiveObjects?.() || [];
+                          if (activeObjects.length > 1) {
+                            // Use fabric from props instead of importing
+                            if (fabric && fabric.Group) {
+                              const group = new fabric.Group(activeObjects);
+                              activeObjects.forEach((obj: any) =>
+                                canvas.remove(obj)
+                              );
+                              canvas.add(group);
+                              canvas.setActiveObject(group);
+                            }
+                          }
+                          break;
+                        case "ungroup":
+                          if (
+                            targetObject.type === "group" &&
+                            targetObject.getObjects
+                          ) {
+                            const objects = targetObject.getObjects();
+                            targetObject.destroy();
+                            canvas.remove(targetObject);
+                            objects.forEach((obj: any) => {
+                              canvas.add(obj);
+                            });
+                            if (objects.length > 0) {
+                              canvas.setActiveObject(objects[0]);
+                            }
+                          }
+                          break;
+                      }
+                      canvas.renderAll();
+                    }}
+                  />
+                )}
+              </div>
+            </ScrollArea>
+          </div>
+        </CardContent>
+      </Card>
     </>
   );
 };
