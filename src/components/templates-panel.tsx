@@ -6,6 +6,8 @@ import { useRef } from "react";
 import { useTemplatesStore } from "@/stores/useTemplatesStore";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { HexColorPicker } from "react-colorful";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 interface TemplatesPanelProps {
@@ -55,7 +57,7 @@ const TemplatesPanel: React.FC<TemplatesPanelProps> = ({
           <h3 className="font-semibold text-[var(--color-primary-foreground)] mb-2">
             ✨ Use Your Own Template
           </h3>
-          <input
+          <Input
             type="file"
             accept="image/*"
             ref={fileInputRef}
@@ -80,12 +82,13 @@ const TemplatesPanel: React.FC<TemplatesPanelProps> = ({
             Background Color
           </h3>
           <div className="space-y-3">
-            <input
-              type="color"
-              value={backgroundColor}
-              onChange={(e) => handleBackgroundColorChange(e.target.value)}
-              className="w-full h-10 rounded-md border border-input bg-background cursor-pointer"
-            />
+            <div className="w-full rounded-md border border-input bg-background overflow-hidden">
+              <HexColorPicker
+                color={backgroundColor}
+                onChange={handleBackgroundColorChange}
+                style={{ width: "100%" }}
+              />
+            </div>
             <div className="flex flex-wrap gap-2">
               {[
                 "#ffffff",
