@@ -120,16 +120,12 @@ export default function HomePage() {
             {templates.map((template) => (
               <Card
                 key={template.id}
-                className="group cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border-2 hover:border-blue-300"
+                className="group cursor-pointer"
                 onClick={() => handleTemplateSelect(template.id)}
               >
                 <CardContent className="p-4">
                   <div
-                    className={`h-32 flex items-center justify-center text-gray-500 rounded-lg mb-3 transition-all group-hover:scale-105 ${
-                      template.id === "blank"
-                        ? "bg-gray-100 border-2 border-dashed border-gray-300 group-hover:border-blue-400"
-                        : "bg-gradient-to-br from-gray-200 to-gray-300 group-hover:from-blue-100 group-hover:to-purple-100"
-                    }`}
+                    className={`h-32 flex items-center justify-center text-gray-500 rounded-lg mb-3 border-2 border-dashed`}
                   >
                     {template.id === "blank" ? (
                       <div className="text-center">
