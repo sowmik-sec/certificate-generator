@@ -5,7 +5,6 @@ import { FabricCanvas } from "@/types/fabric";
 import { FabricObject } from "fabric";
 import { usePropertiesStore } from "@/stores/usePropertiesStore";
 import { EditorMode } from "@/components/sidebar-navigation";
-import AdvancedSettingsPanel from "./advanced-settings-panel";
 import MobilePropertyPanel from "./mobile-property-panel";
 import { useResponsive } from "@/hooks/useResponsive";
 import { toast, Toaster } from "sonner";
@@ -26,17 +25,24 @@ import {
   Type,
   MoveHorizontal,
   PaintRoller,
+  AlignStartVertical,
+  AlignCenterVertical,
+  AlignEndVertical,
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
+import { Slider } from "@/components/ui/slider";
+import { Input } from "@/components/ui/input";
 
 interface TopPropertyPanelProps {
   selectedObject: FabricObject;
@@ -65,8 +71,6 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
 
   const [isUpperCase, setIsUpperCase] = useState(false);
   const [currentAlignment, setCurrentAlignment] = useState("left");
-  const [showOpacityCard, setShowOpacityCard] = useState(false);
-  const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
   const [hasStrikethrough, setHasStrikethrough] = useState(false);
   const [currentListType, setCurrentListType] = useState<
     "none" | "bullet" | "number"
@@ -508,25 +512,133 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
       </Button>
 
       {/* Advanced Settings - Only for Text */}
-      <div className="relative">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => {
-            setShowAdvancedSettings(!showAdvancedSettings);
-          }}
-          className="w-10 h-10 flex flex-col items-center justify-center hover:cursor-pointer rounded-md transition-colors hover:bg-gray-100 text-gray-800 border border-transparent"
-          title="Advanced Settings"
-        >
-          <Type className="w-4 h-3" />
-          <MoveHorizontal className="w-6 h-3" />
-        </Button>
-        {showAdvancedSettings && (
-          <AdvancedSettingsPanel
-            onClose={() => setShowAdvancedSettings(false)}
-          />
-        )}
-      </div>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="w-10 h-10 flex flex-col items-center justify-center hover:cursor-pointer rounded-md transition-colors hover:bg-gray-100 text-gray-800 border border-transparent"
+            title="Advanced Settings"
+          >
+            <Type className="w-4 h-3" />
+            <MoveHorizontal className="w-6 h-3" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="w-72 p-4" align="start">
+          <DropdownMenuLabel className="text-sm font-medium text-gray-700 mb-3">
+            Advanced Text Settings
+          </DropdownMenuLabel>
+
+          {/* Letter Spacing */}
+          <div className="space-y-2 mb-4">
+            <label className="text-sm font-medium text-gray-700">
+              Letter spacing
+            </label>
+            <div className="flex items-center gap-3">
+              <Slider
+                min={-200}
+                max={800}
+                step={1}
+                value={[attributes.charSpacing || 0]}
+                onValueChange={(val) =>
+                  handlePropertyChange("charSpacing", val[0])
+                }
+                className="flex-1"
+              />
+              <Input
+                type="number"
+                min={-200}
+                max={800}
+                value={attributes.charSpacing || 0}
+                onChange={(e) =>
+                  handlePropertyChange("charSpacing", Number(e.target.value))
+                }
+                className="w-16 h-8"
+              />
+            </div>
+          </div>
+
+          {/* Line Spacing */}
+          <div className="space-y-2 mb-4">
+            <label className="text-sm font-medium text-gray-700">
+              Line spacing
+            </label>
+            <div className="flex items-center gap-3">
+              <Slider
+                min={0.5}
+                max={3}
+                step={0.01}
+                value={[attributes.lineHeight || 1.16]}
+                onValueChange={(val) =>
+                  handlePropertyChange("lineHeight", val[0])
+                }
+                className="flex-1"
+              />
+              <Input
+                type="number"
+                min={0.5}
+                max={3}
+                step={0.01}
+                value={attributes.lineHeight || 1.16}
+                onChange={(e) =>
+                  handlePropertyChange("lineHeight", Number(e.target.value))
+                }
+                className="w-16 h-8"
+              />
+            </div>
+          </div>
+
+          {/* Text Alignment */}
+          <div className="space-y-2 mb-4">
+            <label className="text-sm font-medium text-gray-700">
+              Text alignment
+            </label>
+            <div className="flex items-center gap-1">
+              <Button
+                variant={
+                  attributes.textAlign === "left" ? "secondary" : "ghost"
+                }
+                size="sm"
+                className="px-2 py-1 h-8"
+                onClick={() => handlePropertyChange("textAlign", "left")}
+              >
+                <AlignStartVertical className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={
+                  attributes.textAlign === "center" ? "secondary" : "ghost"
+                }
+                size="sm"
+                className="px-2 py-1 h-8"
+                onClick={() => handlePropertyChange("textAlign", "center")}
+              >
+                <AlignCenterVertical className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={
+                  attributes.textAlign === "right" ? "secondary" : "ghost"
+                }
+                size="sm"
+                className="px-2 py-1 h-8"
+                onClick={() => handlePropertyChange("textAlign", "right")}
+              >
+                <AlignEndVertical className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+
+          <DropdownMenuSeparator />
+
+          {/* More Settings Button */}
+          <Button
+            className="w-full mt-2 hover:cursor-pointer font-semibold"
+            variant="secondary"
+            onClick={() => setEditorMode("advanced-settings")}
+          >
+            More Settings
+          </Button>
+        </DropdownMenuContent>
+      </DropdownMenu>
       {/* Separator */}
       <Separator orientation="vertical" className="h-7 mx-1" />
 
@@ -685,45 +797,36 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
       <Separator orientation="vertical" className="h-7 mx-1" />
 
       {/* Transparency */}
-      <div className="relative">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setShowOpacityCard(!showOpacityCard)}
-          className="w-10 h-10 flex items-center justify-center hover:cursor-pointer rounded-md transition-colors hover:bg-gray-100 text-gray-800 border border-transparent"
-          title="Transparency"
-        >
-          <Droplets className="w-5 h-5" />
-        </Button>
-
-        {showOpacityCard && (
-          <Card className="absolute top-full left-1/2 transform -translate-x-1/2 mt-3 z-70 min-w-[150px]">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm text-gray-700 font-semibold">
-                Transparency
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="flex items-center gap-3">
-                <input
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.01"
-                  value={attributes.opacity || 1}
-                  onChange={(e) =>
-                    handlePropertyChange("opacity", parseFloat(e.target.value))
-                  }
-                  className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
-                />
-                <span className="text-sm text-gray-700 font-semibold min-w-[35px] text-center">
-                  {Math.round((attributes.opacity || 1) * 100)}%
-                </span>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-      </div>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="w-10 h-10 flex items-center justify-center hover:cursor-pointer rounded-md transition-colors hover:bg-gray-100 text-gray-800 border border-transparent"
+            title="Transparency"
+          >
+            <Droplets className="w-5 h-5" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="w-64 p-4" align="start">
+          <DropdownMenuLabel className="text-sm font-medium text-gray-700 mb-3">
+            Transparency
+          </DropdownMenuLabel>
+          <div className="flex items-center gap-3">
+            <Slider
+              min={0}
+              max={1}
+              step={0.01}
+              value={[attributes.opacity || 1]}
+              onValueChange={(val) => handlePropertyChange("opacity", val[0])}
+              className="flex-1"
+            />
+            <span className="text-sm text-gray-700 font-semibold min-w-[35px] text-center">
+              {Math.round((attributes.opacity || 1) * 100)}%
+            </span>
+          </div>
+        </DropdownMenuContent>
+      </DropdownMenu>
 
       {/* Separator */}
       <Separator orientation="vertical" className="h-7 mx-1" />
@@ -780,17 +883,6 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
         {/* Common controls */}
         {renderCommonControls()}
       </Card>
-
-      {/* Click outside handler for specific dropdowns only */}
-      {(showOpacityCard || showAdvancedSettings) && (
-        <div
-          className="fixed inset-0 z-55"
-          onClick={() => {
-            setShowOpacityCard(false);
-            setShowAdvancedSettings(false);
-          }}
-        />
-      )}
     </div>
   );
 };
