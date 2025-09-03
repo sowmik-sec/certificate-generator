@@ -10,6 +10,11 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import { UndoButton, RedoButton } from "@/components/history-toolbar";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
 import { useParams } from "next/navigation";
 import { getTemplate } from "@/lib/templateMap";
 import {
@@ -71,19 +76,39 @@ const HeaderActions: React.FC<HeaderActionsProps> = ({
     <div className="flex items-center space-x-2">
       {/* Undo/Redo Controls */}
       <div className="flex items-center space-x-1 mr-2">
-        <UndoButton />
-        <RedoButton />
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div>
+              <UndoButton />
+            </div>
+          </TooltipTrigger>
+          <TooltipContent sideOffset={4}>Undo</TooltipContent>
+        </Tooltip>
+
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div>
+              <RedoButton />
+            </div>
+          </TooltipTrigger>
+          <TooltipContent sideOffset={4}>Redo</TooltipContent>
+        </Tooltip>
       </div>
 
       {selectedObject && (
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={deleteSelected}
-          className="p-2 text-gray-600 hover:bg-red-100 hover:text-red-600 rounded-lg transition-colors"
-        >
-          <Trash2 size={20} />
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={deleteSelected}
+              className="p-2 text-gray-600 hover:bg-red-100 hover:text-red-600 rounded-lg transition-colors"
+            >
+              <Trash2 size={20} />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent sideOffset={4}>Delete</TooltipContent>
+        </Tooltip>
       )}
 
       {templateId && (
