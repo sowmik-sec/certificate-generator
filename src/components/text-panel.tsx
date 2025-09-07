@@ -4,6 +4,16 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Frame, Search, Type } from "lucide-react";
 
 interface TextPanelProps {
   addHeading: (options?: object) => void;
@@ -81,149 +91,126 @@ const TextPanel: React.FC<TextPanelProps> = ({
       subtitleStyle: "",
       fontSize: 32,
       fontWeight: "900",
-      color: "#000000",
+      color: "var(--color-foreground)",
       fontFamily: "Arial Black",
     },
     {
       id: 2,
       preview: "brand",
       subtitle: "IDENTITY",
-      titleStyle: "text-2xl font-light text-purple-600",
-      subtitleStyle: "text-sm font-medium text-gray-600 tracking-widest",
+      titleStyle: "text-2xl font-light text-[var(--color-primary)]",
+      subtitleStyle:
+        "text-sm font-medium text-[var(--color-muted-foreground)] tracking-widest",
       fontSize: 28,
       fontWeight: "300",
-      color: "#9333ea",
+      color: "var(--color-primary)",
       subtitleFontSize: 14,
       subtitleFontWeight: "500",
-      subtitleColor: "#6b7280",
+      subtitleColor: "var(--color-muted-foreground)",
       fontFamily: "Arial",
     },
     {
       id: 3,
       preview: "user",
       subtitle: "FLOW",
-      titleStyle: "text-xl font-light italic text-gray-800",
-      subtitleStyle: "text-2xl font-black text-gray-900",
+      titleStyle: "text-xl font-light italic text-[var(--color-foreground)]",
+      subtitleStyle: "text-2xl font-black text-[var(--color-foreground)]",
       fontSize: 24,
       fontWeight: "300",
-      color: "#1f2937",
+      color: "var(--color-foreground)",
       subtitleFontSize: 32,
       subtitleFontWeight: "900",
-      subtitleColor: "#111827",
+      subtitleColor: "var(--color-foreground)",
       fontFamily: "Arial",
     },
     {
       id: 4,
       preview: "Net",
       subtitle: "REVENUE",
-      titleStyle: "text-2xl font-light italic text-gray-700",
-      subtitleStyle: "text-lg font-black text-blue-600 tracking-wider",
+      titleStyle:
+        "text-2xl font-light italic text-[var(--color-muted-foreground)]",
+      subtitleStyle:
+        "text-lg font-black text-[var(--color-destructive)] tracking-wider",
       fontSize: 28,
       fontWeight: "300",
-      color: "#374151",
+      color: "var(--color-muted-foreground)",
       subtitleFontSize: 20,
       subtitleFontWeight: "900",
-      subtitleColor: "#2563eb",
+      subtitleColor: "var(--color-destructive)",
       fontFamily: "Arial",
     },
     {
       id: 5,
       preview: "BULK",
       subtitle: "DEAL",
-      titleStyle: "text-3xl font-black text-purple-700",
-      subtitleStyle: "text-xl font-black text-blue-900",
+      titleStyle: "text-3xl font-black text-[var(--color-primary)]",
+      subtitleStyle: "text-xl font-black text-[var(--color-destructive)]",
       fontSize: 36,
       fontWeight: "900",
-      color: "#7c3aed",
+      color: "var(--color-primary)",
       subtitleFontSize: 24,
       subtitleFontWeight: "900",
-      subtitleColor: "#1e3a8a",
+      subtitleColor: "var(--color-destructive)",
       fontFamily: "Arial Black",
     },
     {
       id: 6,
       preview: "TEAM",
       subtitle: "EFFORT",
-      titleStyle: "text-sm font-medium text-gray-500 tracking-[0.3em]",
-      subtitleStyle: "text-xl font-black text-green-600",
+      titleStyle:
+        "text-sm font-medium text-[var(--color-muted-foreground)] tracking-[0.3em]",
+      subtitleStyle: "text-xl font-black text-[var(--color-destructive)]",
       fontSize: 16,
       fontWeight: "500",
-      color: "#6b7280",
+      color: "var(--color-muted-foreground)",
       subtitleFontSize: 24,
       subtitleFontWeight: "900",
-      subtitleColor: "#059669",
+      subtitleColor: "var(--color-destructive)",
       fontFamily: "Arial",
     },
     {
       id: 7,
       preview: "modern",
       subtitle: "STYLE",
-      titleStyle: "text-xl font-thin text-gray-900",
-      subtitleStyle: "text-sm font-bold text-pink-600 tracking-wider",
+      titleStyle: "text-xl font-thin text-[var(--color-foreground)]",
+      subtitleStyle:
+        "text-sm font-bold text-[var(--color-destructive)] tracking-wider",
       fontSize: 24,
       fontWeight: "100",
-      color: "#111827",
+      color: "var(--color-foreground)",
       subtitleFontSize: 16,
       subtitleFontWeight: "700",
-      subtitleColor: "#db2777",
+      subtitleColor: "var(--color-destructive)",
       fontFamily: "Arial",
     },
     {
       id: 8,
       preview: "BOLD",
       subtitle: "impact",
-      titleStyle: "text-2xl font-black text-red-600",
-      subtitleStyle: "text-lg font-light italic text-gray-700",
+      titleStyle: "text-2xl font-black text-[var(--color-destructive)]",
+      subtitleStyle:
+        "text-lg font-light italic text-[var(--color-muted-foreground)]",
       fontSize: 28,
       fontWeight: "900",
-      color: "#dc2626",
+      color: "var(--color-destructive)",
       subtitleFontSize: 20,
       subtitleFontWeight: "300",
-      subtitleColor: "#374151",
+      subtitleColor: "var(--color-muted-foreground)",
       fontFamily: "Arial Black",
     },
   ];
   const FrameIcon = ({ className }: { className?: string }) => (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-    >
-      <path d="M22 12h-4" />
-      <path d="M2 12H6" />
-      <path d="M12 2v4" />
-      <path d="M12 18v4" />
-      <rect width="16" height="16" x="4" y="4" rx="2" />
-    </svg>
+    <Frame className={className} />
   );
 
   return (
-    <div className="h-full flex flex-col bg-white">
+    <div className="h-full flex flex-col bg-[var(--color-background)]">
       {/* Sticky Header */}
-      <div className="sticky top-0 bg-white border-b border-gray-200 z-10 p-4 space-y-4">
+      <div className="sticky top-0 bg-[var(--color-background)] border-b border-[var(--color-border)] z-10 p-4 space-y-4">
         {/* Search Input */}
         <div className="relative">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <svg
-              className="h-5 w-5 text-gray-400"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
-            </svg>
+            <Search className="h-5 w-5 text-[var(--color-muted-foreground)]" />
           </div>
           <Input
             type="text"
@@ -235,135 +222,204 @@ const TextPanel: React.FC<TextPanelProps> = ({
         </div>
 
         {/* Add Text Box Button */}
-        <Button
-          onClick={() => addBodyText()}
-          className="w-full bg-purple-400 hover:bg-purple-800 hover:cursor-pointer py-3 px-4 font-medium flex items-center justify-center space-x-2"
-        >
-          <span className="text-xl">T</span>
-          <span>Add a text box</span>
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              onClick={() => addBodyText()}
+              className="w-full bg-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:cursor-pointer py-3 px-4 font-medium flex items-center justify-center space-x-2"
+            >
+              <Type className="w-5 h-5" />
+              <span>Add a text box</span>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Add a customizable text box to your design</p>
+          </TooltipContent>
+        </Tooltip>
       </div>
 
       {/* Scrollable Content */}
       <ScrollArea className="h-[600px] w-full">
-        <div className="p-4 space-y-8">
-          {/* Default Text Styles Section */}
-          <div className="space-y-3">
-            <h3 className="text-xl font-bold text-gray-900 mb-4">
-              Default text styles
-            </h3>
-
-            {/* Heading */}
-            <Button
-              onClick={() => addHeading()}
-              variant="outline"
-              className="w-full p-4 h-auto text-left justify-start hover:cursor-pointer"
-            >
-              <div className="text-3xl font-bold text-gray-900 group-hover:text-purple-600 transition-colors">
-                Add a heading
-              </div>
-            </Button>
-
-            {/* Subheading */}
-            <Button
-              onClick={() => addSubheading()}
-              variant="outline"
-              className="w-full p-4 h-auto text-left justify-start hover:cursor-pointer"
-            >
-              <div className="text-xl font-semibold text-gray-800 group-hover:text-purple-600 transition-colors">
-                Add a subheading
-              </div>
-            </Button>
-
-            {/* Body Text */}
-            <Button
-              onClick={() => addBodyText()}
-              variant="outline"
-              className="w-full p-4 h-auto text-left justify-start hover:cursor-pointer"
-            >
-              <div className="text-sm text-gray-700 group-hover:text-purple-600 transition-colors">
-                Add a little bit of body text
-              </div>
-            </Button>
-          </div>
-
-          {/* Dynamic Text Section */}
-          <div className="space-y-3">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">
-              Dynamic text
-            </h2>
-            <Button
-              onClick={addPageNumber}
-              variant="outline"
-              className="p-0 h-auto w-full hover:cursor-pointer"
-            >
-              <div className="flex items-center p-3 space-x-4 w-full max-w-xs cursor-pointer hover:bg-gray-50 transition-colors duration-200">
-                {/* Icon Container */}
-                <div className="relative flex-shrink-0 w-16 h-16 rounded-md overflow-hidden bg-gradient-to-br from-orange-400 to-red-600 shadow-md border-2 border-yellow-200">
-                  {/* Bottom right number '2' */}
-                  <span className="absolute bottom-1 right-2 text-2xl font-bold text-white">
-                    2
-                  </span>
-
-                  {/* Top left box with icon and number '1' */}
-                  <div className="absolute top-1 left-1 w-8 h-8 bg-red-900 rounded-sm flex items-center justify-center">
-                    <div className="relative w-full h-full">
-                      <FrameIcon className="absolute inset-0 w-full h-full text-white opacity-70" />
-                      <span className="absolute inset-0 flex items-center justify-center text-white font-bold text-sm">
-                        1
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Text Label */}
-                <p className="font-semibold text-gray-700 text-lg">
-                  Page numbers
-                </p>
-              </div>
-            </Button>
-          </div>
-
-          {/* Font Combinations Section */}
-          <div className="space-y-3">
-            <h3 className="text-xl font-bold text-gray-900 mb-4">
-              Font combinations
-            </h3>
-            <p className="text-xs text-gray-500">
-              Click any combination to add both texts to your design
-            </p>
-
-            <div className="grid grid-cols-2 gap-3">
-              {fontCombinations.map((combo) => (
-                <Button
-                  key={combo.id}
-                  onClick={() => addFontCombination(combo)}
-                  variant="outline"
-                  className="relative p-4 h-auto text-left justify-start group hover:cursor-pointer"
-                >
-                  <div className="space-y-1">
-                    <div
-                      className={`${
-                        combo.titleStyle || "font-bold text-xl"
-                      } text-gray-900 group-hover:text-purple-600 transition-colors truncate`}
+        <TooltipProvider>
+          <div className="p-4 space-y-8">
+            {/* Default Text Styles Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-xl font-bold text-[var(--color-foreground)]">
+                  Default text styles
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {/* Heading */}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      onClick={() => addHeading()}
+                      variant="outline"
+                      className="w-full p-4 h-auto text-left justify-start hover:cursor-pointer"
                     >
-                      {combo.preview}
-                    </div>
-                    {combo.subtitle && (
-                      <div
-                        className={`${
-                          combo.subtitleStyle || "text-sm text-gray-600"
-                        } group-hover:text-purple-500 transition-colors truncate`}
-                      >
-                        {combo.subtitle}
+                      <div className="text-3xl font-bold text-[var(--color-foreground)] group-hover:text-[var(--color-primary)] transition-colors">
+                        Add a heading
                       </div>
-                    )}
-                  </div>
-                </Button>
-              ))}
-            </div>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Add a large heading text to your design</p>
+                  </TooltipContent>
+                </Tooltip>
+
+                {/* Subheading */}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      onClick={() => addSubheading()}
+                      variant="outline"
+                      className="w-full p-4 h-auto text-left justify-start hover:cursor-pointer"
+                    >
+                      <div className="text-xl font-semibold text-[var(--color-foreground)] group-hover:text-[var(--color-primary)] transition-colors">
+                        Add a subheading
+                      </div>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Add a medium subheading text to your design</p>
+                  </TooltipContent>
+                </Tooltip>
+
+                {/* Body Text */}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      onClick={() => addBodyText()}
+                      variant="outline"
+                      className="w-full p-4 h-auto text-left justify-start hover:cursor-pointer"
+                    >
+                      <div className="text-sm text-[var(--color-muted-foreground)] group-hover:text-[var(--color-primary)] transition-colors">
+                        Add a little bit of body text
+                      </div>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Add regular body text to your design</p>
+                  </TooltipContent>
+                </Tooltip>
+              </CardContent>
+            </Card>
+
+            <Separator />
+
+            {/* Dynamic Text Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-xl font-bold text-[var(--color-foreground)]">
+                  Dynamic text
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      onClick={addPageNumber}
+                      variant="outline"
+                      className="p-0 h-auto w-full hover:cursor-pointer"
+                    >
+                      <div className="flex items-center p-3 space-x-4 w-full max-w-xs cursor-pointer hover:bg-[var(--color-muted)] transition-colors duration-200">
+                        {/* Icon Container */}
+                        <div className="relative flex-shrink-0 w-16 h-16 rounded-md overflow-hidden bg-gradient-to-br from-[var(--color-accent)] to-[var(--color-destructive)] shadow-md border-2 border-[var(--color-accent)]">
+                          {/* Bottom right number '2' */}
+                          <span className="absolute bottom-1 right-2 text-2xl font-bold text-[var(--color-primary-foreground)]">
+                            2
+                          </span>
+
+                          {/* Top left box with icon and number '1' */}
+                          <div className="absolute top-1 left-1 w-8 h-8 bg-[var(--color-destructive)] rounded-sm flex items-center justify-center">
+                            <div className="relative w-full h-full">
+                              <FrameIcon className="absolute inset-0 w-full h-full text-[var(--color-primary-foreground)] opacity-70" />
+                              <span className="absolute inset-0 flex items-center justify-center text-[var(--color-primary-foreground)] font-bold text-sm">
+                                1
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Text Label */}
+                        <p className="font-semibold text-[var(--color-muted-foreground)] text-lg">
+                          Page numbers
+                        </p>
+                      </div>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Add automatic page numbering to your design</p>
+                  </TooltipContent>
+                </Tooltip>
+              </CardContent>
+            </Card>
+
+            <Separator />
+
+            {/* Font Combinations Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-xl font-bold text-[var(--color-foreground)]">
+                  Font combinations
+                </CardTitle>
+                <p className="text-xs text-[var(--color-muted-foreground)]">
+                  Click any combination to add both texts to your design
+                </p>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 gap-3">
+                  {fontCombinations.map((combo) => (
+                    <Tooltip key={combo.id}>
+                      <TooltipTrigger asChild>
+                        <Button
+                          onClick={() => addFontCombination(combo)}
+                          variant="outline"
+                          className="relative p-4 h-auto text-left justify-start group hover:cursor-pointer"
+                        >
+                          <div className="space-y-1">
+                            <div
+                              className={`${
+                                combo.titleStyle || "font-bold text-xl"
+                              } text-[var(--color-foreground)] group-hover:text-[var(--color-primary)] transition-colors truncate`}
+                            >
+                              {combo.preview}
+                            </div>
+                            {combo.subtitle && (
+                              <div
+                                className={`${
+                                  combo.subtitleStyle ||
+                                  "text-sm text-[var(--color-muted-foreground)]"
+                                } group-hover:text-[var(--color-destructive)] transition-colors truncate`}
+                              >
+                                {combo.subtitle}
+                              </div>
+                            )}
+                          </div>
+                          <Badge
+                            variant="secondary"
+                            className="absolute top-2 right-2 text-xs"
+                          >
+                            {combo.id}
+                          </Badge>
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>
+                          Add &quot;{combo.preview}&quot;{" "}
+                          {combo.subtitle &&
+                            `with &quot;${combo.subtitle}&quot;`}{" "}
+                          to your design
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
           </div>
-        </div>
+        </TooltipProvider>
       </ScrollArea>
     </div>
   );

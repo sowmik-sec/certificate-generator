@@ -11,7 +11,7 @@ export function cn(...inputs: ClassValue[]) {
  * @param canvas - The fabric canvas instance to render
  * @param skipErrorLogging - Whether to skip logging render errors (default: false)
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 export function safeCanvasRender(canvas: any, skipErrorLogging = false) {
   if (!canvas) return;
 
@@ -57,7 +57,7 @@ export function safeCanvasRender(canvas: any, skipErrorLogging = false) {
  * @param operation - The operation to perform
  * @param skipErrorLogging - Whether to skip logging errors
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 export function safeCanvasOperation(
   canvas: any,
   operation: () => void,
