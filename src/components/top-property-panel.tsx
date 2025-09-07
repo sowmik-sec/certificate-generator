@@ -304,9 +304,9 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
   const renderTextControls = () => (
     <div className="flex items-center gap-3">
       {/* Font Family Dropdown */}
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <DropdownMenu>
+      <DropdownMenu modal={false}>
+        <Tooltip>
+          <TooltipTrigger asChild>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
@@ -317,33 +317,33 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
                 </span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent
-              className="min-w-[160px] max-h-64"
-              style={{ zIndex: 70 }}
-              sideOffset={15}
-              data-selection-ui
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Font Family</p>
+          </TooltipContent>
+        </Tooltip>
+        <DropdownMenuContent
+          className="min-w-[160px] max-h-64"
+          style={{ zIndex: 70 }}
+          sideOffset={15}
+          data-selection-ui
+        >
+          {fontOptions.map((font) => (
+            <DropdownMenuItem
+              key={font}
+              onClick={() => handlePropertyChange("fontFamily", font)}
+              className={`cursor-pointer ${
+                attributes.fontFamily === font
+                  ? "bg-[var(--color-accent)] text-[var(--color-primary)]"
+                  : "text-[var(--color-foreground)]"
+              }`}
+              style={{ fontFamily: font }}
             >
-              {fontOptions.map((font) => (
-                <DropdownMenuItem
-                  key={font}
-                  onClick={() => handlePropertyChange("fontFamily", font)}
-                  className={`cursor-pointer ${
-                    attributes.fontFamily === font
-                      ? "bg-[var(--color-accent)] text-[var(--color-primary)]"
-                      : "text-[var(--color-foreground)]"
-                  }`}
-                  style={{ fontFamily: font }}
-                >
-                  {font}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p>Font Family</p>
-        </TooltipContent>
-      </Tooltip>
+              {font}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
 
       {/* Font Size Controls */}
       <div className="flex items-center gap-1">
@@ -384,13 +384,13 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
 
       {/* Font Color */}
       <div className="flex items-center">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <DropdownMenu
-              modal={false}
-              open={textColorPickerOpen}
-              onOpenChange={handleTextColorPickerOpenChange}
-            >
+        <DropdownMenu
+          modal={false}
+          open={textColorPickerOpen}
+          onOpenChange={handleTextColorPickerOpenChange}
+        >
+          <Tooltip>
+            <TooltipTrigger asChild>
               <DropdownMenuTrigger asChild>
                 <Label className="flex items-center cursor-pointer group">
                   <div className="w-10 h-10 flex flex-col items-center justify-center relative">
@@ -405,35 +405,35 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
                   </div>
                 </Label>
               </DropdownMenuTrigger>
-              <DropdownMenuContent
-                className="p-3 z-[9999]"
-                align="start"
-                sideOffset={15}
-                data-selection-ui
-              >
-                <div
-                  ref={textColorPickerRef}
-                  className="color-picker-container"
-                  onClick={(e) => e.stopPropagation()}
-                  onMouseDown={(e) => e.stopPropagation()}
-                  onMouseUp={(e) => e.stopPropagation()}
-                  onPointerDown={(e) => e.stopPropagation()}
-                  onPointerUp={(e) => e.stopPropagation()}
-                  onTouchStart={(e) => e.stopPropagation()}
-                  onTouchEnd={(e) => e.stopPropagation()}
-                >
-                  <HexColorPicker
-                    color={attributes.fill || "#000000"}
-                    onChange={(color) => handlePropertyChange("fill", color)}
-                  />
-                </div>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Text Color</p>
-          </TooltipContent>
-        </Tooltip>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Text Color</p>
+            </TooltipContent>
+          </Tooltip>
+          <DropdownMenuContent
+            className="p-3 z-[9999]"
+            align="start"
+            sideOffset={15}
+            data-selection-ui
+          >
+            <div
+              ref={textColorPickerRef}
+              className="color-picker-container"
+              onClick={(e) => e.stopPropagation()}
+              onMouseDown={(e) => e.stopPropagation()}
+              onMouseUp={(e) => e.stopPropagation()}
+              onPointerDown={(e) => e.stopPropagation()}
+              onPointerUp={(e) => e.stopPropagation()}
+              onTouchStart={(e) => e.stopPropagation()}
+              onTouchEnd={(e) => e.stopPropagation()}
+            >
+              <HexColorPicker
+                color={attributes.fill || "#000000"}
+                onChange={(color) => handlePropertyChange("fill", color)}
+              />
+            </div>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* Text Formatting */}
@@ -599,9 +599,9 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
       </Tooltip>
 
       {/* Advanced Settings - Only for Text */}
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <DropdownMenu>
+      <DropdownMenu modal={false}>
+        <Tooltip>
+          <TooltipTrigger asChild>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
@@ -612,133 +612,130 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
                 <MoveHorizontal className="w-6 h-3" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent
-              className="w-72 p-4 z-[9999]"
-              align="start"
-              sideOffset={15}
-              data-selection-ui
-            >
-              <DropdownMenuLabel className="text-sm font-medium text-[var(--color-foreground)] mb-3">
-                Advanced Text Settings
-              </DropdownMenuLabel>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Advanced Settings</p>
+          </TooltipContent>
+        </Tooltip>
+        <DropdownMenuContent
+          className="w-72 p-4 z-[9999]"
+          align="start"
+          sideOffset={15}
+          data-selection-ui
+        >
+          <DropdownMenuLabel className="text-sm font-medium text-[var(--color-foreground)] mb-3">
+            Advanced Text Settings
+          </DropdownMenuLabel>
 
-              {/* Letter Spacing */}
-              <div className="space-y-2 mb-4">
-                <label className="text-sm font-medium text-[var(--color-foreground)]">
-                  Letter spacing
-                </label>
-                <div className="flex items-center gap-3">
-                  <Slider
-                    min={-200}
-                    max={800}
-                    step={1}
-                    value={[attributes.charSpacing || 0]}
-                    onValueChange={(val) =>
-                      handlePropertyChange("charSpacing", val[0])
-                    }
-                    className="flex-1"
-                  />
-                  <Input
-                    type="number"
-                    min={-200}
-                    max={800}
-                    value={attributes.charSpacing || 0}
-                    onChange={(e) =>
-                      handlePropertyChange(
-                        "charSpacing",
-                        Number(e.target.value)
-                      )
-                    }
-                    className="w-16 h-8"
-                  />
-                </div>
-              </div>
+          {/* Letter Spacing */}
+          <div className="space-y-2 mb-4">
+            <label className="text-sm font-medium text-[var(--color-foreground)]">
+              Letter spacing
+            </label>
+            <div className="flex items-center gap-3">
+              <Slider
+                min={-200}
+                max={800}
+                step={1}
+                value={[attributes.charSpacing || 0]}
+                onValueChange={(val) =>
+                  handlePropertyChange("charSpacing", val[0])
+                }
+                className="flex-1"
+              />
+              <Input
+                type="number"
+                min={-200}
+                max={800}
+                value={attributes.charSpacing || 0}
+                onChange={(e) =>
+                  handlePropertyChange("charSpacing", Number(e.target.value))
+                }
+                className="w-16 h-8"
+              />
+            </div>
+          </div>
 
-              {/* Line Spacing */}
-              <div className="space-y-2 mb-4">
-                <label className="text-sm font-medium text-[var(--color-foreground)]">
-                  Line spacing
-                </label>
-                <div className="flex items-center gap-3">
-                  <Slider
-                    min={0.5}
-                    max={3}
-                    step={0.01}
-                    value={[attributes.lineHeight || 1.16]}
-                    onValueChange={(val) =>
-                      handlePropertyChange("lineHeight", val[0])
-                    }
-                    className="flex-1"
-                  />
-                  <Input
-                    type="number"
-                    min={0.5}
-                    max={3}
-                    step={0.01}
-                    value={attributes.lineHeight || 1.16}
-                    onChange={(e) =>
-                      handlePropertyChange("lineHeight", Number(e.target.value))
-                    }
-                    className="w-16 h-8"
-                  />
-                </div>
-              </div>
+          {/* Line Spacing */}
+          <div className="space-y-2 mb-4">
+            <label className="text-sm font-medium text-[var(--color-foreground)]">
+              Line spacing
+            </label>
+            <div className="flex items-center gap-3">
+              <Slider
+                min={0.5}
+                max={3}
+                step={0.01}
+                value={[attributes.lineHeight || 1.16]}
+                onValueChange={(val) =>
+                  handlePropertyChange("lineHeight", val[0])
+                }
+                className="flex-1"
+              />
+              <Input
+                type="number"
+                min={0.5}
+                max={3}
+                step={0.01}
+                value={attributes.lineHeight || 1.16}
+                onChange={(e) =>
+                  handlePropertyChange("lineHeight", Number(e.target.value))
+                }
+                className="w-16 h-8"
+              />
+            </div>
+          </div>
 
-              {/* Text Alignment */}
-              <div className="space-y-2 mb-4">
-                <label className="text-sm font-medium text-[var(--color-foreground)]">
-                  Text alignment
-                </label>
-                <div className="flex items-center gap-1">
-                  <Button
-                    variant={
-                      attributes.textAlign === "left" ? "secondary" : "ghost"
-                    }
-                    size="sm"
-                    className="px-2 py-1 h-8"
-                    onClick={() => handlePropertyChange("textAlign", "left")}
-                  >
-                    <AlignStartVertical className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant={
-                      attributes.textAlign === "center" ? "secondary" : "ghost"
-                    }
-                    size="sm"
-                    className="px-2 py-1 h-8"
-                    onClick={() => handlePropertyChange("textAlign", "center")}
-                  >
-                    <AlignCenterVertical className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant={
-                      attributes.textAlign === "right" ? "secondary" : "ghost"
-                    }
-                    size="sm"
-                    className="px-2 py-1 h-8"
-                    onClick={() => handlePropertyChange("textAlign", "right")}
-                  >
-                    <AlignEndVertical className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-
-              <DropdownMenuSeparator />
-
-              {/* More Settings Button */}
-              <DropdownMenuItem
-                className="w-full mt-2 cursor-pointer font-semibold"
-                onClick={() => setEditorMode("advanced-settings")}
+          {/* Text Alignment */}
+          <div className="space-y-2 mb-4">
+            <label className="text-sm font-medium text-[var(--color-foreground)]">
+              Text alignment
+            </label>
+            <div className="flex items-center gap-1">
+              <Button
+                variant={
+                  attributes.textAlign === "left" ? "secondary" : "ghost"
+                }
+                size="sm"
+                className="px-2 py-1 h-8"
+                onClick={() => handlePropertyChange("textAlign", "left")}
               >
-                More Settings
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p>Advanced Settings</p>
-        </TooltipContent>
-      </Tooltip>
+                <AlignStartVertical className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={
+                  attributes.textAlign === "center" ? "secondary" : "ghost"
+                }
+                size="sm"
+                className="px-2 py-1 h-8"
+                onClick={() => handlePropertyChange("textAlign", "center")}
+              >
+                <AlignCenterVertical className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={
+                  attributes.textAlign === "right" ? "secondary" : "ghost"
+                }
+                size="sm"
+                className="px-2 py-1 h-8"
+                onClick={() => handlePropertyChange("textAlign", "right")}
+              >
+                <AlignEndVertical className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+
+          <DropdownMenuSeparator />
+
+          {/* More Settings Button */}
+          <DropdownMenuItem
+            className="w-full mt-2 cursor-pointer font-semibold"
+            onClick={() => setEditorMode("advanced-settings")}
+          >
+            More Settings
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
       {/* Separator */}
       <Separator orientation="vertical" className="h-7 mx-1" />
 
@@ -765,13 +762,13 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
     <div className="flex items-center gap-3">
       {/* Shape Color */}
       <div className="flex items-center">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <DropdownMenu
-              modal={false}
-              open={shapeFillColorPickerOpen}
-              onOpenChange={handleShapeFillColorPickerOpenChange}
-            >
+        <DropdownMenu
+          modal={false}
+          open={shapeFillColorPickerOpen}
+          onOpenChange={handleShapeFillColorPickerOpenChange}
+        >
+          <Tooltip>
+            <TooltipTrigger asChild>
               <DropdownMenuTrigger asChild>
                 <Label className="flex items-center cursor-pointer group">
                   <div className="w-10 h-10 flex items-center justify-center">
@@ -782,46 +779,46 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
                   </div>
                 </Label>
               </DropdownMenuTrigger>
-              <DropdownMenuContent
-                className="p-3 z-[9999]"
-                align="start"
-                sideOffset={15}
-                data-selection-ui
-              >
-                <div
-                  ref={shapeFillColorPickerRef}
-                  className="color-picker-container"
-                  onClick={(e) => e.stopPropagation()}
-                  onMouseDown={(e) => e.stopPropagation()}
-                  onMouseUp={(e) => e.stopPropagation()}
-                  onPointerDown={(e) => e.stopPropagation()}
-                  onPointerUp={(e) => e.stopPropagation()}
-                  onTouchStart={(e) => e.stopPropagation()}
-                  onTouchEnd={(e) => e.stopPropagation()}
-                >
-                  <HexColorPicker
-                    color={attributes.fill || "#000000"}
-                    onChange={(color) => handlePropertyChange("fill", color)}
-                  />
-                </div>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Shape Color</p>
-          </TooltipContent>
-        </Tooltip>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Shape Color</p>
+            </TooltipContent>
+          </Tooltip>
+          <DropdownMenuContent
+            className="p-3 z-[9999]"
+            align="start"
+            sideOffset={15}
+            data-selection-ui
+          >
+            <div
+              ref={shapeFillColorPickerRef}
+              className="color-picker-container"
+              onClick={(e) => e.stopPropagation()}
+              onMouseDown={(e) => e.stopPropagation()}
+              onMouseUp={(e) => e.stopPropagation()}
+              onPointerDown={(e) => e.stopPropagation()}
+              onPointerUp={(e) => e.stopPropagation()}
+              onTouchStart={(e) => e.stopPropagation()}
+              onTouchEnd={(e) => e.stopPropagation()}
+            >
+              <HexColorPicker
+                color={attributes.fill || "#000000"}
+                onChange={(color) => handlePropertyChange("fill", color)}
+              />
+            </div>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* Stroke Color */}
       <div className="flex items-center">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <DropdownMenu
-              modal={false}
-              open={shapeStrokeColorPickerOpen}
-              onOpenChange={handleShapeStrokeColorPickerOpenChange}
-            >
+        <DropdownMenu
+          modal={false}
+          open={shapeStrokeColorPickerOpen}
+          onOpenChange={handleShapeStrokeColorPickerOpenChange}
+        >
+          <Tooltip>
+            <TooltipTrigger asChild>
               <DropdownMenuTrigger asChild>
                 <label className="flex items-center cursor-pointer group">
                   <div className="w-10 h-10 flex items-center justify-center">
@@ -835,35 +832,35 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
                   </div>
                 </label>
               </DropdownMenuTrigger>
-              <DropdownMenuContent
-                className="p-3 z-[9999]"
-                align="start"
-                sideOffset={15}
-                data-selection-ui
-              >
-                <div
-                  ref={shapeStrokeColorPickerRef}
-                  className="color-picker-container"
-                  onClick={(e) => e.stopPropagation()}
-                  onMouseDown={(e) => e.stopPropagation()}
-                  onMouseUp={(e) => e.stopPropagation()}
-                  onPointerDown={(e) => e.stopPropagation()}
-                  onPointerUp={(e) => e.stopPropagation()}
-                  onTouchStart={(e) => e.stopPropagation()}
-                  onTouchEnd={(e) => e.stopPropagation()}
-                >
-                  <HexColorPicker
-                    color={attributes.stroke || "#333333"}
-                    onChange={(color) => handlePropertyChange("stroke", color)}
-                  />
-                </div>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Border Color</p>
-          </TooltipContent>
-        </Tooltip>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Border Color</p>
+            </TooltipContent>
+          </Tooltip>
+          <DropdownMenuContent
+            className="p-3 z-[9999]"
+            align="start"
+            sideOffset={15}
+            data-selection-ui
+          >
+            <div
+              ref={shapeStrokeColorPickerRef}
+              className="color-picker-container"
+              onClick={(e) => e.stopPropagation()}
+              onMouseDown={(e) => e.stopPropagation()}
+              onMouseUp={(e) => e.stopPropagation()}
+              onPointerDown={(e) => e.stopPropagation()}
+              onPointerUp={(e) => e.stopPropagation()}
+              onTouchStart={(e) => e.stopPropagation()}
+              onTouchEnd={(e) => e.stopPropagation()}
+            >
+              <HexColorPicker
+                color={attributes.stroke || "#333333"}
+                onChange={(color) => handlePropertyChange("stroke", color)}
+              />
+            </div>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* Stroke Width */}
@@ -915,13 +912,13 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
     <div className="flex items-center gap-3">
       {/* Line Color */}
       <div className="flex items-center">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <DropdownMenu
-              modal={false}
-              open={lineColorPickerOpen}
-              onOpenChange={handleLineColorPickerOpenChange}
-            >
+        <DropdownMenu
+          modal={false}
+          open={lineColorPickerOpen}
+          onOpenChange={handleLineColorPickerOpenChange}
+        >
+          <Tooltip>
+            <TooltipTrigger asChild>
               <DropdownMenuTrigger asChild>
                 <label className="flex items-center cursor-pointer group">
                   <div className="w-10 h-10 flex items-center justify-center">
@@ -934,35 +931,35 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
                   </div>
                 </label>
               </DropdownMenuTrigger>
-              <DropdownMenuContent
-                className="p-3 z-[9999]"
-                align="start"
-                sideOffset={15}
-                data-selection-ui
-              >
-                <div
-                  ref={lineColorPickerRef}
-                  className="color-picker-container"
-                  onClick={(e) => e.stopPropagation()}
-                  onMouseDown={(e) => e.stopPropagation()}
-                  onMouseUp={(e) => e.stopPropagation()}
-                  onPointerDown={(e) => e.stopPropagation()}
-                  onPointerUp={(e) => e.stopPropagation()}
-                  onTouchStart={(e) => e.stopPropagation()}
-                  onTouchEnd={(e) => e.stopPropagation()}
-                >
-                  <HexColorPicker
-                    color={attributes.stroke || "#000000"}
-                    onChange={(color) => handlePropertyChange("stroke", color)}
-                  />
-                </div>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Line Color</p>
-          </TooltipContent>
-        </Tooltip>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Line Color</p>
+            </TooltipContent>
+          </Tooltip>
+          <DropdownMenuContent
+            className="p-3 z-[9999]"
+            align="start"
+            sideOffset={15}
+            data-selection-ui
+          >
+            <div
+              ref={lineColorPickerRef}
+              className="color-picker-container"
+              onClick={(e) => e.stopPropagation()}
+              onMouseDown={(e) => e.stopPropagation()}
+              onMouseUp={(e) => e.stopPropagation()}
+              onPointerDown={(e) => e.stopPropagation()}
+              onPointerUp={(e) => e.stopPropagation()}
+              onTouchStart={(e) => e.stopPropagation()}
+              onTouchEnd={(e) => e.stopPropagation()}
+            >
+              <HexColorPicker
+                color={attributes.stroke || "#000000"}
+                onChange={(color) => handlePropertyChange("stroke", color)}
+              />
+            </div>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* Line Width */}
@@ -1016,9 +1013,9 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
       <Separator orientation="vertical" className="h-7 mx-1" />
 
       {/* Transparency */}
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <DropdownMenu>
+      <DropdownMenu modal={false}>
+        <Tooltip>
+          <TooltipTrigger asChild>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
@@ -1028,37 +1025,35 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
                 <Droplets className="w-5 h-5" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent
-              className="w-64 p-4 z-[9999]"
-              align="start"
-              sideOffset={15}
-              data-selection-ui
-            >
-              <DropdownMenuLabel className="text-sm font-medium text-[var(--color-foreground)] mb-3">
-                Transparency
-              </DropdownMenuLabel>
-              <div className="flex items-center gap-3">
-                <Slider
-                  min={0}
-                  max={1}
-                  step={0.01}
-                  value={[attributes.opacity || 1]}
-                  onValueChange={(val) =>
-                    handlePropertyChange("opacity", val[0])
-                  }
-                  className="flex-1"
-                />
-                <span className="text-sm text-[var(--color-foreground)] font-semibold min-w-[35px] text-center">
-                  {Math.round((attributes.opacity || 1) * 100)}%
-                </span>
-              </div>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p>Transparency</p>
-        </TooltipContent>
-      </Tooltip>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Transparency</p>
+          </TooltipContent>
+        </Tooltip>
+        <DropdownMenuContent
+          className="w-64 p-4 z-[9999]"
+          align="start"
+          sideOffset={15}
+          data-selection-ui
+        >
+          <DropdownMenuLabel className="text-sm font-medium text-[var(--color-foreground)] mb-3">
+            Transparency
+          </DropdownMenuLabel>
+          <div className="flex items-center gap-3">
+            <Slider
+              min={0}
+              max={1}
+              step={0.01}
+              value={[attributes.opacity || 1]}
+              onValueChange={(val) => handlePropertyChange("opacity", val[0])}
+              className="flex-1"
+            />
+            <span className="text-sm text-[var(--color-foreground)] font-semibold min-w-[35px] text-center">
+              {Math.round((attributes.opacity || 1) * 100)}%
+            </span>
+          </div>
+        </DropdownMenuContent>
+      </DropdownMenu>
 
       {/* Separator */}
       <Separator orientation="vertical" className="h-7 mx-1" />
