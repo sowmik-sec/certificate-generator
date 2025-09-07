@@ -231,8 +231,10 @@ const PositionLeftPanel: React.FC<PositionLeftPanelProps> = ({
   return (
     <div className="w-full h-full flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0">
-        <h3 className="text-lg font-semibold text-gray-900">Position</h3>
+      <div className="flex items-center justify-between p-6 flex-shrink-0 border-b border-[var(--color-border)]">
+        <h3 className="text-lg font-semibold text-[var(--color-foreground)]">
+          Position
+        </h3>
         <Button
           onClick={onClose}
           variant="ghost"
@@ -250,7 +252,7 @@ const PositionLeftPanel: React.FC<PositionLeftPanelProps> = ({
         className="flex-1 flex flex-col overflow-hidden"
       >
         {/* Tab Navigation */}
-        <div className="px-6 py-4 border-b border-gray-200 flex-shrink-0">
+        <div className="px-6 py-4 border-b border-[var(--color-border)] flex-shrink-0">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger
               value="arrange"
@@ -276,7 +278,7 @@ const PositionLeftPanel: React.FC<PositionLeftPanelProps> = ({
                 <Button
                   variant="outline"
                   onClick={bringForward}
-                  className="flex items-center gap-2 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="flex items-center gap-2 p-3 rounded-lg transition-colors border border-[var(--color-border)]"
                 >
                   <ChevronUp className="w-5 h-5" />
                   <span className="text-sm font-medium">Forward</span>
@@ -284,7 +286,7 @@ const PositionLeftPanel: React.FC<PositionLeftPanelProps> = ({
                 <Button
                   variant="outline"
                   onClick={sendBackward}
-                  className="flex items-center gap-2 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="flex items-center gap-2 p-3 rounded-lg transition-colors border border-[var(--color-border)]"
                 >
                   <ChevronDown className="w-5 h-5" />
                   <span className="text-sm font-medium">Backward</span>
@@ -292,7 +294,7 @@ const PositionLeftPanel: React.FC<PositionLeftPanelProps> = ({
                 <Button
                   variant="outline"
                   onClick={bringToFront}
-                  className="flex items-center gap-2 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="flex items-center gap-2 p-3 rounded-lg transition-colors border border-[var(--color-border)]"
                 >
                   <ChevronUp className="w-5 h-5" />
                   <span className="text-sm font-medium">To front</span>
@@ -300,7 +302,7 @@ const PositionLeftPanel: React.FC<PositionLeftPanelProps> = ({
                 <Button
                   variant="outline"
                   onClick={sendToBack}
-                  className="flex items-center gap-2 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="flex items-center gap-2 p-3 rounded-lg transition-colors border border-[var(--color-border)]"
                 >
                   <ChevronDown className="w-5 h-5" />
                   <span className="text-sm font-medium">To back</span>
@@ -311,14 +313,14 @@ const PositionLeftPanel: React.FC<PositionLeftPanelProps> = ({
 
               {/* Align to page Section */}
               <div className="mb-6">
-                <h4 className="text-sm font-medium text-gray-900 mb-4">
+                <h4 className="text-sm font-medium mb-4 text-[var(--color-foreground)]">
                   Align to page
                 </h4>
                 <div className="grid grid-cols-2 gap-3">
                   <Button
                     variant="outline"
                     onClick={alignToTop}
-                    className="flex items-center gap-2 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                    className="flex items-center gap-2 p-3 rounded-lg transition-colors border border-[var(--color-border)]"
                   >
                     <AlignVerticalJustifyStart className="w-5 h-5" />
                     <span className="text-sm font-medium">Top</span>
@@ -326,7 +328,7 @@ const PositionLeftPanel: React.FC<PositionLeftPanelProps> = ({
                   <Button
                     variant="outline"
                     onClick={alignToLeft}
-                    className="flex items-center gap-2 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                    className="flex items-center gap-2 p-3 rounded-lg transition-colors border border-[var(--color-border)]"
                   >
                     <AlignHorizontalJustifyStart className="w-5 h-5" />
                     <span className="text-sm font-medium">Left</span>
@@ -334,7 +336,7 @@ const PositionLeftPanel: React.FC<PositionLeftPanelProps> = ({
                   <Button
                     variant="outline"
                     onClick={alignToMiddle}
-                    className="flex items-center gap-2 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                    className="flex items-center gap-2 p-3 rounded-lg transition-colors border border-[var(--color-border)]"
                   >
                     <AlignVerticalJustifyCenter className="w-5 h-5" />
                     <span className="text-sm font-medium">Middle</span>
@@ -342,7 +344,7 @@ const PositionLeftPanel: React.FC<PositionLeftPanelProps> = ({
                   <Button
                     variant="outline"
                     onClick={alignToCenter}
-                    className="flex items-center gap-2 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                    className="flex items-center gap-2 p-3 rounded-lg transition-colors border border-[var(--color-border)]"
                   >
                     <AlignHorizontalJustifyCenter className="w-5 h-5" />
                     <span className="text-sm font-medium">Center</span>
@@ -350,7 +352,7 @@ const PositionLeftPanel: React.FC<PositionLeftPanelProps> = ({
                   <Button
                     variant="outline"
                     onClick={alignToBottom}
-                    className="flex items-center gap-2 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                    className="flex items-center gap-2 p-3 rounded-lg transition-colors border border-[var(--color-border)]"
                   >
                     <AlignVerticalJustifyEnd className="w-5 h-5" />
                     <span className="text-sm font-medium">Bottom</span>
@@ -358,7 +360,7 @@ const PositionLeftPanel: React.FC<PositionLeftPanelProps> = ({
                   <Button
                     variant="outline"
                     onClick={alignToRight}
-                    className="flex items-center gap-2 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                    className="flex items-center gap-2 p-3 rounded-lg transition-colors border border-[var(--color-border)]"
                   >
                     <AlignHorizontalJustifyEnd className="w-5 h-5" />
                     <span className="text-sm font-medium">Right</span>
@@ -371,14 +373,14 @@ const PositionLeftPanel: React.FC<PositionLeftPanelProps> = ({
               {/* Advanced Section */}
               <Card>
                 <CardContent className="p-4">
-                  <h4 className="text-sm font-medium text-gray-900 mb-4">
+                  <h4 className="text-sm font-medium mb-4 text-[var(--color-foreground)]">
                     Advanced
                   </h4>
 
                   {/* Width, Height, and Ratio Row */}
                   <div className="grid grid-cols-3 gap-2 mb-4">
                     <div>
-                      <Label className="block text-xs font-medium text-gray-600 mb-2">
+                      <Label className="block text-xs font-medium mb-2 text-[var(--color-muted-foreground)]">
                         Width
                       </Label>
                       <Input
@@ -391,12 +393,12 @@ const PositionLeftPanel: React.FC<PositionLeftPanelProps> = ({
                         step="0.01"
                         min="0.1"
                       />
-                      <span className="text-xs text-gray-500 mt-1 block">
+                      <span className="text-xs mt-1 block text-[var(--color-muted-foreground)]">
                         cm
                       </span>
                     </div>
                     <div>
-                      <Label className="block text-xs font-medium text-gray-600 mb-2">
+                      <Label className="block text-xs font-medium mb-2 text-[var(--color-muted-foreground)]">
                         Height
                       </Label>
                       <Input
@@ -408,29 +410,29 @@ const PositionLeftPanel: React.FC<PositionLeftPanelProps> = ({
                         disabled={isRatioLocked}
                         className={`w-full ${
                           isRatioLocked
-                            ? "bg-gray-100 text-gray-500"
-                            : "bg-white"
+                            ? "bg-[var(--color-muted)] text-[var(--color-muted-foreground)]"
+                            : "bg-[var(--color-input)]"
                         }`}
                         step="0.01"
                         min="0.1"
                       />
-                      <span className="text-xs text-gray-500 mt-1 block">
+                      <span className="text-xs mt-1 block text-[var(--color-muted-foreground)]">
                         cm
                       </span>
                     </div>
                     <div>
-                      <Label className="block text-xs font-medium text-gray-600 mb-2">
+                      <Label className="block text-xs font-medium mb-2 text-[var(--color-muted-foreground)]">
                         Ratio
                       </Label>
                       <Button
                         variant="outline"
                         onClick={toggleRatioLock}
-                        className={`w-full h-[42px] border rounded-md transition-colors flex items-center justify-center ${
-                          isRatioLocked
-                            ? "bg-purple-100 border-purple-300 text-purple-700"
-                            : "border-gray-300 text-gray-600 hover:bg-gray-50 bg-white"
-                        }`}
                         title={isRatioLocked ? "Unlock ratio" : "Lock ratio"}
+                        className={`w-full h-[42px] rounded-md transition-colors flex items-center justify-center ${
+                          isRatioLocked
+                            ? "bg-[var(--color-primary)] text-[var(--color-primary-foreground)] border-[var(--color-primary)]"
+                            : "border-[var(--color-border)] text-[var(--color-muted-foreground)] bg-[var(--color-input)]"
+                        }`}
                       >
                         {isRatioLocked ? (
                           <Lock className="w-5 h-5" />
@@ -444,7 +446,7 @@ const PositionLeftPanel: React.FC<PositionLeftPanelProps> = ({
                   {/* X, Y and Rotate Row */}
                   <div className="grid grid-cols-3 gap-2 mb-4">
                     <div>
-                      <Label className="block text-xs font-medium text-gray-600 mb-2">
+                      <Label className="block text-xs font-medium mb-2 text-[var(--color-muted-foreground)]">
                         X
                       </Label>
                       <Input
@@ -458,12 +460,12 @@ const PositionLeftPanel: React.FC<PositionLeftPanelProps> = ({
                         className="w-full"
                         step="0.01"
                       />
-                      <span className="text-xs text-gray-500 mt-1 block">
+                      <span className="text-xs mt-1 block text-[var(--color-muted-foreground)]">
                         cm
                       </span>
                     </div>
                     <div>
-                      <Label className="block text-xs font-medium text-gray-600 mb-2">
+                      <Label className="block text-xs font-medium mb-2 text-[var(--color-muted-foreground)]">
                         Y
                       </Label>
                       <Input
@@ -477,12 +479,12 @@ const PositionLeftPanel: React.FC<PositionLeftPanelProps> = ({
                         className="w-full"
                         step="0.01"
                       />
-                      <span className="text-xs text-gray-500 mt-1 block">
+                      <span className="text-xs mt-1 block text-[var(--color-muted-foreground)]">
                         cm
                       </span>
                     </div>
                     <div>
-                      <Label className="block text-xs font-medium text-gray-600 mb-2">
+                      <Label className="block text-xs font-medium mb-2 text-[var(--color-muted-foreground)]">
                         Rotate
                       </Label>
                       <Input
@@ -496,7 +498,7 @@ const PositionLeftPanel: React.FC<PositionLeftPanelProps> = ({
                         max="360"
                         step="1"
                       />
-                      <span className="text-xs text-gray-500 mt-1 block">
+                      <span className="text-xs mt-1 block text-[var(--color-muted-foreground)]">
                         °
                       </span>
                     </div>
