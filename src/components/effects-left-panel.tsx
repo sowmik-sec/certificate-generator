@@ -138,7 +138,8 @@ const SliderWithInput = memo(
           // Direct manipulation of fabric objects - bypass React entirely during drag
           if (
             selectedObject._isCurvedText ||
-            selectedObject.type === "curved-text"
+            selectedObject.type === "curved-text" ||
+            (selectedObject.type === "group" && selectedObject._isCurvedText)
           ) {
             const group = selectedObject;
             const objects = group.getObjects();
@@ -542,7 +543,9 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
           if (selectedObjectRef.current) {
             if (
               selectedObjectRef.current._isCurvedText ||
-              selectedObjectRef.current.type === "curved-text"
+              selectedObjectRef.current.type === "curved-text" ||
+              (selectedObjectRef.current.type === "group" &&
+                selectedObjectRef.current._isCurvedText)
             ) {
               selectedObjectRef.current._curveAmount = value;
             }
@@ -588,7 +591,8 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
       ) {
         if (
           selectedObject._isCurvedText ||
-          selectedObject.type === "curved-text"
+          selectedObject.type === "curved-text" ||
+          (selectedObject.type === "group" && selectedObject._isCurvedText)
         ) {
           // Allow deletion of curved text
           event.preventDefault();
@@ -612,7 +616,8 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
       ) {
         if (
           selectedObject._isCurvedText ||
-          selectedObject.type === "curved-text"
+          selectedObject.type === "curved-text" ||
+          (selectedObject.type === "group" && selectedObject._isCurvedText)
         ) {
           keyEvent.preventDefault();
           canvas.remove(selectedObject);
@@ -643,7 +648,8 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
 
       if (
         selectedObject._isCurvedText ||
-        selectedObject.type === "curved-text"
+        selectedObject.type === "curved-text" ||
+        (selectedObject.type === "group" && selectedObject._isCurvedText)
       ) {
         currentCurveValue = selectedObject._curveAmount || 0;
         isCurrentlyCurved = true;
@@ -877,7 +883,8 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
       // If it's a curved text group, apply effects to individual characters
       if (
         selectedObject._isCurvedText ||
-        selectedObject.type === "curved-text"
+        selectedObject.type === "curved-text" ||
+        (selectedObject.type === "group" && selectedObject._isCurvedText)
       ) {
         const group = selectedObject;
         const objects = group.getObjects();
@@ -943,7 +950,11 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
       // If curve is near zero, reset to normal text
       if (Math.abs(intensity) < 0.01) {
         // Remove curved text if it exists and replace with straight text
-        if (textObject._isCurvedText || textObject.type === "curved-text") {
+        if (
+          textObject._isCurvedText ||
+          textObject.type === "curved-text" ||
+          (textObject.type === "group" && textObject._isCurvedText)
+        ) {
           const straightText = new fabric.Text(originalText, {
             left: originalLeft,
             top: originalTop,
@@ -1079,23 +1090,58 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
           lockMovementY: false,
         });
 
-        // Add metadata to identify this as a curved text
-        (curvedTextGroup as any)._isCurvedText = true;
-        (curvedTextGroup as any)._originalText = originalText;
-        (curvedTextGroup as any)._curveAmount = curveAmount;
-        (curvedTextGroup as any)._fontSize = fontSize;
-        (curvedTextGroup as any)._fontFamily = fontFamily;
-        (curvedTextGroup as any)._fill = fill;
-        (curvedTextGroup as any)._stroke = stroke;
-        (curvedTextGroup as any)._strokeWidth = strokeWidth;
-        (curvedTextGroup as any).type = "curved-text";
+        // Add metadata to identify this as a curved text - use standard fabric properties
+        // to avoid serialization issues
+        Object.defineProperty(curvedTextGroup, "_isCurvedText", {
+          value: true,
+          enumerable: false, // Don't include in serialization
+          configurable: true,
+        });
+        Object.defineProperty(curvedTextGroup, "_originalText", {
+          value: originalText,
+          enumerable: false,
+          configurable: true,
+        });
+        Object.defineProperty(curvedTextGroup, "_curveAmount", {
+          value: curveAmount,
+          enumerable: false,
+          configurable: true,
+        });
+        Object.defineProperty(curvedTextGroup, "_fontSize", {
+          value: fontSize,
+          enumerable: false,
+          configurable: true,
+        });
+        Object.defineProperty(curvedTextGroup, "_fontFamily", {
+          value: fontFamily,
+          enumerable: false,
+          configurable: true,
+        });
+        Object.defineProperty(curvedTextGroup, "_fill", {
+          value: fill,
+          enumerable: false,
+          configurable: true,
+        });
+        Object.defineProperty(curvedTextGroup, "_stroke", {
+          value: stroke,
+          enumerable: false,
+          configurable: true,
+        });
+        Object.defineProperty(curvedTextGroup, "_strokeWidth", {
+          value: strokeWidth,
+          enumerable: false,
+          configurable: true,
+        });
+
+        // Set type to a standard fabric type to avoid serialization issues
+        curvedTextGroup.type = "group";
 
         // Add to canvas and make it active
         canvas.add(curvedTextGroup);
         canvas.setActiveObject(curvedTextGroup);
         canvas.renderAll();
 
-        // Fire selection events
+        // Fire selection events with a longer delay to ensure canvas is stable
         setTimeout(() => {
           canvas.fire("selection:cleared");
           canvas.fire("selection:created", {
@@ -1103,7 +1149,7 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
             selected: [curvedTextGroup],
           });
           canvas.fire("object:selected", { target: curvedTextGroup });
-        }, 10);
+        }, 50); // Increased delay
       }
     },
     [fabric, canvas]
@@ -1118,6 +1164,7 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
     (selectedObject.type !== "textbox" &&
       selectedObject.type !== "text" &&
       selectedObject.type !== "curved-text" &&
+      !(selectedObject.type === "group" && selectedObject._isCurvedText) &&
       !selectedObject._isCurvedText)
   ) {
     return (
@@ -1159,6 +1206,7 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
       selectedObject.type !== "textbox" &&
       selectedObject.type !== "text" &&
       selectedObject.type !== "curved-text" &&
+      !(selectedObject.type === "group" && selectedObject._isCurvedText) &&
       !selectedObject._isCurvedText
     ) {
       console.warn("Shape effects can only be applied to text objects");
@@ -1179,7 +1227,8 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
         // Reset to straight text
         if (
           selectedObject._isCurvedText ||
-          selectedObject.type === "curved-text"
+          selectedObject.type === "curved-text" ||
+          (selectedObject.type === "group" && selectedObject._isCurvedText)
         ) {
           const originalText = selectedObject._originalText || "";
           const fontSize = selectedObject._fontSize || 24;
@@ -1208,7 +1257,7 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
           canvas.setActiveObject(newTextObject);
           canvas.renderAll();
 
-          // Fire selection events
+          // Fire selection events with longer delay
           setTimeout(() => {
             canvas.fire("selection:cleared");
             canvas.fire("selection:created", {
@@ -1216,7 +1265,7 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
               selected: [newTextObject],
             });
             canvas.fire("object:selected", { target: newTextObject });
-          }, 10);
+          }, 50); // Increased delay
         } else {
           // Reset any transformations on regular text
           selectedObject.skewY = 0;
