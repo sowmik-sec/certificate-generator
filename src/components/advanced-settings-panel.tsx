@@ -98,13 +98,13 @@ const AdvancedSettingsPanel: React.FC<AdvancedSettingsPanelProps> = ({
   return (
     <div
       ref={panelRef}
-      className="absolute top-full -left-24 mt-3 w-72 rounded-lg border bg-white p-4 shadow-lg z-70"
+      className="absolute top-full -left-24 mt-3 w-72 rounded-lg border bg-background p-4 shadow-lg z-70"
     >
       <div className="space-y-4">
         <div className="">
           <Label
             htmlFor="letter-spacing"
-            className="text-sm font-medium text-gray-700"
+            className="text-sm font-medium text-foreground"
           >
             Letter spacing
           </Label>
@@ -135,7 +135,7 @@ const AdvancedSettingsPanel: React.FC<AdvancedSettingsPanelProps> = ({
         <div className="">
           <Label
             htmlFor="line-spacing"
-            className="text-sm font-medium text-gray-700"
+            className="text-sm font-medium text-foreground"
           >
             Line spacing
           </Label>
@@ -165,7 +165,7 @@ const AdvancedSettingsPanel: React.FC<AdvancedSettingsPanelProps> = ({
           </div>
         </div>
         <div className="">
-          <Label className="text-sm font-medium text-gray-700 mb-2 block">
+          <Label className="text-sm font-medium text-foreground mb-2 block">
             Anchor text box
           </Label>
           <div className="flex items-center gap-1">
@@ -181,12 +181,8 @@ const AdvancedSettingsPanel: React.FC<AdvancedSettingsPanelProps> = ({
                     <AlignStartVertical className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent
-                  side="bottom"
-                  className="!bg-slate-900 !text-white !border-slate-700 shadow-lg [&>*]:!text-white"
-                  style={{ backgroundColor: "rgb(15, 23, 42)", color: "white" }}
-                >
-                  <p style={{ color: "white" }}>Anchor start</p>
+                <TooltipContent side="bottom">
+                  <p>Anchor start</p>
                 </TooltipContent>
               </Tooltip>
               <Tooltip>
@@ -200,12 +196,8 @@ const AdvancedSettingsPanel: React.FC<AdvancedSettingsPanelProps> = ({
                     <AlignCenterVertical className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent
-                  side="bottom"
-                  className="!bg-slate-900 !text-white !border-slate-700 shadow-lg [&>*]:!text-white"
-                  style={{ backgroundColor: "rgb(15, 23, 42)", color: "white" }}
-                >
-                  <p style={{ color: "white" }}>Anchor middle</p>
+                <TooltipContent side="bottom">
+                  <p>Anchor middle</p>
                 </TooltipContent>
               </Tooltip>
               <Tooltip>
@@ -219,12 +211,8 @@ const AdvancedSettingsPanel: React.FC<AdvancedSettingsPanelProps> = ({
                     <AlignEndVertical className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent
-                  side="bottom"
-                  className="!bg-slate-900 !text-white !border-slate-700 shadow-lg [&>*]:!text-white"
-                  style={{ backgroundColor: "rgb(15, 23, 42)", color: "white" }}
-                >
-                  <p style={{ color: "white" }}>Anchor end</p>
+                <TooltipContent side="bottom">
+                  <p>Anchor end</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
