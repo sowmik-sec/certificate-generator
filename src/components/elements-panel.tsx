@@ -9,6 +9,15 @@ import {
   Hexagon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface ElementsPanelProps {
   addSquare: (options?: { fill?: string }) => void;
@@ -64,7 +73,9 @@ const ElementsPanel: React.FC<ElementsPanelProps> = ({
   const shapes = [
     {
       name: "Square",
-      icon: <Square size={32} className="text-gray-700" />,
+      icon: (
+        <Square size={32} className="text-[var(--color-muted-foreground)]" />
+      ),
       action: () => addSquare({ fill: shapeColor }),
     },
     {
@@ -74,7 +85,7 @@ const ElementsPanel: React.FC<ElementsPanelProps> = ({
           width="32"
           height="32"
           viewBox="0 0 32 32"
-          className="text-gray-700"
+          className="text-[var(--color-muted-foreground)]"
         >
           <rect
             x="4"
@@ -91,7 +102,9 @@ const ElementsPanel: React.FC<ElementsPanelProps> = ({
     },
     {
       name: "Circle",
-      icon: <Circle size={32} className="text-gray-700" />,
+      icon: (
+        <Circle size={32} className="text-[var(--color-muted-foreground)]" />
+      ),
       action: () => addCircle({ fill: shapeColor }),
     },
     {
@@ -101,7 +114,7 @@ const ElementsPanel: React.FC<ElementsPanelProps> = ({
           width="32"
           height="32"
           viewBox="0 0 32 32"
-          className="text-gray-700"
+          className="text-[var(--color-muted-foreground)]"
         >
           <ellipse
             cx="16"
@@ -118,22 +131,28 @@ const ElementsPanel: React.FC<ElementsPanelProps> = ({
     },
     {
       name: "Triangle",
-      icon: <Triangle size={32} className="text-gray-700" />,
+      icon: (
+        <Triangle size={32} className="text-[var(--color-muted-foreground)]" />
+      ),
       action: () => addTriangle({ fill: shapeColor }),
     },
     {
       name: "Star",
-      icon: <Star size={32} className="text-gray-700" />,
+      icon: <Star size={32} className="text-[var(--color-muted-foreground)]" />,
       action: () => addStar({ fill: shapeColor }),
     },
     {
       name: "Heart",
-      icon: <Heart size={32} className="text-gray-700" />,
+      icon: (
+        <Heart size={32} className="text-[var(--color-muted-foreground)]" />
+      ),
       action: () => addHeart({ fill: shapeColor }),
     },
     {
       name: "Hexagon",
-      icon: <Hexagon size={32} className="text-gray-700" />,
+      icon: (
+        <Hexagon size={32} className="text-[var(--color-muted-foreground)]" />
+      ),
       action: () => addHexagon({ fill: shapeColor }),
     },
     {
@@ -143,7 +162,7 @@ const ElementsPanel: React.FC<ElementsPanelProps> = ({
           width="32"
           height="32"
           viewBox="0 0 32 32"
-          className="text-gray-700"
+          className="text-[var(--color-muted-foreground)]"
         >
           <path
             d="M16 4 L28 12 L24 26 L8 26 L4 12 Z"
@@ -162,7 +181,7 @@ const ElementsPanel: React.FC<ElementsPanelProps> = ({
           width="32"
           height="32"
           viewBox="0 0 32 32"
-          className="text-gray-700"
+          className="text-[var(--color-muted-foreground)]"
         >
           <path
             d="M16 4 L28 16 L16 28 L4 16 Z"
@@ -181,7 +200,7 @@ const ElementsPanel: React.FC<ElementsPanelProps> = ({
           width="32"
           height="32"
           viewBox="0 0 32 32"
-          className="text-gray-700"
+          className="text-[var(--color-muted-foreground)]"
         >
           <path
             d="M4 14 L20 14 L20 10 L28 16 L20 22 L20 18 L4 18 Z"
@@ -198,7 +217,9 @@ const ElementsPanel: React.FC<ElementsPanelProps> = ({
   const lines = [
     {
       name: "Line",
-      icon: <Minus size={40} className="text-gray-700" />,
+      icon: (
+        <Minus size={40} className="text-[var(--color-muted-foreground)]" />
+      ),
       action: () => addLine({ stroke: lineColor }),
     },
     {
@@ -208,7 +229,7 @@ const ElementsPanel: React.FC<ElementsPanelProps> = ({
           width="40"
           height="40"
           viewBox="0 0 40 40"
-          className="text-gray-700"
+          className="text-[var(--color-muted-foreground)]"
         >
           <path
             d="M5 20 H 15 M 25 20 H 35"
@@ -227,7 +248,7 @@ const ElementsPanel: React.FC<ElementsPanelProps> = ({
           width="40"
           height="40"
           viewBox="0 0 40 40"
-          className="text-gray-700"
+          className="text-[var(--color-muted-foreground)]"
         >
           <circle cx="8" cy="20" r="2" fill="currentColor" />
           <circle cx="16" cy="20" r="2" fill="currentColor" />
@@ -244,7 +265,7 @@ const ElementsPanel: React.FC<ElementsPanelProps> = ({
           width="40"
           height="40"
           viewBox="0 0 40 40"
-          className="text-gray-700"
+          className="text-[var(--color-muted-foreground)]"
         >
           <path
             d="M5 20 H 30 L 25 15 M 30 20 L 25 25"
@@ -265,7 +286,7 @@ const ElementsPanel: React.FC<ElementsPanelProps> = ({
           width="40"
           height="40"
           viewBox="0 0 40 40"
-          className="text-gray-700"
+          className="text-[var(--color-muted-foreground)]"
         >
           <path
             d="M5 35 L10 5 L20 35 L30 5 L35 35"
@@ -285,7 +306,7 @@ const ElementsPanel: React.FC<ElementsPanelProps> = ({
           width="40"
           height="40"
           viewBox="0 0 40 40"
-          className="text-gray-700"
+          className="text-[var(--color-muted-foreground)]"
         >
           <path
             d="M5 20 Q10 5, 15 20 T25 20 T35 20"
@@ -305,7 +326,7 @@ const ElementsPanel: React.FC<ElementsPanelProps> = ({
           width="40"
           height="40"
           viewBox="0 0 40 40"
-          className="text-gray-700"
+          className="text-[var(--color-muted-foreground)]"
         >
           <path
             d="M5 16 H35 M5 24 H35"
@@ -324,7 +345,7 @@ const ElementsPanel: React.FC<ElementsPanelProps> = ({
           width="40"
           height="40"
           viewBox="0 0 40 40"
-          className="text-gray-700"
+          className="text-[var(--color-muted-foreground)]"
         >
           <path
             d="M5 30 Q20 5, 35 30"
@@ -344,7 +365,7 @@ const ElementsPanel: React.FC<ElementsPanelProps> = ({
           width="40"
           height="40"
           viewBox="0 0 40 40"
-          className="text-gray-700"
+          className="text-[var(--color-muted-foreground)]"
         >
           <path
             d="M5 25 L10 25 L10 15 L15 15 L15 25 L20 25 L20 15 L25 15 L25 25 L30 25 L30 15 L35 15"
@@ -364,7 +385,7 @@ const ElementsPanel: React.FC<ElementsPanelProps> = ({
           width="40"
           height="40"
           viewBox="0 0 40 40"
-          className="text-gray-700"
+          className="text-[var(--color-muted-foreground)]"
         >
           <path
             d="M5 20 H35"
@@ -383,7 +404,7 @@ const ElementsPanel: React.FC<ElementsPanelProps> = ({
           width="40"
           height="40"
           viewBox="0 0 40 40"
-          className="text-gray-700"
+          className="text-[var(--color-muted-foreground)]"
         >
           <path
             d="M5 20 H13 M17 20 H19 M23 20 H31 M35 20 H37"
@@ -397,41 +418,86 @@ const ElementsPanel: React.FC<ElementsPanelProps> = ({
     },
   ];
   return (
-    <div className="space-y-6">
-      <div>
-        <h3 className="text-lg font-semibold mb-4 text-gray-800 ">Lines</h3>
-        <div className="grid grid-cols-3 gap-3">
-          {lines.map((line) => (
-            <Button
-              key={line.name}
-              onClick={line.action}
-              variant="outline"
-              className="flex flex-col items-center justify-center p-3 h-auto bg-white hover:bg-gray-50 hover:cursor-pointer"
-            >
-              {line.icon}
-              <span className="mt-1 text-xs text-center text-gray-600">
-                {line.name}
-              </span>
-            </Button>
-          ))}
+    <div className="h-full flex flex-col bg-[var(--color-background)]">
+      <TooltipProvider>
+        <div className="p-4 space-y-6">
+          {/* Lines Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-xl font-bold text-[var(--color-foreground)] flex items-center gap-2">
+                <Minus className="w-5 h-5" />
+                Lines
+                <Badge variant="secondary" className="ml-auto">
+                  {lines.length}
+                </Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-3 gap-3">
+                {lines.map((line) => (
+                  <Tooltip key={line.name}>
+                    <TooltipTrigger asChild>
+                      <Button
+                        onClick={line.action}
+                        variant="outline"
+                        className="flex flex-col items-center justify-center p-3 h-auto bg-[var(--color-background)] hover:bg-[var(--color-muted)] hover:cursor-pointer transition-colors"
+                      >
+                        {line.icon}
+                        <span className="mt-1 text-xs text-center text-[var(--color-muted-foreground)]">
+                          {line.name}
+                        </span>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Add a {line.name.toLowerCase()} to your design</p>
+                    </TooltipContent>
+                  </Tooltip>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Separator />
+
+          {/* Shapes Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-xl font-bold text-[var(--color-foreground)] flex items-center gap-2">
+                <Square className="w-5 h-5" />
+                Shapes
+                <Badge variant="secondary" className="ml-auto">
+                  {shapes.length}
+                </Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-3 gap-3">
+                {shapes.map((shape) => (
+                  <Tooltip key={shape.name}>
+                    <TooltipTrigger asChild>
+                      <Button
+                        onClick={shape.action}
+                        variant="outline"
+                        className="flex flex-col items-center justify-center p-3 h-auto bg-[var(--color-background)] hover:bg-[var(--color-muted)] hover:cursor-pointer transition-colors"
+                      >
+                        {shape.icon}
+                        <span className="mt-1 text-xs text-center text-[var(--color-muted-foreground)]">
+                          {shape.name}
+                        </span>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>
+                        Add a {shape.name.toLowerCase()} shape to your design
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         </div>
-      </div>
-      <div>
-        <h3 className="text-lg font-semibold mb-4 text-gray-800">Shapes</h3>
-        <div className="grid grid-cols-3 gap-3">
-          {shapes.map((shape) => (
-            <Button
-              key={shape.name}
-              onClick={shape.action}
-              variant="outline"
-              className="flex flex-col items-center justify-center p-3 h-auto bg-white hover:bg-gray-50 hover:cursor-pointer"
-            >
-              {shape.icon}
-              <span className="mt-1 text-xs text-gray-600">{shape.name}</span>
-            </Button>
-          ))}
-        </div>
-      </div>
+      </TooltipProvider>
     </div>
   );
 };
