@@ -1091,7 +1091,10 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
   // Desktop version
   return (
     <TooltipProvider>
-      <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-60">
+      <div
+        className="absolute top-4 left-1/2 transform -translate-x-1/2 z-60"
+        data-selection-ui
+      >
         <Card className="flex flex-row items-center gap-3 px-5 py-2 backdrop-blur-sm bg-[var(--color-card)] border shadow-lg">
           {/* Render controls based on object type */}
           {isTextObject() && renderTextControls()}

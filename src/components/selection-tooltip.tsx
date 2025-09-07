@@ -38,6 +38,9 @@ const SelectionTooltip: React.FC<SelectionTooltipProps> = ({
   // local tick to force re-render after mutating Fabric objects
   const [, setTick] = useState(0);
 
+  // Prevent unused parameter warning
+  void onOpenMobileProperties;
+
   const updateTooltipPosition = useCallback(
     (obj: any) => {
       if (!obj || !canvas) return;
@@ -453,7 +456,7 @@ const SelectionTooltip: React.FC<SelectionTooltipProps> = ({
     // On mobile, open context menu items as left panel instead of context menu
     if (isMobile && setEditorMode) {
       setEditorMode("context-menu");
-      // Completely hide the tooltip when opening left panel
+      // Hide the tooltip when opening left panel
       hideTooltip();
       return;
     }
@@ -470,22 +473,34 @@ const SelectionTooltip: React.FC<SelectionTooltipProps> = ({
     // Calculate position for the context menu
     const targetRect = (e.target as HTMLElement).getBoundingClientRect();
 
-    // Create synthetic right-click event on the ContextMenuTrigger
-    const syntheticEvent = new MouseEvent("contextmenu", {
-      bubbles: true,
-      cancelable: true,
-      clientX: targetRect.left + targetRect.width / 2,
-      clientY: targetRect.bottom + 5,
-      button: 2, // Right mouse button
-    });
-
-    // Dispatch to the ContextMenuTrigger element
-    contextMenuTrigger.dispatchEvent(syntheticEvent);
-
-    // Hide the tooltip but keep selection for desktop context menu
-    if (!position) {
-      setTooltipState((prev) => ({ ...prev, visible: false }));
+    // Ensure the target object stays selected before triggering context menu
+    if (canvas.getActiveObject() !== targetObject) {
+      canvas.setActiveObject(targetObject);
+      canvas.renderAll();
     }
+
+    // Add a small delay to ensure selection state is stable
+    setTimeout(() => {
+      // Create synthetic right-click event on the ContextMenuTrigger
+      const syntheticEvent = new MouseEvent("contextmenu", {
+        bubbles: true,
+        cancelable: true,
+        clientX: targetRect.left + targetRect.width / 2,
+        clientY: targetRect.bottom + 5,
+        button: 2, // Right mouse button
+        detail: 1,
+        view: window,
+      });
+
+      // Mark this as a synthetic event to avoid interference
+      (syntheticEvent as any).__synthetic = true;
+
+      // Dispatch to the ContextMenuTrigger element
+      contextMenuTrigger.dispatchEvent(syntheticEvent);
+    }, 10);
+
+    // Don't hide the tooltip or selection state - let the context menu handle its own state
+    // The context menu will manage its visibility independently
   };
   if (position) {
     // When position is provided, use selectedObject directly
@@ -503,6 +518,7 @@ const SelectionTooltip: React.FC<SelectionTooltipProps> = ({
           pointerEvents: "auto",
         }}
         onClick={(e) => e.stopPropagation()}
+        data-selection-ui
       >
         {/* Lock/Unlock Button */}
         <Button
@@ -571,6 +587,7 @@ const SelectionTooltip: React.FC<SelectionTooltipProps> = ({
         pointerEvents: "auto",
       }}
       onClick={(e) => e.stopPropagation()}
+      data-selection-ui
     >
       {/* Lock/Unlock Button */}
       <Button

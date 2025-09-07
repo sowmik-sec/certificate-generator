@@ -55,6 +55,11 @@ const SelectionOverlay: React.FC<SelectionOverlayProps> = ({
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
 
+      // Ignore synthetic events from SelectionTooltip
+      if ((e as any).__synthetic) {
+        return;
+      }
+
       // Don't close if clicking on selection components themselves
       if (target.closest("[data-selection-ui]")) {
         return;

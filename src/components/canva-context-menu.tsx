@@ -35,7 +35,6 @@ import {
   Palette,
 } from "lucide-react";
 import { useCanvasStore } from "@/stores/useCanvasStore";
-import { alignmentUtils } from "@/lib/alignmentUtils";
 
 interface CanvaContextMenuProps {
   canvas: any;
@@ -53,9 +52,13 @@ const CanvaContextMenu: React.FC<CanvaContextMenuProps> = ({
 
   const { fabric, setSelectedObject } = useCanvasStore();
 
+  // Ensure we have a consistent selectedObject reference
+  const effectiveSelectedObject =
+    selectedObject || canvas?.getActiveObject() || null;
+
   // Enhanced copy functionality like Canva
   const handleCopy = useCallback(() => {
-    if (!selectedObject || !fabric) return;
+    if (!effectiveSelectedObject || !fabric) return;
 
     const createSafeCopy = (obj: any) => {
       const safeCopy: any = {
@@ -137,19 +140,19 @@ const CanvaContextMenu: React.FC<CanvaContextMenuProps> = ({
 
     try {
       // Try normal clone first
-      selectedObject.clone((cloned: any) => {
+      effectiveSelectedObject.clone((cloned: any) => {
         setCopiedObject(cloned);
         // Also save to localStorage for persistence
-        const safeCopy = createSafeCopy(selectedObject);
+        const safeCopy = createSafeCopy(effectiveSelectedObject);
         localStorage.setItem("copiedObject", JSON.stringify(safeCopy));
       });
     } catch (error) {
       console.log("Normal cloning failed, using safe copy method:", error);
-      const safeCopy = createSafeCopy(selectedObject);
+      const safeCopy = createSafeCopy(effectiveSelectedObject);
       setCopiedObject(safeCopy);
       localStorage.setItem("copiedObject", JSON.stringify(safeCopy));
     }
-  }, [selectedObject, fabric]);
+  }, [effectiveSelectedObject, fabric]);
 
   const handleCopyStyle = useCallback(() => {
     if (!selectedObject) return;
@@ -367,11 +370,27 @@ const CanvaContextMenu: React.FC<CanvaContextMenuProps> = ({
       }
     } catch (error) {
       console.error("Failed to paste object:", error);
+      // Fallback: try to create a simple rectangle if paste fails completely
+      try {
+        const fallbackObj = new fabric.Rect({
+          left: 50,
+          top: 50,
+          width: 100,
+          height: 100,
+          fill: "#cccccc",
+        });
+        canvas.add(fallbackObj);
+        canvas.setActiveObject(fallbackObj);
+        setSelectedObject(fallbackObj);
+        canvas.renderAll();
+      } catch (fallbackError) {
+        console.error("Even fallback paste failed:", fallbackError);
+      }
     }
   }, [copiedObject, canvas, fabric, setSelectedObject]);
 
   const handlePasteStyle = useCallback(() => {
-    if (!selectedObject) return;
+    if (!selectedObject || !canvas) return;
 
     let styleToApply = copiedStyle;
     if (!styleToApply) {
@@ -390,34 +409,68 @@ const CanvaContextMenu: React.FC<CanvaContextMenuProps> = ({
       // Apply style properties that are relevant to the object type
       const updates: any = {};
 
-      if (styleToApply.fill !== undefined) updates.fill = styleToApply.fill;
-      if (styleToApply.stroke !== undefined)
+      // Common properties for all objects
+      if (styleToApply.fill !== undefined && styleToApply.fill !== null) {
+        updates.fill = styleToApply.fill;
+      }
+      if (styleToApply.stroke !== undefined && styleToApply.stroke !== null) {
         updates.stroke = styleToApply.stroke;
-      if (styleToApply.strokeWidth !== undefined)
+      }
+      if (
+        styleToApply.strokeWidth !== undefined &&
+        styleToApply.strokeWidth !== null
+      ) {
         updates.strokeWidth = styleToApply.strokeWidth;
-      if (styleToApply.opacity !== undefined)
+      }
+      if (styleToApply.opacity !== undefined && styleToApply.opacity !== null) {
         updates.opacity = styleToApply.opacity;
-      if (styleToApply.shadow !== undefined)
-        updates.shadow = styleToApply.shadow;
-
-      // Text-specific styles
-      if (selectedObject.type === "textbox" || selectedObject.type === "text") {
-        if (styleToApply.fontFamily !== undefined)
-          updates.fontFamily = styleToApply.fontFamily;
-        if (styleToApply.fontSize !== undefined)
-          updates.fontSize = styleToApply.fontSize;
-        if (styleToApply.fontWeight !== undefined)
-          updates.fontWeight = styleToApply.fontWeight;
-        if (styleToApply.fontStyle !== undefined)
-          updates.fontStyle = styleToApply.fontStyle;
-        if (styleToApply.textAlign !== undefined)
-          updates.textAlign = styleToApply.textAlign;
-        if (styleToApply.lineHeight !== undefined)
-          updates.lineHeight = styleToApply.lineHeight;
       }
 
-      selectedObject.set(updates);
-      canvas.renderAll();
+      // Text-specific styles - only apply to text objects
+      if (selectedObject.type === "textbox" || selectedObject.type === "text") {
+        if (
+          styleToApply.fontFamily !== undefined &&
+          styleToApply.fontFamily !== null
+        ) {
+          updates.fontFamily = styleToApply.fontFamily;
+        }
+        if (
+          styleToApply.fontSize !== undefined &&
+          styleToApply.fontSize !== null
+        ) {
+          updates.fontSize = styleToApply.fontSize;
+        }
+        if (
+          styleToApply.fontWeight !== undefined &&
+          styleToApply.fontWeight !== null
+        ) {
+          updates.fontWeight = styleToApply.fontWeight;
+        }
+        if (
+          styleToApply.fontStyle !== undefined &&
+          styleToApply.fontStyle !== null
+        ) {
+          updates.fontStyle = styleToApply.fontStyle;
+        }
+        if (
+          styleToApply.textAlign !== undefined &&
+          styleToApply.textAlign !== null
+        ) {
+          updates.textAlign = styleToApply.textAlign;
+        }
+        if (
+          styleToApply.lineHeight !== undefined &&
+          styleToApply.lineHeight !== null
+        ) {
+          updates.lineHeight = styleToApply.lineHeight;
+        }
+      }
+
+      // Only apply updates if we have valid properties
+      if (Object.keys(updates).length > 0) {
+        selectedObject.set(updates);
+        canvas.renderAll();
+      }
     } catch (error) {
       console.error("Error applying style:", error);
     }
@@ -672,6 +725,22 @@ const CanvaContextMenu: React.FC<CanvaContextMenuProps> = ({
         }
       } catch (fallbackError) {
         console.error("All duplication methods failed:", fallbackError);
+        // Last resort: create a simple copy
+        try {
+          const lastResortObj = new fabric.Rect({
+            left: (selectedObject.left || 0) + 20,
+            top: (selectedObject.top || 0) + 20,
+            width: selectedObject.width || 100,
+            height: selectedObject.height || 100,
+            fill: selectedObject.fill || "#cccccc",
+          });
+          canvas.add(lastResortObj);
+          canvas.setActiveObject(lastResortObj);
+          setSelectedObject(lastResortObj);
+          canvas.renderAll();
+        } catch {
+          console.error("All duplication attempts failed");
+        }
       }
     }
   }, [selectedObject, canvas, fabric, setSelectedObject]);
@@ -697,8 +766,10 @@ const CanvaContextMenu: React.FC<CanvaContextMenuProps> = ({
       lockScalingX: !isLocked,
       lockScalingY: !isLocked,
       lockRotation: !isLocked,
-      selectable: isLocked, // When locked, make it non-selectable in the future
-      evented: isLocked, // Disable events when locked
+      lockSkewingX: !isLocked,
+      lockSkewingY: !isLocked,
+      hasControls: isLocked, // Show/hide controls when locked/unlocked
+      hasBorders: isLocked, // Show/hide borders when locked/unlocked
     });
 
     canvas.renderAll();
@@ -707,83 +778,139 @@ const CanvaContextMenu: React.FC<CanvaContextMenuProps> = ({
   const handleVisibilityToggle = useCallback(() => {
     if (!selectedObject || !canvas) return;
 
-    selectedObject.set("visible", !selectedObject.visible);
+    const newVisibility = !selectedObject.visible;
+    selectedObject.set("visible", newVisibility);
+
+    // If hiding the object, deselect it
+    if (!newVisibility) {
+      canvas.discardActiveObject();
+      setSelectedObject(null);
+    }
+
     canvas.renderAll();
-  }, [selectedObject, canvas]);
+  }, [selectedObject, canvas, setSelectedObject]);
 
   const handleBringToFront = useCallback(() => {
     if (!selectedObject || !canvas) return;
-    canvas.bringToFront(selectedObject);
+    selectedObject.bringToFront();
     canvas.renderAll();
   }, [selectedObject, canvas]);
 
   const handleSendToBack = useCallback(() => {
     if (!selectedObject || !canvas) return;
-    canvas.sendToBack(selectedObject);
+    selectedObject.sendToBack();
     canvas.renderAll();
   }, [selectedObject, canvas]);
 
   const handleBringForward = useCallback(() => {
     if (!selectedObject || !canvas) return;
-    canvas.bringForward(selectedObject);
+    selectedObject.bringForward();
     canvas.renderAll();
   }, [selectedObject, canvas]);
 
   const handleSendBackward = useCallback(() => {
     if (!selectedObject || !canvas) return;
-    canvas.sendBackward(selectedObject);
+    selectedObject.sendBackward();
     canvas.renderAll();
   }, [selectedObject, canvas]);
 
   const handleAlignLeft = useCallback(() => {
-    alignmentUtils.alignToLeft({ canvas, selectedObject });
+    if (!selectedObject || !canvas) return;
+    const objectBounds = selectedObject.getBoundingRect();
+    const newLeft = selectedObject.left - objectBounds.left;
+    selectedObject.set("left", newLeft);
+    selectedObject.setCoords();
+    canvas.renderAll();
   }, [selectedObject, canvas]);
 
   const handleAlignCenter = useCallback(() => {
-    alignmentUtils.alignToCenter({ canvas, selectedObject });
+    if (!selectedObject || !canvas) return;
+    const canvasWidth = canvas.getWidth();
+    const objectBounds = selectedObject.getBoundingRect();
+    const objectCenterX = objectBounds.left + objectBounds.width / 2;
+    const canvasCenterX = canvasWidth / 2;
+    const offsetX = canvasCenterX - objectCenterX;
+    selectedObject.set("left", selectedObject.left + offsetX);
+    selectedObject.setCoords();
+    canvas.renderAll();
   }, [selectedObject, canvas]);
 
   const handleAlignRight = useCallback(() => {
-    alignmentUtils.alignToRight({ canvas, selectedObject });
+    if (!selectedObject || !canvas) return;
+    const canvasWidth = canvas.getWidth();
+    const objectBounds = selectedObject.getBoundingRect();
+    const objectRightEdge = objectBounds.left + objectBounds.width;
+    const offsetX = canvasWidth - objectRightEdge;
+    selectedObject.set("left", selectedObject.left + offsetX);
+    selectedObject.setCoords();
+    canvas.renderAll();
   }, [selectedObject, canvas]);
 
   const handleAlignTop = useCallback(() => {
-    alignmentUtils.alignToTop({ canvas, selectedObject });
+    if (!selectedObject || !canvas) return;
+    const objectBounds = selectedObject.getBoundingRect();
+    const newTop = selectedObject.top - objectBounds.top;
+    selectedObject.set("top", newTop);
+    selectedObject.setCoords();
+    canvas.renderAll();
   }, [selectedObject, canvas]);
 
   const handleAlignMiddle = useCallback(() => {
-    alignmentUtils.alignToMiddle({ canvas, selectedObject });
+    if (!selectedObject || !canvas) return;
+    const canvasHeight = canvas.getHeight();
+    const objectBounds = selectedObject.getBoundingRect();
+    const objectCenterY = objectBounds.top + objectBounds.height / 2;
+    const canvasCenterY = canvasHeight / 2;
+    const offsetY = canvasCenterY - objectCenterY;
+    selectedObject.set("top", selectedObject.top + offsetY);
+    selectedObject.setCoords();
+    canvas.renderAll();
   }, [selectedObject, canvas]);
 
   const handleAlignBottom = useCallback(() => {
-    alignmentUtils.alignToBottom({ canvas, selectedObject });
+    if (!selectedObject || !canvas) return;
+    const canvasHeight = canvas.getHeight();
+    const objectBounds = selectedObject.getBoundingRect();
+    const objectBottomEdge = objectBounds.top + objectBounds.height;
+    const offsetY = canvasHeight - objectBottomEdge;
+    selectedObject.set("top", selectedObject.top + offsetY);
+    selectedObject.setCoords();
+    canvas.renderAll();
   }, [selectedObject, canvas]);
 
   const handleAddLink = useCallback(() => {
-    if (!selectedObject) return;
+    if (!selectedObject || !canvas) return;
 
-    const url = prompt("Enter URL:", selectedObject.link || "");
-    if (url !== null) {
-      selectedObject.set("link", url);
-      // Visual indication for linked objects
-      if (url) {
-        selectedObject.set("stroke", "#0066cc");
-        selectedObject.set("strokeWidth", 1);
-      } else {
-        selectedObject.set("stroke", "");
-        selectedObject.set("strokeWidth", 0);
+    try {
+      const url = prompt("Enter URL:", selectedObject.link || "");
+      if (url !== null) {
+        selectedObject.set("link", url);
+        // Visual indication for linked objects
+        if (url.trim()) {
+          selectedObject.set("stroke", "#0066cc");
+          selectedObject.set("strokeWidth", 1);
+        } else {
+          selectedObject.set("stroke", "");
+          selectedObject.set("strokeWidth", 0);
+        }
+        canvas.renderAll();
       }
-      canvas.renderAll();
+    } catch (error) {
+      console.error("Error setting link:", error);
     }
   }, [selectedObject, canvas]);
 
   const handleAltText = useCallback(() => {
-    if (!selectedObject) return;
+    if (!selectedObject || !canvas) return;
 
-    const alt = prompt("Enter alternative text:", selectedObject.alt || "");
-    if (alt !== null) {
-      selectedObject.set("alt", alt);
-      canvas.renderAll();
+    try {
+      const alt = prompt("Enter alternative text:", selectedObject.alt || "");
+      if (alt !== null) {
+        selectedObject.set("alt", alt);
+        canvas.renderAll();
+      }
+    } catch (error) {
+      console.error("Error setting alt text:", error);
     }
   }, [selectedObject, canvas]);
 
@@ -794,18 +921,29 @@ const CanvaContextMenu: React.FC<CanvaContextMenuProps> = ({
     if (!activeSelection || activeSelection.type !== "activeSelection") return;
 
     const group = activeSelection.toGroup();
-    canvas.setActiveObject(group);
-    canvas.renderAll();
-  }, [canvas, fabric]);
+    if (group) {
+      canvas.setActiveObject(group);
+      setSelectedObject(group);
+      canvas.renderAll();
+    }
+  }, [canvas, fabric, setSelectedObject]);
 
   const handleUngroup = useCallback(() => {
     if (!selectedObject || !canvas || !fabric) return;
 
     if (selectedObject.type === "group") {
-      selectedObject.toActiveSelection();
-      canvas.renderAll();
+      const activeSelection = selectedObject.toActiveSelection();
+      if (activeSelection) {
+        canvas.renderAll();
+        // Clear the selection after ungrouping
+        setTimeout(() => {
+          canvas.discardActiveObject();
+          setSelectedObject(null);
+          canvas.renderAll();
+        }, 10);
+      }
     }
-  }, [selectedObject, canvas, fabric]);
+  }, [selectedObject, canvas, fabric, setSelectedObject]);
 
   // Add keyboard shortcuts support
   useEffect(() => {
@@ -816,56 +954,20 @@ const CanvaContextMenu: React.FC<CanvaContextMenuProps> = ({
         target.tagName === "INPUT" ||
         target.tagName === "TEXTAREA" ||
         target.contentEditable === "true" ||
-        target.classList.contains("text-cursor")
+        target.classList.contains("text-cursor") ||
+        // Check if any text object is in editing mode
+        (canvas &&
+          canvas.getActiveObject &&
+          canvas.getActiveObject()?.isEditing)
       ) {
         return;
       }
 
-      // Skip if no object is selected
-      if (!selectedObject) return;
-
       const isMac = /Mac|iPod|iPhone|iPad/.test(navigator.platform);
       const modifier = isMac ? e.metaKey : e.ctrlKey;
 
-      if (modifier && !e.shiftKey && !e.altKey) {
-        switch (e.key.toLowerCase()) {
-          case "c":
-            e.preventDefault();
-            handleCopy();
-            break;
-          case "x":
-            e.preventDefault();
-            handleCut();
-            break;
-          case "v":
-            e.preventDefault();
-            handlePaste();
-            break;
-          case "d":
-            e.preventDefault();
-            handleDuplicate();
-            break;
-          case "g":
-            e.preventDefault();
-            handleGroup();
-            break;
-        }
-      } else if (modifier && e.shiftKey && !e.altKey) {
-        switch (e.key.toLowerCase()) {
-          case "c":
-            e.preventDefault();
-            handleCopyStyle();
-            break;
-          case "v":
-            e.preventDefault();
-            handlePasteStyle();
-            break;
-          case "g":
-            e.preventDefault();
-            handleUngroup();
-            break;
-        }
-      } else if (!modifier && !e.shiftKey && !e.altKey) {
+      // Handle delete/backspace keys (without modifier)
+      if (!modifier && !e.shiftKey && !e.altKey && selectedObject) {
         switch (e.key) {
           case "Delete":
           case "Backspace":
@@ -874,11 +976,96 @@ const CanvaContextMenu: React.FC<CanvaContextMenuProps> = ({
             break;
         }
       }
+
+      // Handle Ctrl/Cmd combinations
+      if (modifier && !e.shiftKey && !e.altKey) {
+        switch (e.key.toLowerCase()) {
+          case "c":
+            if (selectedObject) {
+              e.preventDefault();
+              handleCopy();
+            }
+            break;
+          case "x":
+            if (selectedObject) {
+              e.preventDefault();
+              handleCut();
+            }
+            break;
+          case "v":
+            e.preventDefault();
+            handlePaste();
+            break;
+          case "d":
+            if (selectedObject) {
+              e.preventDefault();
+              handleDuplicate();
+            }
+            break;
+          case "g":
+            if (
+              canvas &&
+              canvas.getActiveObject()?.type === "activeSelection"
+            ) {
+              e.preventDefault();
+              handleGroup();
+            }
+            break;
+          case "]":
+            if (selectedObject) {
+              e.preventDefault();
+              handleBringToFront();
+            }
+            break;
+          case "[":
+            if (selectedObject) {
+              e.preventDefault();
+              handleSendToBack();
+            }
+            break;
+        }
+      }
+      // Handle Ctrl/Cmd + Shift combinations
+      else if (modifier && e.shiftKey && !e.altKey) {
+        switch (e.key.toLowerCase()) {
+          case "c":
+            if (selectedObject) {
+              e.preventDefault();
+              handleCopyStyle();
+            }
+            break;
+          case "v":
+            if (selectedObject) {
+              e.preventDefault();
+              handlePasteStyle();
+            }
+            break;
+          case "g":
+            if (selectedObject?.type === "group") {
+              e.preventDefault();
+              handleUngroup();
+            }
+            break;
+          case "]":
+            if (selectedObject) {
+              e.preventDefault();
+              handleBringForward();
+            }
+            break;
+          case "[":
+            if (selectedObject) {
+              e.preventDefault();
+              handleSendBackward();
+            }
+            break;
+        }
+      }
     };
 
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [
+    canvas,
     selectedObject,
     handleCopy,
     handleCut,
@@ -889,6 +1076,10 @@ const CanvaContextMenu: React.FC<CanvaContextMenuProps> = ({
     handleDelete,
     handleGroup,
     handleUngroup,
+    handleBringToFront,
+    handleSendToBack,
+    handleBringForward,
+    handleSendBackward,
   ]);
 
   const isLocked =
@@ -906,7 +1097,7 @@ const CanvaContextMenu: React.FC<CanvaContextMenuProps> = ({
     <ContextMenu>
       <ContextMenuTrigger asChild>{children}</ContextMenuTrigger>
       <ContextMenuPortal>
-        <ContextMenuContent className="w-64">
+        <ContextMenuContent className="w-64" data-selection-ui>
           {/* Basic Actions */}
           <ContextMenuItem onClick={handleCopy} disabled={!selectedObject}>
             <Copy className="mr-2 h-4 w-4" />
