@@ -320,6 +320,7 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
             <DropdownMenuContent
               className="min-w-[160px] max-h-64"
               style={{ zIndex: 70 }}
+              sideOffset={15}
             >
               {fontOptions.map((font) => (
                 <DropdownMenuItem
@@ -403,7 +404,11 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
                   </div>
                 </Label>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="p-3" align="start">
+              <DropdownMenuContent
+                className="p-3 z-[9999]"
+                align="start"
+                sideOffset={15}
+              >
                 <div
                   ref={textColorPickerRef}
                   className="color-picker-container"
@@ -605,7 +610,11 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
                 <MoveHorizontal className="w-6 h-3" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-72 p-4" align="start">
+            <DropdownMenuContent
+              className="w-72 p-4 z-[9999]"
+              align="start"
+              sideOffset={15}
+            >
               <DropdownMenuLabel className="text-sm font-medium text-[var(--color-foreground)] mb-3">
                 Advanced Text Settings
               </DropdownMenuLabel>
@@ -771,7 +780,11 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
                   </div>
                 </Label>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="p-3" align="start">
+              <DropdownMenuContent
+                className="p-3 z-[9999]"
+                align="start"
+                sideOffset={15}
+              >
                 <div
                   ref={shapeFillColorPickerRef}
                   className="color-picker-container"
@@ -819,7 +832,11 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
                   </div>
                 </label>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="p-3" align="start">
+              <DropdownMenuContent
+                className="p-3 z-[9999]"
+                align="start"
+                sideOffset={15}
+              >
                 <div
                   ref={shapeStrokeColorPickerRef}
                   className="color-picker-container"
@@ -913,7 +930,11 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
                   </div>
                 </label>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="p-3" align="start">
+              <DropdownMenuContent
+                className="p-3 z-[9999]"
+                align="start"
+                sideOffset={15}
+              >
                 <div
                   ref={lineColorPickerRef}
                   className="color-picker-container"
@@ -1002,7 +1023,11 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
                 <Droplets className="w-5 h-5" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-64 p-4" align="start">
+            <DropdownMenuContent
+              className="w-64 p-4 z-[9999]"
+              align="start"
+              sideOffset={15}
+            >
               <DropdownMenuLabel className="text-sm font-medium text-[var(--color-foreground)] mb-3">
                 Transparency
               </DropdownMenuLabel>
