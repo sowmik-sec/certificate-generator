@@ -275,7 +275,7 @@ const SliderWithInput = memo(
 
     return (
       <div className="space-y-2">
-        <Label className="text-sm font-medium text-gray-700">{label}</Label>
+        <Label className="text-sm font-medium text-foreground">{label}</Label>
         <div className="flex items-center space-x-2">
           <Slider
             value={[localValue]}
@@ -1121,10 +1121,10 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
       !selectedObject._isCurvedText)
   ) {
     return (
-      <div className="w-full h-full bg-white flex flex-col overflow-hidden">
+      <div className="w-full h-full bg-background flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between p-2 border-b border-gray-200 flex-shrink-0">
-          <h3 className="text-lg font-semibold text-gray-900">Effects</h3>
+        <div className="flex items-center justify-between p-2 border-b border-border flex-shrink-0">
+          <h3 className="text-lg font-semibold text-foreground">Effects</h3>
           <Button
             variant="ghost"
             size="sm"
@@ -1411,8 +1411,8 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
 
       {/* Color */}
       <div className="flex items-center justify-between">
-        <Label className="text-sm font-medium text-gray-700">Color</Label>
-        <div className="w-8 h-8 rounded-full border border-gray-300 overflow-hidden relative">
+        <Label className="text-sm font-medium text-foreground">Color</Label>
+        <div className="w-8 h-8 rounded-full border border-border overflow-hidden relative">
           <input
             type="color"
             value={effectState.shadowColor || "#000000"}
@@ -1482,8 +1482,8 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
 
       {/* Color */}
       <div className="flex items-center justify-between">
-        <Label className="text-sm font-medium text-gray-700">Color</Label>
-        <div className="w-8 h-8 rounded-full border border-gray-300 overflow-hidden relative">
+        <Label className="text-sm font-medium text-foreground">Color</Label>
+        <div className="w-8 h-8 rounded-full border border-border overflow-hidden relative">
           <input
             type="color"
             value={effectState.spliceColor || "#000000"}
@@ -1531,8 +1531,8 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
 
       {/* Color */}
       <div className="flex items-center justify-between">
-        <Label className="text-sm font-medium text-gray-700">Color</Label>
-        <div className="w-8 h-8 rounded-full border border-gray-300 overflow-hidden relative">
+        <Label className="text-sm font-medium text-foreground">Color</Label>
+        <div className="w-8 h-8 rounded-full border border-border overflow-hidden relative">
           <input
             type="color"
             value={effectState.echoColor || "#000000"}
@@ -1567,9 +1567,9 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
 
       {/* Color Section with both colors side by side */}
       <div className="space-y-2">
-        <Label className="text-sm font-medium text-gray-700">Colors</Label>
+        <Label className="text-sm font-medium text-foreground">Colors</Label>
         <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 rounded-full border border-gray-300 overflow-hidden relative">
+          <div className="w-8 h-8 rounded-full border border-border overflow-hidden relative">
             <input
               type="color"
               value={effectState.glitchColor1 || "#ff0000"}
@@ -1580,7 +1580,7 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
               style={{ WebkitAppearance: "none", appearance: "none" }}
             />
           </div>
-          <div className="w-8 h-8 rounded-full border border-gray-300 overflow-hidden relative">
+          <div className="w-8 h-8 rounded-full border border-border overflow-hidden relative">
             <input
               type="color"
               value={effectState.glitchColor2 || "#00ffff"}
@@ -1639,8 +1639,8 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
 
       {/* Color */}
       <div className="flex items-center justify-between">
-        <Label className="text-sm font-medium text-gray-700">Color</Label>
-        <div className="w-8 h-8 rounded-full border border-gray-300 overflow-hidden relative">
+        <Label className="text-sm font-medium text-foreground">Color</Label>
+        <div className="w-8 h-8 rounded-full border border-border overflow-hidden relative">
           <input
             type="color"
             value={effectState.backgroundColor || "#000000"}
@@ -1668,15 +1668,15 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
   );
 
   return (
-    <div className="w-full h-full bg-white flex flex-col overflow-hidden">
+    <div className="w-full h-full bg-background flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 flex-shrink-0">
-        <h3 className="text-lg font-semibold text-gray-900">Effects</h3>
+      <div className="flex items-center justify-between px-4 py-3 border-b border-border flex-shrink-0">
+        <h3 className="text-lg font-semibold text-foreground">Effects</h3>
         <Button
           variant="ghost"
           size="sm"
           onClick={handleClose}
-          className="p-1 hover:bg-gray-100 rounded-md transition-colors"
+          className="p-1 hover:bg-muted rounded-md transition-colors"
         >
           <X className="w-5 h-5" />
         </Button>
@@ -1705,8 +1705,10 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
                       : ""
                   }`}
                 >
-                  <div className="w-full h-12 flex items-center justify-center bg-gray-100 rounded">
-                    <span className="text-lg font-bold text-gray-700">Ag</span>
+                  <div className="w-full h-12 flex items-center justify-center bg-muted rounded">
+                    <span className="text-lg font-bold text-foreground">
+                      Ag
+                    </span>
                   </div>
                   <span className="text-xs">None</span>
                 </Button>
@@ -1721,8 +1723,8 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
                       : ""
                   }`}
                 >
-                  <div className="w-full h-12 flex items-center justify-center bg-gray-100 rounded relative overflow-hidden">
-                    <span className="text-lg font-bold text-gray-700 relative z-10">
+                  <div className="w-full h-12 flex items-center justify-center bg-muted rounded relative overflow-hidden">
+                    <span className="text-lg font-bold text-foreground relative z-10">
                       Ag
                     </span>
                     <div
@@ -1732,7 +1734,7 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
                         opacity: 0.4,
                       }}
                     >
-                      <span className="text-lg font-bold text-gray-600">
+                      <span className="text-lg font-bold text-muted-foreground">
                         Ag
                       </span>
                     </div>
@@ -1750,9 +1752,9 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
                       : ""
                   }`}
                 >
-                  <div className="w-full h-12 flex items-center justify-center bg-gray-100 rounded">
+                  <div className="w-full h-12 flex items-center justify-center bg-muted rounded">
                     <span
-                      className="text-lg font-bold text-gray-700"
+                      className="text-lg font-bold text-foreground"
                       style={{
                         filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))",
                       }}
@@ -1807,9 +1809,9 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
                       : ""
                   }`}
                 >
-                  <div className="w-full h-12 flex items-center justify-center bg-gray-100 rounded">
+                  <div className="w-full h-12 flex items-center justify-center bg-muted rounded">
                     <span
-                      className="text-lg font-bold text-gray-700"
+                      className="text-lg font-bold text-foreground"
                       style={{ WebkitTextStroke: "1px #374151" }}
                     >
                       Ag
@@ -1828,9 +1830,9 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
                       : ""
                   }`}
                 >
-                  <div className="w-full h-12 flex items-center justify-center bg-gray-100 rounded">
+                  <div className="w-full h-12 flex items-center justify-center bg-muted rounded">
                     <span
-                      className="text-lg font-bold text-gray-700"
+                      className="text-lg font-bold text-foreground"
                       style={{ WebkitTextStroke: "1px #374151" }}
                     >
                       Ag
@@ -1867,12 +1869,12 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
                       : ""
                   }`}
                 >
-                  <div className="w-full h-12 flex items-center justify-center bg-gray-100 rounded relative">
-                    <span className="text-lg font-bold text-gray-700 relative z-10">
+                  <div className="w-full h-12 flex items-center justify-center bg-muted rounded relative">
+                    <span className="text-lg font-bold text-foreground relative z-10">
                       Ag
                     </span>
                     <div className="absolute inset-0 flex items-center justify-center transform translate-x-0.5 translate-y-0.5">
-                      <span className="text-lg font-bold text-gray-500 opacity-60">
+                      <span className="text-lg font-bold text-muted-foreground opacity-60">
                         Ag
                       </span>
                     </div>
@@ -1890,8 +1892,8 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
                       : ""
                   }`}
                 >
-                  <div className="w-full h-12 flex items-center justify-center bg-gray-100 rounded relative overflow-hidden">
-                    <span className="text-lg font-bold text-gray-700 relative z-20">
+                  <div className="w-full h-12 flex items-center justify-center bg-muted rounded relative overflow-hidden">
+                    <span className="text-lg font-bold text-foreground relative z-20">
                       Ag
                     </span>
                     <div
@@ -2006,8 +2008,10 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
                       : ""
                   }`}
                 >
-                  <div className="w-full h-12 flex items-center justify-center bg-gray-100 rounded">
-                    <span className="text-lg font-bold text-gray-700">Ag</span>
+                  <div className="w-full h-12 flex items-center justify-center bg-muted rounded">
+                    <span className="text-lg font-bold text-foreground">
+                      Ag
+                    </span>
                   </div>
                   <span className="text-xs">None</span>
                 </Button>
@@ -2022,8 +2026,8 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
                       : ""
                   }`}
                 >
-                  <div className="w-full h-12 flex items-center justify-center bg-gray-100 rounded">
-                    <span className="text-lg font-bold text-gray-700">
+                  <div className="w-full h-12 flex items-center justify-center bg-muted rounded">
+                    <span className="text-lg font-bold text-foreground">
                       <svg
                         width="24"
                         height="16"
