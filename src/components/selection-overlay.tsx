@@ -73,6 +73,15 @@ const SelectionOverlay: React.FC<SelectionOverlayProps> = ({
         return;
       }
 
+      // Don't close if clicking on Radix UI dropdown content or context menu content
+      if (
+        target.closest("[data-radix-menu-content]") ||
+        target.closest("[data-radix-popper-content-wrapper]") ||
+        target.closest("[data-radix-context-menu-content]")
+      ) {
+        return;
+      }
+
       // Don't interfere with canvas interactions - let Fabric.js handle them
       if (target.tagName === "CANVAS") {
         return;

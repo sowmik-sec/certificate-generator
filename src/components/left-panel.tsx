@@ -250,9 +250,12 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
         onClick={handleClick}
         data-left-panel
       >
-        <CardContent className="p-0 h-full flex flex-col">
+        <CardContent className="p-0 h-full flex flex-col" data-left-panel>
           {/* Header with current mode */}
-          <CardHeader className="py-3 px-4 border-b border-border/50 bg-muted/30 rounded-t-3xl">
+          <CardHeader
+            className="py-3 px-4 border-b border-border/50 bg-muted/30 rounded-t-3xl"
+            data-left-panel
+          >
             <CardTitle className="text-base font-semibold capitalize flex items-center gap-3 text-foreground/90">
               {IconComponent && <IconComponent className="h-4 w-4" />}
               {activeMode?.replace("-", " ")}
@@ -269,8 +272,8 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
 
           {/* Scrollable content */}
           <div className="flex-1 min-h-0">
-            <ScrollArea className="h-full">
-              <div className="p-4 space-y-2">
+            <ScrollArea className="h-full" data-left-panel>
+              <div className="p-4 space-y-2" data-left-panel>
                 {activeMode === "templates" && (
                   <TemplatesPanel
                     onSelectTemplate={onSelectTemplate}
