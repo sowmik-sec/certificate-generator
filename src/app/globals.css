@@ -118,3 +118,27 @@ button:hover {
 .mobile-close-button {
   z-index: 60;
 }
+
+/* ============================================================================
+ * DRAWING CURSOR STYLES
+ * Custom cursor handling for drawing mode - ONLY inside actual canvas element
+ * ============================================================================ */
+
+/* Canvas-specific cursor hiding during drawing mode */
+.canvas-container.drawing-active canvas {
+  cursor: none !important;
+}
+
+/* Fabric.js specific elements */
+.canvas-container.drawing-active .upper-canvas {
+  cursor: none !important;
+}
+
+.canvas-container.drawing-active .lower-canvas {
+  cursor: none !important;
+}
+
+/* Ensure fabric wrapper doesn't interfere */
+.canvas-container.drawing-active .canvas-container {
+  cursor: inherit;
+}

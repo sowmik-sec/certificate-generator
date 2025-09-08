@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Lock, Unlock, Trash2, MoreHorizontal, CopyPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { useToolsStore } from "@/stores/useToolsStore";
 
 interface SelectionTooltipProps {
   canvas: any;
@@ -28,6 +29,7 @@ const SelectionTooltip: React.FC<SelectionTooltipProps> = ({
   setEditorMode,
   onOpenMobileProperties,
 }) => {
+  const { isDrawing } = useToolsStore();
   const [tooltipState, setTooltipState] = useState({
     visible: false,
     x: 0,
@@ -503,6 +505,9 @@ const SelectionTooltip: React.FC<SelectionTooltipProps> = ({
     // The context menu will manage its visibility independently
   };
   if (position) {
+    // Hide tooltip during drawing mode
+    if (isDrawing) return null;
+
     // When position is provided, use selectedObject directly
     if (!selectedObject || selectedObject.excludeFromExport) return null;
 
@@ -574,6 +579,9 @@ const SelectionTooltip: React.FC<SelectionTooltipProps> = ({
 
   // Original logic for backward compatibility
   if (!tooltipState.visible || !tooltipState.object) return null;
+
+  // Hide tooltip during drawing mode
+  if (isDrawing) return null;
 
   const isLocked =
     tooltipState.object.lockMovementX || tooltipState.object.lockMovementY;

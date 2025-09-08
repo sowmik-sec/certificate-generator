@@ -4,6 +4,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { FabricCanvas } from "@/types/fabric";
 import { FabricObject } from "fabric";
 import { usePropertiesStore } from "@/stores/usePropertiesStore";
+import { useToolsStore } from "@/stores/useToolsStore";
 import { EditorMode } from "@/components/sidebar-navigation";
 import MobilePropertyPanel from "./mobile-property-panel";
 import { useResponsive } from "@/hooks/useResponsive";
@@ -65,6 +66,7 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
   onMobilePropertyClose = () => {},
 }) => {
   const { isMobile } = useResponsive();
+  const { isDrawing } = useToolsStore();
   const {
     attributes,
     syncFromFabricObject,
@@ -1075,6 +1077,11 @@ const TopPropertyPanel: React.FC<TopPropertyPanelProps> = ({
       </Tooltip>
     </div>
   );
+
+  // Hide property panel during drawing mode
+  if (isDrawing) {
+    return null;
+  }
 
   // If mobile, render the mobile property panel
   if (isMobile) {

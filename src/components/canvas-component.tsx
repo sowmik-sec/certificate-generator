@@ -5,6 +5,8 @@ import { FabricObject } from "fabric";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { safeCanvasOperation } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
+import { useToolsStore } from "@/stores/useToolsStore";
+import DrawingCursor from "./drawing-cursor";
 
 interface CanvasComponentProps {
   fabric: FabricModule;
@@ -23,6 +25,16 @@ const CanvasComponent: React.FC<CanvasComponentProps> = ({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isClient, setIsClient] = useState(false);
+
+  // Access tools store for drawing cursor functionality
+  const {
+    isDrawing,
+    brushColor,
+    brushSize,
+    showDrawingCursor,
+    setIsMouseOverCanvas,
+    applyDrawingSettings,
+  } = useToolsStore();
 
   // Ensure component only renders on client to prevent hydration issues
   useEffect(() => {
@@ -260,6 +272,32 @@ const CanvasComponent: React.FC<CanvasComponentProps> = ({
       }
     });
 
+    // Add mouse enter/leave handlers for drawing cursor
+    canvasInstance.on("mouse:over", () => {
+      setIsMouseOverCanvas(true);
+      applyDrawingSettings(canvasInstance);
+    });
+
+    canvasInstance.on("mouse:out", () => {
+      setIsMouseOverCanvas(false);
+      applyDrawingSettings(canvasInstance);
+    });
+
+    // Add listeners for drawing path events
+    canvasInstance.on("path:created", (e: any) => {
+      console.log("[PathCreated] New drawing path added:", e.path);
+      console.log(
+        "[PathCreated] Total objects:",
+        canvasInstance.getObjects().length
+      );
+    });
+
+    canvasInstance.on("object:added", (e: any) => {
+      if (e.target.type === "path") {
+        console.log("[ObjectAdded] Drawing path added to canvas");
+      }
+    });
+
     setCanvas(canvasInstance);
 
     const resizeObserver = new ResizeObserver(() => {
@@ -285,7 +323,20 @@ const CanvasComponent: React.FC<CanvasComponentProps> = ({
     canvasWidth,
     canvasHeight,
     isClient,
+    setIsMouseOverCanvas,
+    applyDrawingSettings,
+    // Removed isDrawing from here to prevent canvas recreation
   ]);
+
+  // Separate useEffect for handling drawing mode changes
+  useEffect(() => {
+    const currentCanvas =
+      canvasRef.current && fabric?.getCanvasFromElement?.(canvasRef.current);
+    if (currentCanvas) {
+      console.log("[DrawingMode] Changed to:", isDrawing);
+      applyDrawingSettings(currentCanvas);
+    }
+  }, [isDrawing, fabric, applyDrawingSettings]);
 
   // Handle canvas size changes - re-center when dimensions change
   useEffect(() => {
@@ -314,14 +365,32 @@ const CanvasComponent: React.FC<CanvasComponentProps> = ({
   }
 
   return (
-    <div ref={containerRef} className="w-full h-full">
-      <Card
-        className="w-full h-full shadow-xl overflow-hidden border border-gray-200 relative transition-all duration-300 ease-in-out flex items-center justify-center bg-transparent"
-        style={{ padding: 0, margin: 0 }}
-      >
-        <canvas ref={canvasRef} className="shadow-md" />
-      </Card>
-    </div>
+    <>
+      <DrawingCursor
+        color={brushColor}
+        size={brushSize}
+        isVisible={showDrawingCursor}
+      />
+      <div ref={containerRef} className="w-full h-full">
+        <Card
+          className={`w-full h-full shadow-xl overflow-hidden border border-gray-200 relative transition-all duration-300 ease-in-out flex items-center justify-center bg-transparent canvas-container ${
+            isDrawing ? "drawing-active" : ""
+          }`}
+          style={{
+            padding: 0,
+            margin: 0,
+          }}
+        >
+          <canvas
+            ref={canvasRef}
+            className="shadow-md"
+            style={{
+              cursor: isDrawing ? "none" : "default",
+            }}
+          />
+        </Card>
+      </div>
+    </>
   );
 };
 

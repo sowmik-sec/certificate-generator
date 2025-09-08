@@ -93,21 +93,37 @@ const ToolsPanel: React.FC<ToolsPanelProps> = ({
                     <Button
                       onClick={toggleDrawing}
                       variant={isDrawing ? "default" : "outline"}
-                      className={`flex flex-col items-center justify-center p-4 h-auto hover:cursor-pointer ${
-                        isDrawing ? "bg-[var(--color-accent)]" : ""
+                      className={`flex flex-col items-center justify-center p-4 h-auto hover:cursor-pointer transition-all duration-200 ${
+                        isDrawing
+                          ? "bg-[var(--color-accent)] ring-2 ring-blue-500 ring-opacity-50 shadow-lg"
+                          : "hover:bg-[var(--color-accent)] hover:bg-opacity-10"
                       }`}
                     >
                       <Brush
                         size={40}
-                        className="text-[var(--color-muted-foreground)]"
+                        className={`transition-colors duration-200 ${
+                          isDrawing
+                            ? "text-white"
+                            : "text-[var(--color-muted-foreground)]"
+                        }`}
                       />
-                      <span className="mt-2 text-sm text-[var(--color-muted-foreground)]">
-                        Draw
+                      <span
+                        className={`mt-2 text-sm transition-colors duration-200 ${
+                          isDrawing
+                            ? "text-white"
+                            : "text-[var(--color-muted-foreground)]"
+                        }`}
+                      >
+                        {isDrawing ? "Drawing..." : "Draw"}
                       </span>
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Toggle drawing mode</p>
+                    <p>
+                      {isDrawing
+                        ? "Exit drawing mode"
+                        : "Enter drawing mode - use custom pen cursor"}
+                    </p>
                   </TooltipContent>
                 </Tooltip>
 
