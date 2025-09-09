@@ -514,6 +514,7 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
   const canvasRef = useRef(canvas);
   const applyEffectWithStateRef = useRef<any>(null);
   const applyCurveEffectRef = useRef<any>(null);
+  const curveUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null); // For debouncing curve updates
 
   // Update refs when values change
   useEffect(() => {
@@ -539,8 +540,9 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
 
         // Apply effects immediately with the new state
         if (key === "curveIntensity") {
-          // Handle curve effects
+          // Handle curve effects with proper debouncing to prevent multiple creations
           if (selectedObjectRef.current) {
+            // Update the curve amount directly on the object for immediate feedback
             if (
               selectedObjectRef.current._isCurvedText ||
               selectedObjectRef.current.type === "curved-text" ||
@@ -549,12 +551,18 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
             ) {
               selectedObjectRef.current._curveAmount = value;
             }
-            // Apply curve effect immediately
-            requestAnimationFrame(() => {
-              if (applyCurveEffectRef.current) {
+
+            // Clear any pending curve updates
+            if (curveUpdateTimeoutRef.current) {
+              clearTimeout(curveUpdateTimeoutRef.current);
+            }
+
+            // Debounce the actual curve application to prevent multiple object creation
+            curveUpdateTimeoutRef.current = setTimeout(() => {
+              if (applyCurveEffectRef.current && selectedObjectRef.current) {
                 applyCurveEffectRef.current(selectedObjectRef.current, value);
               }
-            });
+            }, 100); // Wait 100ms after the last change before applying
           }
         } else {
           // Apply other effects immediately if an effect is selected
@@ -634,12 +642,23 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
       canvas.off("keydown", handleCanvasKeyDown);
+
+      // Cleanup curve update timeout
+      if (curveUpdateTimeoutRef.current) {
+        clearTimeout(curveUpdateTimeoutRef.current);
+      }
     };
   }, [canvas, selectedObject]);
 
   // Sync with selected object on mount and reset effects when object changes
   useEffect(() => {
     if (selectedObject) {
+      // Clear any pending curve updates when object changes
+      if (curveUpdateTimeoutRef.current) {
+        clearTimeout(curveUpdateTimeoutRef.current);
+        curveUpdateTimeoutRef.current = null;
+      }
+
       syncFromFabricObject(selectedObject);
 
       // Check if this is a curved text and preserve its curve value
@@ -970,6 +989,7 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
             hasBorders: true,
           });
 
+          // Remove the old curved text object
           canvas.remove(textObject);
           canvas.add(straightText);
           canvas.setActiveObject(straightText);
@@ -1008,7 +1028,7 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
         radius = minRadius;
       }
 
-      // Remove the existing object (whether it's curved or straight)
+      // Always remove the existing object before creating new curved text
       canvas.remove(textObject);
 
       // Create individual character objects positioned along the arc
@@ -1096,41 +1116,49 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
           value: true,
           enumerable: false, // Don't include in serialization
           configurable: true,
+          writable: true,
         });
         Object.defineProperty(curvedTextGroup, "_originalText", {
           value: originalText,
           enumerable: false,
           configurable: true,
+          writable: true,
         });
         Object.defineProperty(curvedTextGroup, "_curveAmount", {
           value: curveAmount,
           enumerable: false,
           configurable: true,
+          writable: true, // Make it writable so we can update it
         });
         Object.defineProperty(curvedTextGroup, "_fontSize", {
           value: fontSize,
           enumerable: false,
           configurable: true,
+          writable: true,
         });
         Object.defineProperty(curvedTextGroup, "_fontFamily", {
           value: fontFamily,
           enumerable: false,
           configurable: true,
+          writable: true,
         });
         Object.defineProperty(curvedTextGroup, "_fill", {
           value: fill,
           enumerable: false,
           configurable: true,
+          writable: true,
         });
         Object.defineProperty(curvedTextGroup, "_stroke", {
           value: stroke,
           enumerable: false,
           configurable: true,
+          writable: true,
         });
         Object.defineProperty(curvedTextGroup, "_strokeWidth", {
           value: strokeWidth,
           enumerable: false,
           configurable: true,
+          writable: true,
         });
 
         // Set type to a standard fabric type to avoid serialization issues
