@@ -18,7 +18,6 @@ import {
 import { useEffect, useCallback } from "react";
 import { useLayerStore } from "@/stores/useLayerStore";
 import { Input } from "@/components/ui/input";
-import { Button } from "./ui/button";
 
 interface LayerPanelProps {
   canvas: FabricCanvas;
@@ -58,19 +57,19 @@ const LayerPanel: React.FC<LayerPanelProps> = ({
     switch (type.toLowerCase()) {
       case "textbox":
       case "text":
-        return <Type size={16} className="text-blue-500" />;
+        return <Type size={14} className="text-blue-500" />;
       case "rect":
       case "rectangle":
-        return <Square size={16} className="text-green-500" />;
+        return <Square size={14} className="text-green-500" />;
       case "circle":
       case "ellipse":
-        return <Circle size={16} className="text-purple-500" />;
+        return <Circle size={14} className="text-purple-500" />;
       case "image":
-        return <ImageIcon size={16} className="text-orange-500" />;
+        return <ImageIcon size={14} className="text-orange-500" />;
       case "group":
-        return <Shapes size={16} className="text-indigo-500" />;
+        return <Shapes size={14} className="text-indigo-500" />;
       default:
-        return <Shapes size={16} className="text-gray-500" />;
+        return <Shapes size={14} className="text-gray-500" />;
     }
   };
 
@@ -294,7 +293,7 @@ const LayerPanel: React.FC<LayerPanelProps> = ({
     } else {
       // Moving up (toward back)
       for (let i = draggedIndex; i > targetIndex; i--) {
-        canvas.sendBackward(draggedObject);
+        canvas.sendBackwards(draggedObject);
       }
     }
 
@@ -311,7 +310,7 @@ const LayerPanel: React.FC<LayerPanelProps> = ({
   return (
     <div className="w-full bg-white h-full flex flex-col">
       {/* Header */}
-      <div className="px-4 py-3 border-b border-gray-200">
+      <div className="px-3 py-2 border-b border-gray-200">
         <h3 className="text-sm font-medium text-gray-900">Layers</h3>
         <p className="text-xs text-gray-500 mt-1">
           {layers.length} layer{layers.length !== 1 ? "s" : ""}
@@ -328,7 +327,7 @@ const LayerPanel: React.FC<LayerPanelProps> = ({
             </div>
           </div>
         ) : (
-          <div className="py-2">
+          <div className="py-1">
             {layers.map((layer) => (
               <div
                 key={layer.id}
@@ -336,7 +335,7 @@ const LayerPanel: React.FC<LayerPanelProps> = ({
                 onDragStart={(e) => handleDragStart(e, layer.id)}
                 onDragOver={handleDragOver}
                 onDrop={(e) => handleDrop(e, layer.id)}
-                className={`group flex items-center px-3 py-2 mx-2 mb-1 rounded cursor-pointer transition-all ${
+                className={`group flex items-center px-2 py-1.5 mx-2 mb-1 rounded cursor-pointer transition-all ${
                   isLayerSelected(layer)
                     ? "bg-blue-100 border border-blue-200"
                     : "hover:bg-gray-50"
@@ -344,12 +343,12 @@ const LayerPanel: React.FC<LayerPanelProps> = ({
                 onClick={(e) => selectLayer(layer, e.ctrlKey || e.metaKey)}
               >
                 {/* Drag Handle */}
-                <div className="opacity-0 group-hover:opacity-100 mr-2 cursor-move">
-                  <GripVertical size={14} className="text-gray-400" />
+                <div className="opacity-0 group-hover:opacity-100 mr-1.5 cursor-move">
+                  <GripVertical size={12} className="text-gray-400" />
                 </div>
 
                 {/* Layer Icon */}
-                <div className="flex-shrink-0 mr-3">
+                <div className="flex-shrink-0 mr-2">
                   {getLayerIcon(layer.type)}
                 </div>
 
@@ -395,66 +394,62 @@ const LayerPanel: React.FC<LayerPanelProps> = ({
                 </div>
 
                 {/* Layer Controls */}
-                <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100">
+                <div className="flex items-center space-x-0.5 opacity-0 group-hover:opacity-100">
                   {/* Visibility Toggle */}
-                  <Button
+                  <button
                     onClick={(e) => {
                       e.stopPropagation();
                       toggleVisibility(layer.id);
                     }}
                     className="p-1 rounded hover:bg-gray-200 transition-colors hover:cursor-pointer"
                     title={layer.visible ? "Hide layer" : "Show layer"}
-                    variant="outline"
                   >
                     {layer.visible ? (
-                      <Eye size={14} className="text-gray-600" />
+                      <Eye size={12} className="text-gray-600" />
                     ) : (
-                      <EyeOff size={14} className="text-gray-400" />
+                      <EyeOff size={12} className="text-gray-400" />
                     )}
-                  </Button>
+                  </button>
 
                   {/* Lock Toggle */}
-                  <Button
+                  <button
                     onClick={(e) => {
                       e.stopPropagation();
                       toggleLock(layer.id);
                     }}
                     className="p-1 rounded hover:bg-gray-200 transition-colors hover:cursor-pointer"
                     title={layer.locked ? "Unlock layer" : "Lock layer"}
-                    variant="outline"
                   >
                     {layer.locked ? (
-                      <Lock size={14} className="text-red-500" />
+                      <Lock size={12} className="text-red-500" />
                     ) : (
-                      <Unlock size={14} className="text-gray-600" />
+                      <Unlock size={12} className="text-gray-600" />
                     )}
-                  </Button>
+                  </button>
 
                   {/* Duplicate */}
-                  <Button
+                  <button
                     onClick={(e) => {
                       e.stopPropagation();
                       duplicateLayer(layer.id);
                     }}
                     className="p-1 rounded hover:bg-gray-200 transition-colors hover:cursor-pointer"
                     title="Duplicate layer"
-                    variant="outline"
                   >
-                    <Copy size={14} className="text-gray-600" />
-                  </Button>
+                    <Copy size={12} className="text-gray-600" />
+                  </button>
 
                   {/* Delete */}
-                  <Button
+                  <button
                     onClick={(e) => {
                       e.stopPropagation();
                       deleteLayer(layer.id);
                     }}
                     className="p-1 rounded hover:bg-red-100 hover:text-red-600 transition-colors hover:cursor-pointer"
                     title="Delete layer"
-                    variant="outline"
                   >
-                    <Trash2 size={14} className="text-gray-600" />
-                  </Button>
+                    <Trash2 size={12} className="text-gray-600" />
+                  </button>
                 </div>
               </div>
             ))}
@@ -463,7 +458,7 @@ const LayerPanel: React.FC<LayerPanelProps> = ({
       </div>
 
       {/* Layer Actions */}
-      <div className="border-t border-gray-200 p-3">
+      <div className="border-t border-gray-200 p-2">
         <div className="flex justify-between items-center text-xs text-gray-500">
           <span>Drag to reorder</span>
           <span>Ctrl+Click to multi-select</span>

@@ -510,10 +510,8 @@ const PositionLeftPanel: React.FC<PositionLeftPanelProps> = ({
         </TabsContent>
 
         {/* Layers Tab Content */}
-        <TabsContent value="layers" className="flex-1 m-0">
-          <div className="h-[600px] w-full">
-            <LayerPanel canvas={canvas} onSelectionChange={() => {}} />
-          </div>
+        <TabsContent value="layers" className="flex-1 overflow-hidden m-0">
+          <LayerPanel canvas={canvas} onSelectionChange={() => {}} />
         </TabsContent>
       </Tabs>
     </div>
