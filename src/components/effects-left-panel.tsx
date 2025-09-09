@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
+import { HexColorPicker } from "react-colorful";
+
 import { useState, useCallback, useEffect, useRef, memo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -1487,17 +1489,13 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
       />
 
       {/* Color */}
-      <div className="flex items-center justify-between">
+      <div className="space-y-2">
         <Label className="text-sm font-medium text-foreground">Color</Label>
-        <div className="w-8 h-8 rounded-full border border-border overflow-hidden relative">
-          <input
-            type="color"
-            value={effectState.shadowColor || "#000000"}
-            onChange={(e) => updateEffectState("shadowColor", e.target.value)}
-            className="absolute inset-0 w-full h-full border-none cursor-pointer rounded-full"
-            style={{ WebkitAppearance: "none", appearance: "none" }}
-          />
-        </div>
+        <HexColorPicker
+          color={effectState.shadowColor || "#000000"}
+          onChange={(color) => updateEffectState("shadowColor", color)}
+          className="w-full"
+        />
       </div>
     </div>
   );
@@ -1558,17 +1556,13 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
       />
 
       {/* Color */}
-      <div className="flex items-center justify-between">
+      <div className="space-y-2">
         <Label className="text-sm font-medium text-foreground">Color</Label>
-        <div className="w-8 h-8 rounded-full border border-border overflow-hidden relative">
-          <input
-            type="color"
-            value={effectState.spliceColor || "#000000"}
-            onChange={(e) => updateEffectState("spliceColor", e.target.value)}
-            className="absolute inset-0 w-full h-full border-none cursor-pointer rounded-full"
-            style={{ WebkitAppearance: "none", appearance: "none" }}
-          />
-        </div>
+        <HexColorPicker
+          color={effectState.spliceColor || "#000000"}
+          onChange={(color) => updateEffectState("spliceColor", color)}
+          className="w-full"
+        />
       </div>
     </div>
   );
@@ -1607,17 +1601,13 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
       />
 
       {/* Color */}
-      <div className="flex items-center justify-between">
+      <div className="space-y-2">
         <Label className="text-sm font-medium text-foreground">Color</Label>
-        <div className="w-8 h-8 rounded-full border border-border overflow-hidden relative">
-          <input
-            type="color"
-            value={effectState.echoColor || "#000000"}
-            onChange={(e) => updateEffectState("echoColor", e.target.value)}
-            className="absolute inset-0 w-full h-full border-none cursor-pointer rounded-full"
-            style={{ WebkitAppearance: "none", appearance: "none" }}
-          />
-        </div>
+        <HexColorPicker
+          color={effectState.echoColor || "#000000"}
+          onChange={(color) => updateEffectState("echoColor", color)}
+          className="w-full"
+        />
       </div>
     </div>
   );
@@ -1642,32 +1632,20 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
         max={20}
       />
 
-      {/* Color Section with both colors side by side */}
+      {/* Color Section with colors in two rows */}
       <div className="space-y-2">
         <Label className="text-sm font-medium text-foreground">Colors</Label>
-        <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 rounded-full border border-border overflow-hidden relative">
-            <input
-              type="color"
-              value={effectState.glitchColor1 || "#ff0000"}
-              onChange={(e) =>
-                updateEffectState("glitchColor1", e.target.value)
-              }
-              className="absolute inset-0 w-full h-full border-none cursor-pointer rounded-full"
-              style={{ WebkitAppearance: "none", appearance: "none" }}
-            />
-          </div>
-          <div className="w-8 h-8 rounded-full border border-border overflow-hidden relative">
-            <input
-              type="color"
-              value={effectState.glitchColor2 || "#00ffff"}
-              onChange={(e) =>
-                updateEffectState("glitchColor2", e.target.value)
-              }
-              className="absolute inset-0 w-full h-full border-none cursor-pointer rounded-full"
-              style={{ WebkitAppearance: "none", appearance: "none" }}
-            />
-          </div>
+        <div className="space-y-2">
+          <HexColorPicker
+            color={effectState.glitchColor1 || "#ff0000"}
+            onChange={(color) => updateEffectState("glitchColor1", color)}
+            className="w-full"
+          />
+          <HexColorPicker
+            color={effectState.glitchColor2 || "#00ffff"}
+            onChange={(color) => updateEffectState("glitchColor2", color)}
+            className="w-full"
+          />
         </div>
       </div>
     </div>
@@ -1715,19 +1693,13 @@ const EffectsLeftPanel: React.FC<EffectsLeftPanelProps> = ({
       />
 
       {/* Color */}
-      <div className="flex items-center justify-between">
+      <div className="space-y-2">
         <Label className="text-sm font-medium text-foreground">Color</Label>
-        <div className="w-8 h-8 rounded-full border border-border overflow-hidden relative">
-          <input
-            type="color"
-            value={effectState.backgroundColor || "#000000"}
-            onChange={(e) =>
-              updateEffectState("backgroundColor", e.target.value)
-            }
-            className="absolute inset-0 w-full h-full border-none cursor-pointer rounded-full"
-            style={{ WebkitAppearance: "none", appearance: "none" }}
-          />
-        </div>
+        <HexColorPicker
+          color={effectState.backgroundColor || "#000000"}
+          onChange={(color) => updateEffectState("backgroundColor", color)}
+          className="w-full"
+        />
       </div>
     </div>
   );
