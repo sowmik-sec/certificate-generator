@@ -57,7 +57,9 @@ const TextEditingEnhancer: React.FC<TextEditingEnhancerProps> = ({
 
       // Skip if this is a group - let the canvas component handle it
       if (target.isType("group")) {
-        console.log("TextEditingEnhancer: Skipping group double-click, letting canvas handle it");
+        console.log(
+          "TextEditingEnhancer: Skipping group double-click, letting canvas handle it"
+        );
         return;
       }
 
@@ -71,7 +73,7 @@ const TextEditingEnhancer: React.FC<TextEditingEnhancerProps> = ({
             lockMovementY: true,
           });
         }
-        
+
         // Prevent any delays by forcing immediate editing mode
         setTimeout(() => {
           target.enterEditing();

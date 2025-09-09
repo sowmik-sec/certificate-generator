@@ -3,6 +3,7 @@
 ## Problem Description
 
 The user reported several issues with the sticky note functionality:
+
 1. Text couldn't be edited inside sticky notes
 2. Text box would move outside the certificate/sticky note bounds
 3. Text box would disappear after some time
@@ -11,6 +12,7 @@ The user reported several issues with the sticky note functionality:
 ## Root Cause Analysis
 
 The original implementation had several flaws:
+
 1. **Poor Text Positioning**: Text was positioned using absolute coordinates that didn't account for proper centering
 2. **Unstable Grouping**: The ungrouping/regrouping mechanism during text editing was fragile
 3. **No Position Constraints**: Text could move freely outside the sticky note bounds
@@ -21,6 +23,7 @@ The original implementation had several flaws:
 ### 1. Improved Sticky Note Creation (`useCanvasOperations.ts`)
 
 **Key Improvements:**
+
 - **Centered Origins**: Both background and text use `originX: "center", originY: "center"` for stable positioning
 - **Proper Text Constraints**: Text width is set to 160px (within 200px note with padding)
 - **Movement Locks**: Text has `lockMovementX: true, lockMovementY: true` to prevent drift
@@ -43,7 +46,7 @@ const noteText = new fabric.Textbox("Double-click to edit", {
   width: 160,
   fontSize: 16,
   textAlign: "center",
-  left: 0,  // Center horizontally
+  left: 0, // Center horizontally
   top: -20, // Slightly above center
   lockMovementX: true,
   lockMovementY: true,
@@ -56,6 +59,7 @@ const noteText = new fabric.Textbox("Double-click to edit", {
 ### 2. Enhanced Double-Click Handling (`canvas-component.tsx`)
 
 **Key Improvements:**
+
 - **Sticky Note Detection**: Special handling for objects marked with `_stickyNote` or `type: "sticky-note"`
 - **Simplified Text Selection**: For sticky notes, directly select the text object without complex hit detection
 - **Stable Positioning**: Proper coordinate transformation during ungrouping/regrouping
@@ -67,7 +71,7 @@ if (group._stickyNote || group.type === "sticky-note") {
   const textObjects = group
     .getObjects()
     .filter((o: any) => o.isType("textbox") || o._stickyNoteText);
-  
+
   if (textObjects.length > 0) {
     clickedTextObject = textObjects[0]; // Direct selection
   }
@@ -77,6 +81,7 @@ if (group._stickyNote || group.type === "sticky-note") {
 ### 3. Text Editing Enhancements (`text-editing-enhancer.tsx`)
 
 **Key Improvements:**
+
 - **Movement Prevention**: Temporarily lock movement during editing for sticky note text
 - **Proper Cleanup**: Re-enable movement after editing (though still constrained)
 - **Special Configuration**: Enhanced setup for sticky note text objects
@@ -94,16 +99,19 @@ if (target._stickyNoteText) {
 ## Technical Implementation Details
 
 ### Coordinate System
+
 - **Center Origins**: All sticky note components use center-based positioning for stability
 - **Relative Positioning**: Text is positioned relative to the group center (0, -20)
 - **Stable Transforms**: Coordinate transformations account for center origins
 
 ### Event Handling
+
 - **Double-Click**: Enhanced to handle sticky notes specially
 - **Text Editing**: Improved enter/exit handling with movement locks
 - **Group Management**: Robust ungrouping/regrouping with position preservation
 
 ### Visual Design
+
 - **Canva-like Appearance**: Yellow background with subtle border and shadow
 - **Professional Styling**: Proper corner controls, borders, and visual feedback
 - **Consistent Typography**: Arial font, 16px size, center-aligned text
@@ -111,17 +119,20 @@ if (target._stickyNoteText) {
 ## User Experience Improvements
 
 ### 1. Stable Text Editing
+
 - ✅ Text stays within sticky note bounds
 - ✅ No drift or movement during editing
 - ✅ Consistent positioning after edit completion
 
 ### 2. Canva-like Behavior
+
 - ✅ Double-click to edit text
 - ✅ Professional visual styling
 - ✅ Stable group behavior
 - ✅ Proper selection feedback
 
 ### 3. Reliability
+
 - ✅ No disappearing text boxes
 - ✅ Robust ungrouping/regrouping
 - ✅ Consistent coordinate system
@@ -131,7 +142,7 @@ if (target._stickyNoteText) {
 
 1. **Create Sticky Note**: Click "Sticky Note" in the Tools panel
 2. **Edit Text**: Double-click on the sticky note to edit text
-3. **Verify Stability**: 
+3. **Verify Stability**:
    - Text should stay within note bounds
    - No movement outside the yellow area
    - Text should not disappear
@@ -148,6 +159,7 @@ if (target._stickyNoteText) {
 ## Result
 
 The sticky note now behaves exactly like Canva:
+
 - ✅ Stable text editing within bounds
 - ✅ Professional visual appearance
 - ✅ No text drift or disappearing issues

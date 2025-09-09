@@ -151,11 +151,14 @@ const CanvasComponent: React.FC<CanvasComponentProps> = ({
           const textObjects = group
             .getObjects()
             .filter((o: any) => o.isType("textbox") || o._stickyNoteText);
-          
+
           console.log("Found text objects:", textObjects.length);
           if (textObjects.length > 0) {
             clickedTextObject = textObjects[0]; // Take the first (and likely only) text object
-            console.log("Selected text object for editing:", clickedTextObject.text);
+            console.log(
+              "Selected text object for editing:",
+              clickedTextObject.text
+            );
           }
         } else {
           // Original logic for other groups (like tables)
@@ -168,7 +171,8 @@ const CanvasComponent: React.FC<CanvasComponentProps> = ({
 
             // Calculate the group's transformation matrix
             const groupTransform = group.calcTransformMatrix();
-            const invertedTransform = fabric.util.invertTransform(groupTransform);
+            const invertedTransform =
+              fabric.util.invertTransform(groupTransform);
             const localPoint = fabric.util.transformPoint(
               pointer,
               invertedTransform
@@ -221,7 +225,7 @@ const CanvasComponent: React.FC<CanvasComponentProps> = ({
 
         if (clickedTextObject) {
           console.log("Starting text editing for:", clickedTextObject.text);
-          
+
           // Prevent event bubbling to stop other handlers
           options.e.preventDefault();
           options.e.stopPropagation();
@@ -260,13 +264,11 @@ const CanvasComponent: React.FC<CanvasComponentProps> = ({
             canvasInstance.add(obj);
           });
 
-          safeCanvasOperation(canvasInstance, () =>
-            canvasInstance.renderAll()
-          );
+          safeCanvasOperation(canvasInstance, () => canvasInstance.renderAll());
 
           // Set active object and enter editing mode
           canvasInstance.setActiveObject(clickedTextObject);
-          
+
           // Force immediate editing
           setTimeout(() => {
             clickedTextObject.enterEditing();
@@ -287,14 +289,17 @@ const CanvasComponent: React.FC<CanvasComponentProps> = ({
               });
 
               // For sticky notes, reset positions relative to center
-              if (originalProps._stickyNote || originalProps.type === "sticky-note") {
+              if (
+                originalProps._stickyNote ||
+                originalProps.type === "sticky-note"
+              ) {
                 // Reset object positions to be relative to group center
                 groupObjects.forEach((obj: any) => {
                   if (obj._stickyNoteText || obj.isType("textbox")) {
                     // Keep text centered with slight upward offset for visual balance
                     obj.set({
-                      left: 0,   // Center horizontally
-                      top: -20,  // Slightly above center
+                      left: 0, // Center horizontally
+                      top: -20, // Slightly above center
                       originX: "center",
                       originY: "center",
                     });
@@ -312,11 +317,11 @@ const CanvasComponent: React.FC<CanvasComponentProps> = ({
 
               // Create new group with updated objects
               const newGroup = new fabric.Group(groupObjects, originalProps);
-              
+
               // Restore custom properties
               newGroup._stickyNote = originalProps._stickyNote;
               newGroup.type = originalProps.type;
-              
+
               canvasInstance.add(newGroup);
               canvasInstance.setActiveObject(newGroup);
               safeCanvasOperation(canvasInstance, () =>
