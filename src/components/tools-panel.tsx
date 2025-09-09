@@ -22,6 +22,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { HexColorPicker } from "react-colorful";
 
 interface ToolsPanelProps {
   canvas: FabricCanvas;
@@ -157,12 +158,13 @@ const ToolsPanel: React.FC<ToolsPanelProps> = ({
                   <Label className="block text-sm font-medium text-[var(--color-foreground)]">
                     Color
                   </Label>
-                  <input
-                    type="color"
-                    value={brushColor}
-                    onChange={(e) => setBrushColor(e.target.value)}
-                    className="mt-1 block w-full h-10 rounded-md border border-[var(--color-input)] bg-[var(--color-background)]"
-                  />
+                  <div className="mt-2">
+                    <HexColorPicker
+                      color={brushColor}
+                      onChange={setBrushColor}
+                      className="w-full"
+                    />
+                  </div>
                 </div>
                 <div>
                   <Label className="block text-sm font-medium text-[var(--color-foreground)] mb-2">
@@ -201,12 +203,11 @@ const ToolsPanel: React.FC<ToolsPanelProps> = ({
                   <Label className="block text-sm font-medium text-[var(--color-foreground)] mb-2">
                     Frame Color
                   </Label>
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="color"
-                      value={frameColor}
-                      onChange={(e) => setFrameColor(e.target.value)}
-                      className="w-12 h-8 rounded border border-[var(--color-border)] cursor-pointer"
+                  <div className="space-y-2">
+                    <HexColorPicker
+                      color={frameColor}
+                      onChange={setFrameColor}
+                      className="w-full"
                     />
                     <span className="text-sm text-[var(--color-muted-foreground)]">
                       {frameColor}
