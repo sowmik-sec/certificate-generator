@@ -1,15 +1,12 @@
 "use client";
-import { useHistoryStore } from "@/stores/useHistoryStore";
 
 /**
- * useCanvasStore() returns { json, setJson } exactly as specified
+ * useCanvasStore() - simplified without history functionality
  */
 export const useCanvasStore = () => {
-  const json = useHistoryStore((state) => state.json);
-  const setJson = useHistoryStore((state) => state.setJson);
-
+  // Return empty json state since history functionality is removed
   return {
-    json,
-    setJson,
+    json: null,
+    setJson: () => {},
   };
 };

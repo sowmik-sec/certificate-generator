@@ -30,16 +30,6 @@ import { useCanvasExport } from "@/hooks/useCanvasExport";
 import { useTemplateLoader } from "@/hooks/useTemplateLoader";
 import { useEditorShortcuts } from "@/hooks/useKeyboardShortcuts";
 
-// Import undo/redo system
-import {
-  initFabric,
-  restoreCanvasFromHistory,
-  setTemplateLoading,
-  isTemplateLoading,
-  clearHistoryAfterTemplateLoad,
-} from "@/lib/fabricHistory";
-import { useCanvasStore as useHistoryCanvasStore } from "@/hooks/useCanvasStore";
-
 // Import UI components
 import SidebarNavigation, { EditorMode } from "@/components/sidebar-navigation";
 import LeftPanel from "@/components/left-panel";
@@ -137,73 +127,17 @@ export default function DesignEditorPage() {
     canvasSize
   );
 
-  // Initialize undo/redo history system FIRST with better timing
-  useEffect(() => {
-    if (canvas && fabric) {
-      console.log("🎯 Initializing undo/redo system for main app...");
-      // Add a small delay to ensure canvas is fully initialized
-      const timer = setTimeout(() => {
-        // Double-check canvas is still valid and has required methods
-        if (canvas && typeof canvas.getObjects === "function") {
-          try {
-            canvas.getObjects(); // Test that it actually works
-            initFabric(canvas);
-            console.log("✅ Undo/redo system initialized for main app");
-          } catch (error) {
-            console.warn("⏳ Canvas not ready, retrying in 100ms...", error);
-            setTimeout(() => {
-              if (canvas && typeof canvas.getObjects === "function") {
-                initFabric(canvas);
-                console.log(
-                  "✅ Undo/redo system initialized for main app (retry)"
-                );
-              }
-            }, 100);
-          }
-        }
-      }, 100);
-      return () => clearTimeout(timer);
-    }
-  }, [canvas, fabric]);
-
-  // Load template on mount AFTER history system is ready
+  // Load template on mount
   useEffect(() => {
     if (canvas && fabric && isValidTemplateId(templateId)) {
-      // Wait a bit for history system to be fully initialized
-      setTimeout(() => {
-        const template = getTemplate(templateId);
-        if (template) {
-          console.log("📄 Loading template:", templateId);
-          // Set loading state to prevent auto-restore during template load
-          setTemplateLoading(true);
-
-          // Load the template
-          loadTemplate(template.json);
-
-          // Clear loading state after template is loaded
-          setTimeout(() => {
-            setTemplateLoading(false);
-
-            // Clear history to prevent initial undo state
-            clearHistoryAfterTemplateLoad();
-
-            console.log("✅ Template loading complete");
-          }, 500); // Give time for template to fully load
-        }
-      }, 200);
+      const template = getTemplate(templateId);
+      if (template) {
+        console.log("📄 Loading template:", templateId);
+        loadTemplate(template.json);
+        console.log("✅ Template loading complete");
+      }
     }
   }, [canvas, fabric, templateId, loadTemplate]);
-
-  // Auto-restore canvas from history (for undo/redo) - but not during template loading
-  const { json } = useHistoryCanvasStore();
-  useEffect(() => {
-    if (canvas && json && !isTemplateLoading()) {
-      console.log("🔄 Restoring canvas from history in main app...");
-      restoreCanvasFromHistory(canvas, json);
-    } else if (isTemplateLoading()) {
-      console.log("⏭️ Skipping auto-restore - template is loading");
-    }
-  }, [canvas, json]);
 
   // Sync mobile view state with responsive breakpoints
   useEffect(() => {
@@ -505,7 +439,7 @@ export default function DesignEditorPage() {
       console.log("Canvas dimension change completed, rendering...");
       manager.safeRender(() => {
         // This runs after safe rendering is complete
-        console.log("Canvas rendered successfully, saving to history...");
+        console.log("Canvas rendered successfully");
 
         console.log("Canvas resize completed successfully");
       });

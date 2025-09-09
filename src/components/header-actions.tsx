@@ -9,7 +9,6 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import { UndoButton, RedoButton } from "@/components/history-toolbar";
 import {
   Tooltip,
   TooltipTrigger,
@@ -74,12 +73,6 @@ const HeaderActions: React.FC<HeaderActionsProps> = ({
 
   return (
     <div className="flex items-center space-x-2">
-      {/* Undo/Redo Controls */}
-      <div className="flex items-center space-x-1 mr-2">
-        <UndoButton />
-        <RedoButton />
-      </div>
-
       {selectedObject && (
         <Tooltip>
           <TooltipTrigger asChild>
