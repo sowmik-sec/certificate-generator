@@ -115,7 +115,6 @@ export default function DesignEditorPage() {
     deleteSelected,
     addImageFromURL,
     addStickyNote,
-    addTable,
     handleCopy,
     handlePaste,
   } = useCanvasOperations(canvas, fabric, selectedObject, setSelectedObject);
@@ -604,7 +603,6 @@ export default function DesignEditorPage() {
             {...textHooks}
             {...frameHooks}
             addStickyNote={addStickyNote}
-            addTable={addTable}
           />
         )}
 
@@ -815,7 +813,6 @@ export default function DesignEditorPage() {
                   <ToolsPanel
                     canvas={canvas}
                     addStickyNote={addStickyNote}
-                    addTable={addTable}
                     addSimpleFrame={frameHooks.addSimpleFrame}
                     addDoubleFrame={frameHooks.addDoubleFrame}
                     addDecorativeFrame={frameHooks.addDecorativeFrame}

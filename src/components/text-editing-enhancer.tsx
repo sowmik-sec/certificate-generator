@@ -36,9 +36,8 @@ const TextEditingEnhancer: React.FC<TextEditingEnhancerProps> = ({
       const textObject = e.target;
       if (!textObject) return;
 
-      // Special handling for sticky note text
-      if (textObject._stickyNoteText) {
-        // Re-enable movement after editing (though it should still be constrained)
+      // Remove movement locks after editing for both sticky notes and table cells
+      if (textObject._stickyNoteText || textObject._isTableCell) {
         textObject.set({
           lockMovementX: false,
           lockMovementY: false,
@@ -55,30 +54,56 @@ const TextEditingEnhancer: React.FC<TextEditingEnhancerProps> = ({
       const target = e.target;
       if (!target) return;
 
-      // Skip if this is a group - let the canvas component handle it
+      console.log(
+        "Text enhancer double-click on:",
+        target.type,
+        target._stickyNoteText,
+        target._isTableCell
+      );
+
+      // Handle groups (sticky notes and tables) with simple direct editing
       if (target.isType("group")) {
-        console.log(
-          "TextEditingEnhancer: Skipping group double-click, letting canvas handle it"
-        );
-        return;
+        console.log("Group double-click detected:", target.type);
+
+        // Find text objects in the group
+        const textObjects = target
+          .getObjects()
+          .filter((obj: any) => obj.isType("textbox") || obj.isType("i-text"));
+
+        if (textObjects.length > 0) {
+          const textObj = textObjects[0]; // For now, edit the first text object
+          console.log("Editing text in group directly");
+
+          // Simple direct editing without ungrouping
+          setTimeout(() => {
+            canvas.setActiveObject(textObj);
+            textObj.enterEditing();
+            textObj.selectAll();
+            canvas.renderAll();
+          }, 50);
+        }
+
+        // Prevent default group behavior
+        return false;
       }
 
-      // For text objects, ensure immediate editing
+      // Handle individual text objects
       if (target.type === "textbox" || target.type === "i-text") {
-        // Special handling for sticky note text to prevent movement
-        if (target._stickyNoteText) {
-          // Temporarily disable movement during editing
+        console.log("Direct text editing");
+
+        // Lock movement during editing for special text types
+        if (target._stickyNoteText || target._isTableCell) {
           target.set({
             lockMovementX: true,
             lockMovementY: true,
           });
         }
 
-        // Prevent any delays by forcing immediate editing mode
+        // Start editing
         setTimeout(() => {
           target.enterEditing();
           target.selectAll();
-        }, 0);
+        }, 50);
       }
     };
 
@@ -99,10 +124,10 @@ const TextEditingEnhancer: React.FC<TextEditingEnhancerProps> = ({
           focusOnInit: true,
         });
 
-        // Special configuration for sticky note text
-        if (obj._stickyNoteText) {
+        // Special configuration for sticky note and table cell text
+        if (obj._stickyNoteText || obj._isTableCell) {
           obj.set({
-            // Prevent the text from being moved outside the sticky note bounds
+            // Prevent the text from being moved outside bounds
             lockMovementX: true,
             lockMovementY: true,
             hasControls: false,

@@ -66,7 +66,6 @@ interface LeftPanelProps {
   addBodyText: (options?: any) => void;
   // Tool functions
   addStickyNote: () => void;
-  addTable: (rows: number, cols: number) => void;
   addSimpleFrame: (options?: { stroke?: string; strokeWidth?: number }) => void;
   addDoubleFrame: (options?: { stroke?: string; strokeWidth?: number }) => void;
   addDecorativeFrame: (options?: {
@@ -116,7 +115,6 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
   addSubheading,
   addBodyText,
   addStickyNote,
-  addTable,
   addSimpleFrame,
   addDoubleFrame,
   addDecorativeFrame,
@@ -321,7 +319,6 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
                   <ToolsPanel
                     canvas={canvas}
                     addStickyNote={addStickyNote}
-                    addTable={addTable}
                     addSimpleFrame={addSimpleFrame}
                     addDoubleFrame={addDoubleFrame}
                     addDecorativeFrame={addDecorativeFrame}

@@ -383,8 +383,6 @@ export const useCanvasOperations = (
   const addStickyNote = useCallback(() => {
     if (!canvas || !fabric) return;
 
-    console.log("Creating sticky note...");
-
     // Create background rectangle with proper styling
     const noteBg = new fabric.Rect({
       width: 200,
@@ -413,6 +411,8 @@ export const useCanvasOperations = (
       editable: true,
       lockMovementX: true, // Prevent movement during editing
       lockMovementY: true,
+      lockScalingX: true,
+      lockScalingY: true,
       hasControls: false,
       hasBorders: false,
       selectable: true,
@@ -422,8 +422,6 @@ export const useCanvasOperations = (
       // Custom property to identify sticky note text
       _stickyNoteText: true,
     });
-
-    console.log("Created background and text objects");
 
     // Create group with both elements
     const group = new fabric.Group([noteBg, noteText], {
@@ -445,147 +443,33 @@ export const useCanvasOperations = (
     group._stickyNote = true;
     group.type = "sticky-note";
 
-    console.log("Group created with properties:", {
-      _stickyNote: group._stickyNote,
-      type: group.type,
-      objectCount: group.getObjects().length,
-    });
-
-    // Add a custom double-click handler as a fallback
+    // Add double-click handler for editing
     group.on("mousedblclick", () => {
-      console.log("Group double-click handler triggered");
-      // Find the text object
       const textObj = group
         .getObjects()
-        .find((obj: any) => obj.isType("textbox") || obj._stickyNoteText);
+        .find((obj: any) => obj._stickyNoteText || obj.type === "textbox");
+      if (!textObj) return;
 
-      if (textObj && canvas) {
-        console.log("Starting direct text editing");
-        // Simple approach: temporarily ungroup, edit, then regroup
-        const objects = group.getObjects().slice();
-        const groupPos = { left: group.left, top: group.top };
+      group.removeWithUpdate(textObj);
+      canvas.add(textObj);
+      canvas.setActiveObject(textObj);
+      textObj.enterEditing();
+      textObj.selectAll();
 
-        // Remove group
-        canvas.remove(group);
+      const exitEditing = () => {
+        canvas.remove(textObj);
+        group.addWithUpdate(textObj);
+        canvas.setActiveObject(group);
+        canvas.requestRenderAll();
+      };
 
-        // Add objects individually with proper positioning
-        objects.forEach((obj: any) => {
-          obj.set({
-            left: groupPos.left + (obj.left || 0),
-            top: groupPos.top + (obj.top || 0),
-          });
-          canvas.add(obj);
-        });
-
-        // Select and edit text
-        canvas.setActiveObject(textObj);
-        setTimeout(() => {
-          textObj.enterEditing();
-          textObj.selectAll();
-        }, 100);
-
-        // Handle regrouping on edit exit
-        const regroup = () => {
-          console.log("Regrouping after text edit");
-          objects.forEach((obj: any) => canvas.remove(obj));
-
-          // Reset positions
-          objects.forEach((obj: any) => {
-            if (obj._stickyNoteText) {
-              obj.set({
-                left: 0,
-                top: -20,
-                originX: "center",
-                originY: "center",
-              });
-            } else {
-              obj.set({
-                left: 0,
-                top: 0,
-                originX: "center",
-                originY: "center",
-              });
-            }
-          });
-
-          // Create new group
-          const newGroup = new fabric.Group(objects, {
-            left: groupPos.left,
-            top: groupPos.top,
-            originX: "center",
-            originY: "center",
-          });
-          newGroup._stickyNote = true;
-          newGroup.type = "sticky-note";
-
-          // Re-add the double-click handler
-          newGroup.on("mousedblclick", group._originalHandler || (() => {}));
-
-          canvas.add(newGroup);
-          canvas.setActiveObject(newGroup);
-          canvas.renderAll();
-        };
-
-        textObj.once("editing:exited", regroup);
-        canvas.renderAll();
-      }
+      textObj.once("editing:exited", exitEditing);
     });
-
-    // Store the original handler reference
-    group._originalHandler = group._events?.mousedblclick?.[0] || null;
-
-    console.log("Created sticky note group:", group._stickyNote, group.type);
 
     canvas.add(group);
     canvas.setActiveObject(group);
     canvas.renderAll();
   }, [canvas, fabric]);
-
-  const addTable = useCallback(
-    (rows: number, cols: number) => {
-      if (!canvas || !fabric) return;
-      const cellPadding = 10;
-      const cellWidth = 150;
-      const cellHeight = 50;
-      const tableObjects = [];
-
-      for (let i = 0; i < rows; i++) {
-        for (let j = 0; j < cols; j++) {
-          const cell = new fabric.Rect({
-            width: cellWidth,
-            height: cellHeight,
-            fill: "transparent",
-            stroke: "#000",
-            left: j * cellWidth,
-            top: i * cellHeight,
-          });
-
-          const text = new fabric.Textbox(`Cell ${i}-${j}`, {
-            width: cellWidth - cellPadding,
-            height: cellHeight - cellPadding,
-            left: j * cellWidth + cellPadding / 2,
-            top: i * cellHeight + cellPadding / 2,
-            fontSize: 16,
-            fill: "#000000",
-            fontFamily: "Arial",
-            textAlign: "center",
-          });
-
-          tableObjects.push(cell, text);
-        }
-      }
-
-      const group = new fabric.Group(tableObjects, {
-        left: 150,
-        top: 150,
-      });
-
-      canvas.add(group);
-      canvas.setActiveObject(group);
-      canvas.renderAll();
-    },
-    [canvas, fabric]
-  );
 
   return {
     deleteSelected,
@@ -593,6 +477,5 @@ export const useCanvasOperations = (
     handlePaste,
     addImageFromURL,
     addStickyNote,
-    addTable,
   };
 };

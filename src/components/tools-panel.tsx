@@ -7,12 +7,10 @@ import {
   Settings,
   Square,
   StickyNote,
-  Table,
 } from "lucide-react";
 import { useEffect } from "react";
 import { useToolsStore } from "@/stores/useToolsStore";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -28,7 +26,6 @@ import {
 interface ToolsPanelProps {
   canvas: FabricCanvas;
   addStickyNote: () => void;
-  addTable: (rows: number, cols: number) => void;
   addSimpleFrame: (options?: { stroke?: string; strokeWidth?: number }) => void;
   addDoubleFrame: (options?: { stroke?: string; strokeWidth?: number }) => void;
   addDecorativeFrame: (options?: {
@@ -43,7 +40,6 @@ interface ToolsPanelProps {
 const ToolsPanel: React.FC<ToolsPanelProps> = ({
   canvas,
   addStickyNote,
-  addTable,
   addSimpleFrame,
   addDoubleFrame,
   addDecorativeFrame,
@@ -61,10 +57,6 @@ const ToolsPanel: React.FC<ToolsPanelProps> = ({
     setFrameColor,
     frameWidth,
     setFrameWidth,
-    tableRows,
-    setTableRows,
-    tableCols,
-    setTableCols,
     applyDrawingSettings,
   } = useToolsStore();
 
@@ -82,7 +74,7 @@ const ToolsPanel: React.FC<ToolsPanelProps> = ({
                 <Settings className="w-5 h-5" />
                 Tools
                 <Badge variant="secondary" className="ml-auto">
-                  3 tools
+                  2 tools
                 </Badge>
               </CardTitle>
             </CardHeader>
@@ -147,68 +139,6 @@ const ToolsPanel: React.FC<ToolsPanelProps> = ({
                     <p>Add a sticky note to your design</p>
                   </TooltipContent>
                 </Tooltip>
-
-                <Card className="p-4">
-                  <CardContent className="p-0">
-                    <div className="flex flex-col items-center justify-center">
-                      <Table
-                        size={40}
-                        className="text-[var(--color-muted-foreground)]"
-                      />
-                      <span className="mt-2 text-sm text-[var(--color-muted-foreground)]">
-                        Table
-                      </span>
-                    </div>
-                    <div className="mt-3 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <Label className="text-sm text-[var(--color-muted-foreground)]">
-                          Rows:
-                        </Label>
-                        <Input
-                          type="number"
-                          value={tableRows}
-                          onChange={(e) =>
-                            setTableRows(parseInt(e.target.value) || 1)
-                          }
-                          className="w-16 h-8"
-                          min="1"
-                          max="10"
-                        />
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <Label className="text-sm text-[var(--color-muted-foreground)]">
-                          Cols:
-                        </Label>
-                        <Input
-                          type="number"
-                          value={tableCols}
-                          onChange={(e) =>
-                            setTableCols(parseInt(e.target.value) || 1)
-                          }
-                          className="w-16 h-8"
-                          min="1"
-                          max="10"
-                        />
-                      </div>
-                    </div>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          onClick={() => addTable(tableRows, tableCols)}
-                          className="w-full mt-3 hover:cursor-pointer"
-                          variant="secondary"
-                        >
-                          Add Table
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>
-                          Add a {tableRows}x{tableCols} table to your design
-                        </p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </CardContent>
-                </Card>
               </div>
             </CardContent>
           </Card>
