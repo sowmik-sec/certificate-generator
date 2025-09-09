@@ -36,6 +36,15 @@ const TextEditingEnhancer: React.FC<TextEditingEnhancerProps> = ({
       const textObject = e.target;
       if (!textObject) return;
 
+      // Special handling for sticky note text
+      if (textObject._stickyNoteText) {
+        // Re-enable movement after editing (though it should still be constrained)
+        textObject.set({
+          lockMovementX: false,
+          lockMovementY: false,
+        });
+      }
+
       // Ensure proper cleanup and rendering
       setTimeout(() => {
         canvas.renderAll();
@@ -46,8 +55,23 @@ const TextEditingEnhancer: React.FC<TextEditingEnhancerProps> = ({
       const target = e.target;
       if (!target) return;
 
+      // Skip if this is a group - let the canvas component handle it
+      if (target.isType("group")) {
+        console.log("TextEditingEnhancer: Skipping group double-click, letting canvas handle it");
+        return;
+      }
+
       // For text objects, ensure immediate editing
       if (target.type === "textbox" || target.type === "i-text") {
+        // Special handling for sticky note text to prevent movement
+        if (target._stickyNoteText) {
+          // Temporarily disable movement during editing
+          target.set({
+            lockMovementX: true,
+            lockMovementY: true,
+          });
+        }
+        
         // Prevent any delays by forcing immediate editing mode
         setTimeout(() => {
           target.enterEditing();
@@ -72,6 +96,20 @@ const TextEditingEnhancer: React.FC<TextEditingEnhancerProps> = ({
           // Immediate focus capability
           focusOnInit: true,
         });
+
+        // Special configuration for sticky note text
+        if (obj._stickyNoteText) {
+          obj.set({
+            // Prevent the text from being moved outside the sticky note bounds
+            lockMovementX: true,
+            lockMovementY: true,
+            hasControls: false,
+            hasBorders: false,
+            // Ensure it can still be selected for editing
+            selectable: true,
+            evented: true,
+          });
+        }
       }
     });
 
