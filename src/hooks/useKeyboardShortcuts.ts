@@ -23,8 +23,8 @@ export const useKeyboardShortcuts = (
         target.tagName === "INPUT" ||
         target.tagName === "TEXTAREA" ||
         target.contentEditable === "true" ||
-        target.classList.contains("text-cursor") || // Fabric.js text editing cursor
-        target.classList.contains("cursor") // Additional Fabric.js class
+        (target.classList && target.classList.contains("text-cursor")) || // Fabric.js text editing cursor
+        (target.classList && target.classList.contains("cursor")) // Additional Fabric.js class
       ) {
         return;
       }
