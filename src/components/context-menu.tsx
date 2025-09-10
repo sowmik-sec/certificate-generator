@@ -139,6 +139,9 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ canvas, fabric }) => {
     if (!canvas) return;
 
     const handleRightClick = (e: any) => {
+      // Only handle right-click events (button 2)
+      if (e.e.button !== 2) return;
+
       e.e.preventDefault();
 
       const pointer = canvas.getPointer(e.e);
