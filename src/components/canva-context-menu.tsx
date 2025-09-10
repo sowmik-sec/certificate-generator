@@ -51,89 +51,23 @@ const CanvaContextMenu: React.FC<CanvaContextMenuProps> = ({
   const [contextMenuOpen, setContextMenuOpen] = useState(false);
   const [copiedStyle, setCopiedStyle] = useState<any>(null);
 
-  // Add ref to track if context menu should force close
-  const forceCloseTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  // CRITICAL: Add ref to track drag state
+  // Simplified state tracking
   const isDraggingRef = useRef(false);
-  const postDragTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
   const { fabric, setSelectedObject } = useCanvasStore();
-
-  // SIMPLIFIED: Force close context menu immediately
-  const forceCloseContextMenu = useCallback(() => {
-    console.log("Force closing context menu immediately");
-
-    // Set state to closed immediately
-    setContextMenuOpen(false);
-
-    // Clear all timeouts
-    if (forceCloseTimeoutRef.current) {
-      clearTimeout(forceCloseTimeoutRef.current);
-      forceCloseTimeoutRef.current = null;
-    }
-    if (postDragTimeoutRef.current) {
-      clearTimeout(postDragTimeoutRef.current);
-      postDragTimeoutRef.current = null;
-    }
-
-    // Reset canvas immediately - NO TIMEOUTS
-    if (canvas) {
-      isDraggingRef.current = false;
-      canvas.selection = true;
-      canvas.defaultCursor = "default";
-      canvas.hoverCursor = "move";
-      canvas._currentTransform = null;
-
-      canvas.forEachObject((obj: any) => {
-        obj.selectable = true;
-        obj.evented = true;
-        obj.hoverCursor = "move";
-        obj.moveCursor = "move";
-      });
-
-      canvas.renderAll();
-      canvas.calcOffset();
-    }
-  }, [canvas]);
 
   // Ensure we have a consistent selectedObject reference
   const effectiveSelectedObject =
     selectedObject || canvas?.getActiveObject() || null;
 
-  // SIMPLIFIED: Context menu state handler for uncontrolled mode
+  // Simplified context menu state handler with minimal canvas operations
   const handleOpenChangeWithFocusCheck = (open: boolean) => {
-    console.log("Context menu state changing to:", open);
     setContextMenuOpen(open);
 
+    // Reset drag state when menu closes
     if (!open) {
-      // Clear timeouts immediately
-      if (forceCloseTimeoutRef.current) {
-        clearTimeout(forceCloseTimeoutRef.current);
-        forceCloseTimeoutRef.current = null;
-      }
-
-      // Reset canvas immediately - NO TIMEOUTS
-      if (canvas) {
-        canvas.renderAll();
-        canvas.selection = true;
-        canvas.hoverCursor = "move";
-        canvas.defaultCursor = "default";
-
-        canvas.forEachObject((obj: any) => {
-          obj.selectable = true;
-          obj.evented = true;
-          obj.hoverCursor = "move";
-          obj.moveCursor = "move";
-        });
-
-        canvas.renderAll();
-        canvas.calcOffset();
-      }
+      isDraggingRef.current = false;
     }
-  };
-
-  // Wrapper function to ensure context menu closes for every action
+  }; // Wrapper function to ensure context menu closes for every action
   const createMenuHandler = (handler: () => void) => {
     return () => {
       // Force close context menu immediately
@@ -1073,10 +1007,11 @@ const CanvaContextMenu: React.FC<CanvaContextMenuProps> = ({
         target.tagName === "INPUT" ||
         target.tagName === "TEXTAREA" ||
         target.contentEditable === "true" ||
-        target.classList.contains("text-cursor") ||
+        (target.classList && target.classList.contains("text-cursor")) ||
         // Check if any text object is in editing mode
         (canvas &&
           canvas.getActiveObject &&
+          typeof canvas.getActiveObject === "function" &&
           canvas.getActiveObject()?.isEditing)
       ) {
         return;
@@ -1201,28 +1136,18 @@ const CanvaContextMenu: React.FC<CanvaContextMenuProps> = ({
     handleSendBackward,
   ]);
 
-  // Handle context menu state and focus out behavior
+  // Handle context menu state and canvas events
   useEffect(() => {
     if (!canvas) return;
 
     const handleSelectionCleared = () => {
-      // Close context menu when selection is cleared
       setContextMenuOpen(false);
     };
 
     const handleCanvasMouseDown = (e: any) => {
-      // Close context menu immediately on canvas click
+      // Close context menu on any non-right-click
       if (e.e.button !== 2) {
         setContextMenuOpen(false);
-
-        // Reset canvas immediately - NO TIMEOUTS
-        if (canvas) {
-          canvas.renderAll();
-          canvas.selection = true;
-          canvas.forEachObject((obj: any) => {
-            obj.selectable = true;
-          });
-        }
       }
     };
 
@@ -1233,103 +1158,135 @@ const CanvaContextMenu: React.FC<CanvaContextMenuProps> = ({
 
     const handleObjectModified = () => {
       setContextMenuOpen(false);
-
-      // Reset canvas immediately - NO TIMEOUTS
-      if (canvas) {
-        canvas.selection = true;
-        canvas.renderAll();
-        canvas.calcOffset();
-
-        canvas.forEachObject((obj: any) => {
-          obj.selectable = true;
-          obj.evented = true;
-        });
-      }
     };
 
     const handleDragEnd = () => {
       if (isDraggingRef.current) {
-        console.log("Drag ended - immediate reset");
-        forceCloseContextMenu();
-
-        // Clear drag state immediately
+        console.log("🔥 DRAG ENDED - RESETTING CANVAS STATE");
         isDraggingRef.current = false;
+        setContextMenuOpen(false);
+
+        // CRITICAL: Force reset canvas state after dragging
+        if (canvas) {
+          canvas.selection = true;
+          canvas.defaultCursor = "default";
+          canvas.hoverCursor = "move";
+
+          // Ensure all objects are selectable after drag
+          canvas.forEachObject((obj: any) => {
+            if (!obj.lockMovementX && !obj.lockMovementY) {
+              obj.selectable = true;
+              obj.evented = true;
+            }
+          });
+
+          canvas.renderAll();
+          console.log("🟢 Canvas state reset after drag");
+        }
       }
-    };
-
-    const handleSelectionCreated = () => {
-      setContextMenuOpen(false);
-    };
-
-    const handleSelectionUpdated = () => {
-      setContextMenuOpen(false);
     };
 
     // Add canvas event listeners
     canvas.on("selection:cleared", handleSelectionCleared);
-    canvas.on("selection:created", handleSelectionCreated);
-    canvas.on("selection:updated", handleSelectionUpdated);
+    canvas.on("selection:created", handleSelectionCleared);
+    canvas.on("selection:updated", handleSelectionCleared);
     canvas.on("mouse:down", handleCanvasMouseDown);
     canvas.on("object:moving", handleObjectMoving);
     canvas.on("object:modified", handleObjectModified);
-    // Critical: Handle drag end events
     canvas.on("mouse:up", handleDragEnd);
     canvas.on("object:moved", handleDragEnd);
-    canvas.on("path:created", handleDragEnd);
 
     return () => {
       canvas.off("selection:cleared", handleSelectionCleared);
-      canvas.off("selection:created", handleSelectionCreated);
-      canvas.off("selection:updated", handleSelectionUpdated);
+      canvas.off("selection:created", handleSelectionCleared);
+      canvas.off("selection:updated", handleSelectionCleared);
       canvas.off("mouse:down", handleCanvasMouseDown);
       canvas.off("object:moving", handleObjectMoving);
       canvas.off("object:modified", handleObjectModified);
       canvas.off("mouse:up", handleDragEnd);
       canvas.off("object:moved", handleDragEnd);
-      canvas.off("path:created", handleDragEnd);
     };
-  }, [canvas, contextMenuOpen, forceCloseContextMenu]);
+  }, [canvas]);
 
-  // SIMPLIFIED: Document click handler without complex logic
+  // Improved document click handler for closing context menu
   useEffect(() => {
-    const handleDocumentClick = (e: MouseEvent) => {
-      if (!contextMenuOpen) return;
+    if (!contextMenuOpen) return;
 
+    const handleDocumentClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
 
-      // Don't close if clicking on context menu content or selection UI
+      console.log(
+        "🔍 Document click - contextMenuOpen:",
+        contextMenuOpen,
+        "isDragging:",
+        isDraggingRef.current
+      );
+
+      // Ensure target is a valid Element with closest method
+      if (!target || typeof target.closest !== "function") {
+        return;
+      }
+
+      // Don't close if clicking on context menu content, selection UI, or tooltips
       if (
-        target.closest("[data-radix-context-menu-content]") ||
+        target.closest("[data-slot='context-menu-content']") ||
+        target.closest("[data-slot='context-menu-sub-content']") ||
         target.closest("[data-selection-ui]") ||
-        target.closest("[data-selection-tooltip]")
+        target.closest("[data-selection-tooltip]") ||
+        target.closest("[role='menu']") ||
+        target.closest("[role='menuitem']")
       ) {
+        console.log("🚫 Clicked on UI element - not closing context menu");
         return;
       }
 
-      // Don't close during active dragging operations
-      if (isDraggingRef.current) {
-        return;
-      }
-
-      // Close for clicks outside the context menu and selection UI
-      console.log("Document click - closing context menu immediately");
+      // FORCE CLOSE: Immediately close context menu
+      console.log("✅ FORCE CLOSING CONTEXT MENU");
       setContextMenuOpen(false);
+
+      // CRITICAL: Force Radix to close by dispatching escape key immediately
+      const escapeEvent = new KeyboardEvent("keydown", {
+        key: "Escape",
+        keyCode: 27,
+        bubbles: true,
+        cancelable: true,
+      });
+      document.dispatchEvent(escapeEvent);
+
+      // CRITICAL: After drag, force reset canvas to ensure it's interactive
+      if (canvas) {
+        canvas.selection = true;
+        canvas.defaultCursor = "default";
+        canvas.hoverCursor = "move";
+
+        // Force all objects to be selectable
+        canvas.forEachObject((obj: any) => {
+          if (!obj.lockMovementX && !obj.lockMovementY) {
+            obj.selectable = true;
+            obj.evented = true;
+          }
+        });
+
+        canvas.renderAll();
+        console.log("🔧 Canvas forced to interactive state");
+      }
     };
 
     const handleEscapeKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && contextMenuOpen) {
+      if (e.key === "Escape") {
         setContextMenuOpen(false);
       }
     };
 
-    document.addEventListener("click", handleDocumentClick, true);
-    document.addEventListener("keydown", handleEscapeKey);
+    // Use capture phase with high priority to handle context menu first
+    document.addEventListener("mousedown", handleDocumentClick, true);
+    document.addEventListener("keydown", handleEscapeKey, true);
 
     return () => {
-      document.removeEventListener("click", handleDocumentClick, true);
-      document.removeEventListener("keydown", handleEscapeKey);
+      document.removeEventListener("mousedown", handleDocumentClick, true);
+      document.removeEventListener("keydown", handleEscapeKey, true);
     };
-  }, [contextMenuOpen]);
+  }, [contextMenuOpen, canvas]);
 
   // REMOVED: Complex timeout-based monitoring that was causing delays
   // No more timeout useEffect here
