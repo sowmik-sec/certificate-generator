@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import {
   ContextMenu,
   ContextMenuContent,
@@ -48,17 +48,107 @@ const CanvaContextMenu: React.FC<CanvaContextMenuProps> = ({
   selectedObject,
 }) => {
   const [copiedObject, setCopiedObject] = useState<any>(null);
+  const [contextMenuOpen, setContextMenuOpen] = useState(false);
   const [copiedStyle, setCopiedStyle] = useState<any>(null);
 
+  // Add ref to track if context menu should force close
+  const forceCloseTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // CRITICAL: Add ref to track drag state
+  const isDraggingRef = useRef(false);
+  const postDragTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   const { fabric, setSelectedObject } = useCanvasStore();
+
+  // SIMPLIFIED: Force close context menu immediately
+  const forceCloseContextMenu = useCallback(() => {
+    console.log("Force closing context menu immediately");
+
+    // Set state to closed immediately
+    setContextMenuOpen(false);
+
+    // Clear all timeouts
+    if (forceCloseTimeoutRef.current) {
+      clearTimeout(forceCloseTimeoutRef.current);
+      forceCloseTimeoutRef.current = null;
+    }
+    if (postDragTimeoutRef.current) {
+      clearTimeout(postDragTimeoutRef.current);
+      postDragTimeoutRef.current = null;
+    }
+
+    // Reset canvas immediately - NO TIMEOUTS
+    if (canvas) {
+      isDraggingRef.current = false;
+      canvas.selection = true;
+      canvas.defaultCursor = "default";
+      canvas.hoverCursor = "move";
+      canvas._currentTransform = null;
+
+      canvas.forEachObject((obj: any) => {
+        obj.selectable = true;
+        obj.evented = true;
+        obj.hoverCursor = "move";
+        obj.moveCursor = "move";
+      });
+
+      canvas.renderAll();
+      canvas.calcOffset();
+    }
+  }, [canvas]);
 
   // Ensure we have a consistent selectedObject reference
   const effectiveSelectedObject =
     selectedObject || canvas?.getActiveObject() || null;
 
+  // SIMPLIFIED: Context menu state handler for uncontrolled mode
+  const handleOpenChangeWithFocusCheck = (open: boolean) => {
+    console.log("Context menu state changing to:", open);
+    setContextMenuOpen(open);
+
+    if (!open) {
+      // Clear timeouts immediately
+      if (forceCloseTimeoutRef.current) {
+        clearTimeout(forceCloseTimeoutRef.current);
+        forceCloseTimeoutRef.current = null;
+      }
+
+      // Reset canvas immediately - NO TIMEOUTS
+      if (canvas) {
+        canvas.renderAll();
+        canvas.selection = true;
+        canvas.hoverCursor = "move";
+        canvas.defaultCursor = "default";
+
+        canvas.forEachObject((obj: any) => {
+          obj.selectable = true;
+          obj.evented = true;
+          obj.hoverCursor = "move";
+          obj.moveCursor = "move";
+        });
+
+        canvas.renderAll();
+        canvas.calcOffset();
+      }
+    }
+  };
+
+  // Wrapper function to ensure context menu closes for every action
+  const createMenuHandler = (handler: () => void) => {
+    return () => {
+      // Force close context menu immediately
+      setContextMenuOpen(false);
+      // Execute the actual handler
+      handler();
+    };
+  };
+
   // Enhanced copy functionality like Canva
   const handleCopy = useCallback(() => {
     if (!effectiveSelectedObject || !fabric) return;
+
+    // Close context menu immediately
+    setContextMenuOpen(false);
 
     const createSafeCopy = (obj: any) => {
       const safeCopy: any = {
@@ -157,6 +247,9 @@ const CanvaContextMenu: React.FC<CanvaContextMenuProps> = ({
   const handleCopyStyle = useCallback(() => {
     if (!selectedObject) return;
 
+    // Close context menu immediately
+    setContextMenuOpen(false);
+
     const style = {
       fill: selectedObject.fill,
       stroke: selectedObject.stroke,
@@ -178,6 +271,9 @@ const CanvaContextMenu: React.FC<CanvaContextMenuProps> = ({
   const handleCut = useCallback(() => {
     if (!selectedObject || !canvas) return;
 
+    // Close context menu immediately
+    setContextMenuOpen(false);
+
     // First copy the object
     handleCopy();
 
@@ -190,6 +286,9 @@ const CanvaContextMenu: React.FC<CanvaContextMenuProps> = ({
 
   const handlePaste = useCallback(() => {
     if (!canvas || !fabric) return;
+
+    // Close context menu immediately
+    setContextMenuOpen(false);
 
     // Get the copied object (prefer in-memory, fallback to localStorage)
     let effectiveCopied = copiedObject;
@@ -479,6 +578,9 @@ const CanvaContextMenu: React.FC<CanvaContextMenuProps> = ({
   const handleDuplicate = useCallback(() => {
     if (!selectedObject || !canvas || !fabric) return;
 
+    // Close context menu immediately
+    setContextMenuOpen(false);
+
     const createSafeCopy = (obj: any) => {
       const safeCopy: any = {
         type: obj.type,
@@ -748,6 +850,9 @@ const CanvaContextMenu: React.FC<CanvaContextMenuProps> = ({
   const handleDelete = useCallback(() => {
     if (!selectedObject || !canvas) return;
 
+    // Close context menu immediately
+    setContextMenuOpen(false);
+
     canvas.remove(selectedObject);
     canvas.discardActiveObject();
     setSelectedObject(null);
@@ -792,25 +897,41 @@ const CanvaContextMenu: React.FC<CanvaContextMenuProps> = ({
 
   const handleBringToFront = useCallback(() => {
     if (!selectedObject || !canvas) return;
-    selectedObject.bringToFront();
+
+    // Close context menu immediately
+    setContextMenuOpen(false);
+
+    canvas.bringToFront(selectedObject);
     canvas.renderAll();
   }, [selectedObject, canvas]);
 
   const handleSendToBack = useCallback(() => {
     if (!selectedObject || !canvas) return;
-    selectedObject.sendToBack();
+
+    // Close context menu immediately
+    setContextMenuOpen(false);
+
+    canvas.sendToBack(selectedObject);
     canvas.renderAll();
   }, [selectedObject, canvas]);
 
   const handleBringForward = useCallback(() => {
     if (!selectedObject || !canvas) return;
-    selectedObject.bringForward();
+
+    // Close context menu immediately
+    setContextMenuOpen(false);
+
+    canvas.bringForward(selectedObject);
     canvas.renderAll();
   }, [selectedObject, canvas]);
 
   const handleSendBackward = useCallback(() => {
     if (!selectedObject || !canvas) return;
-    selectedObject.sendBackward();
+
+    // Close context menu immediately
+    setContextMenuOpen(false);
+
+    canvas.sendBackwards(selectedObject);
     canvas.renderAll();
   }, [selectedObject, canvas]);
 
@@ -935,12 +1056,10 @@ const CanvaContextMenu: React.FC<CanvaContextMenuProps> = ({
       const activeSelection = selectedObject.toActiveSelection();
       if (activeSelection) {
         canvas.renderAll();
-        // Clear the selection after ungrouping
-        setTimeout(() => {
-          canvas.discardActiveObject();
-          setSelectedObject(null);
-          canvas.renderAll();
-        }, 10);
+        // Clear the selection immediately after ungrouping
+        canvas.discardActiveObject();
+        setSelectedObject(null);
+        canvas.renderAll();
       }
     }
   }, [selectedObject, canvas, fabric, setSelectedObject]);
@@ -1082,6 +1201,139 @@ const CanvaContextMenu: React.FC<CanvaContextMenuProps> = ({
     handleSendBackward,
   ]);
 
+  // Handle context menu state and focus out behavior
+  useEffect(() => {
+    if (!canvas) return;
+
+    const handleSelectionCleared = () => {
+      // Close context menu when selection is cleared
+      setContextMenuOpen(false);
+    };
+
+    const handleCanvasMouseDown = (e: any) => {
+      // Close context menu immediately on canvas click
+      if (e.e.button !== 2) {
+        setContextMenuOpen(false);
+
+        // Reset canvas immediately - NO TIMEOUTS
+        if (canvas) {
+          canvas.renderAll();
+          canvas.selection = true;
+          canvas.forEachObject((obj: any) => {
+            obj.selectable = true;
+          });
+        }
+      }
+    };
+
+    const handleObjectMoving = () => {
+      isDraggingRef.current = true;
+      setContextMenuOpen(false);
+    };
+
+    const handleObjectModified = () => {
+      setContextMenuOpen(false);
+
+      // Reset canvas immediately - NO TIMEOUTS
+      if (canvas) {
+        canvas.selection = true;
+        canvas.renderAll();
+        canvas.calcOffset();
+
+        canvas.forEachObject((obj: any) => {
+          obj.selectable = true;
+          obj.evented = true;
+        });
+      }
+    };
+
+    const handleDragEnd = () => {
+      if (isDraggingRef.current) {
+        console.log("Drag ended - immediate reset");
+        forceCloseContextMenu();
+
+        // Clear drag state immediately
+        isDraggingRef.current = false;
+      }
+    };
+
+    const handleSelectionCreated = () => {
+      setContextMenuOpen(false);
+    };
+
+    const handleSelectionUpdated = () => {
+      setContextMenuOpen(false);
+    };
+
+    // Add canvas event listeners
+    canvas.on("selection:cleared", handleSelectionCleared);
+    canvas.on("selection:created", handleSelectionCreated);
+    canvas.on("selection:updated", handleSelectionUpdated);
+    canvas.on("mouse:down", handleCanvasMouseDown);
+    canvas.on("object:moving", handleObjectMoving);
+    canvas.on("object:modified", handleObjectModified);
+    // Critical: Handle drag end events
+    canvas.on("mouse:up", handleDragEnd);
+    canvas.on("object:moved", handleDragEnd);
+    canvas.on("path:created", handleDragEnd);
+
+    return () => {
+      canvas.off("selection:cleared", handleSelectionCleared);
+      canvas.off("selection:created", handleSelectionCreated);
+      canvas.off("selection:updated", handleSelectionUpdated);
+      canvas.off("mouse:down", handleCanvasMouseDown);
+      canvas.off("object:moving", handleObjectMoving);
+      canvas.off("object:modified", handleObjectModified);
+      canvas.off("mouse:up", handleDragEnd);
+      canvas.off("object:moved", handleDragEnd);
+      canvas.off("path:created", handleDragEnd);
+    };
+  }, [canvas, contextMenuOpen, forceCloseContextMenu]);
+
+  // SIMPLIFIED: Document click handler without complex logic
+  useEffect(() => {
+    const handleDocumentClick = (e: MouseEvent) => {
+      if (!contextMenuOpen) return;
+
+      const target = e.target as HTMLElement;
+
+      // Don't close if clicking on context menu content or selection UI
+      if (
+        target.closest("[data-radix-context-menu-content]") ||
+        target.closest("[data-selection-ui]") ||
+        target.closest("[data-selection-tooltip]")
+      ) {
+        return;
+      }
+
+      // Don't close during active dragging operations
+      if (isDraggingRef.current) {
+        return;
+      }
+
+      // Close for clicks outside the context menu and selection UI
+      console.log("Document click - closing context menu immediately");
+      setContextMenuOpen(false);
+    };
+
+    const handleEscapeKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && contextMenuOpen) {
+        setContextMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("click", handleDocumentClick, true);
+    document.addEventListener("keydown", handleEscapeKey);
+
+    return () => {
+      document.removeEventListener("click", handleDocumentClick, true);
+      document.removeEventListener("keydown", handleEscapeKey);
+    };
+  }, [contextMenuOpen]);
+
+  // REMOVED: Complex timeout-based monitoring that was causing delays
+  // No more timeout useEffect here
+
   const isLocked =
     selectedObject?.lockMovementX || selectedObject?.lockMovementY;
   const isVisible = selectedObject?.visible !== false;
@@ -1094,37 +1346,49 @@ const CanvaContextMenu: React.FC<CanvaContextMenuProps> = ({
   const isGroup = selectedObject?.type === "group";
 
   return (
-    <ContextMenu>
+    <ContextMenu onOpenChange={handleOpenChangeWithFocusCheck}>
       <ContextMenuTrigger asChild>{children}</ContextMenuTrigger>
       <ContextMenuPortal>
-        <ContextMenuContent className="w-64" data-selection-ui>
+        <ContextMenuContent className="w-64 z-[9999]" data-selection-ui>
           {/* Basic Actions */}
-          <ContextMenuItem onClick={handleCopy} disabled={!selectedObject}>
+          <ContextMenuItem
+            onClick={createMenuHandler(handleCopy)}
+            disabled={!selectedObject}
+          >
             <Copy className="mr-2 h-4 w-4" />
             Copy
             <ContextMenuShortcut>⌘C</ContextMenuShortcut>
           </ContextMenuItem>
 
-          <ContextMenuItem onClick={handleCopyStyle} disabled={!selectedObject}>
+          <ContextMenuItem
+            onClick={createMenuHandler(handleCopyStyle)}
+            disabled={!selectedObject}
+          >
             <Palette className="mr-2 h-4 w-4" />
             Copy style
             <ContextMenuShortcut>⌘⇧C</ContextMenuShortcut>
           </ContextMenuItem>
 
-          <ContextMenuItem onClick={handleCut} disabled={!selectedObject}>
+          <ContextMenuItem
+            onClick={createMenuHandler(handleCut)}
+            disabled={!selectedObject}
+          >
             <Scissors className="mr-2 h-4 w-4" />
             Cut
             <ContextMenuShortcut>⌘X</ContextMenuShortcut>
           </ContextMenuItem>
 
-          <ContextMenuItem onClick={handlePaste} disabled={!hasCopiedObject}>
+          <ContextMenuItem
+            onClick={createMenuHandler(handlePaste)}
+            disabled={!hasCopiedObject}
+          >
             <Clipboard className="mr-2 h-4 w-4" />
             Paste
             <ContextMenuShortcut>⌘V</ContextMenuShortcut>
           </ContextMenuItem>
 
           <ContextMenuItem
-            onClick={handlePasteStyle}
+            onClick={createMenuHandler(handlePasteStyle)}
             disabled={!selectedObject || !hasCopiedStyle}
           >
             <Palette className="mr-2 h-4 w-4" />
@@ -1134,14 +1398,17 @@ const CanvaContextMenu: React.FC<CanvaContextMenuProps> = ({
 
           <ContextMenuSeparator />
 
-          <ContextMenuItem onClick={handleDuplicate} disabled={!selectedObject}>
+          <ContextMenuItem
+            onClick={createMenuHandler(handleDuplicate)}
+            disabled={!selectedObject}
+          >
             <Copy className="mr-2 h-4 w-4" />
             Duplicate
             <ContextMenuShortcut>⌘D</ContextMenuShortcut>
           </ContextMenuItem>
 
           <ContextMenuItem
-            onClick={handleDelete}
+            onClick={createMenuHandler(handleDelete)}
             disabled={!selectedObject}
             className="text-red-600 focus:text-red-600"
           >
@@ -1177,19 +1444,19 @@ const CanvaContextMenu: React.FC<CanvaContextMenuProps> = ({
               Layer
             </ContextMenuSubTrigger>
             <ContextMenuSubContent className="w-48">
-              <ContextMenuItem onClick={handleBringToFront}>
+              <ContextMenuItem onClick={createMenuHandler(handleBringToFront)}>
                 Bring to front
                 <ContextMenuShortcut>⌘]</ContextMenuShortcut>
               </ContextMenuItem>
-              <ContextMenuItem onClick={handleBringForward}>
+              <ContextMenuItem onClick={createMenuHandler(handleBringForward)}>
                 Bring forward
                 <ContextMenuShortcut>⌘⇧]</ContextMenuShortcut>
               </ContextMenuItem>
-              <ContextMenuItem onClick={handleSendBackward}>
+              <ContextMenuItem onClick={createMenuHandler(handleSendBackward)}>
                 Send backward
                 <ContextMenuShortcut>⌘⇧[</ContextMenuShortcut>
               </ContextMenuItem>
-              <ContextMenuItem onClick={handleSendToBack}>
+              <ContextMenuItem onClick={createMenuHandler(handleSendToBack)}>
                 Send to back
                 <ContextMenuShortcut>⌘[</ContextMenuShortcut>
               </ContextMenuItem>
