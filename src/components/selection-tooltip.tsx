@@ -106,14 +106,16 @@ const SelectionTooltip: React.FC<SelectionTooltipProps> = ({
     const handleSelectionCreated = (e: any) => {
       const obj = e.selected?.[0];
       if (obj && !obj.excludeFromExport) {
-        setTimeout(() => updateTooltipPosition(obj), 100); // Delay to ensure object is positioned
+        // Update immediately for smooth response
+        updateTooltipPosition(obj);
       }
     };
 
     const handleSelectionUpdated = (e: any) => {
       const obj = e.selected?.[0];
       if (obj && !obj.excludeFromExport) {
-        setTimeout(() => updateTooltipPosition(obj), 100);
+        // Update immediately for smooth response
+        updateTooltipPosition(obj);
       }
     };
 
@@ -123,7 +125,49 @@ const SelectionTooltip: React.FC<SelectionTooltipProps> = ({
 
     const handleObjectModified = () => {
       if (selectedObject && !selectedObject.excludeFromExport) {
-        setTimeout(() => updateTooltipPosition(selectedObject), 100);
+        // Update immediately without delay
+        updateTooltipPosition(selectedObject);
+      }
+    };
+
+    const handleObjectMoving = (e: any) => {
+      const movingObject = e.target;
+      // Check if the moving object is the currently selected object
+      if (movingObject && !movingObject.excludeFromExport) {
+        // Get the actual selected object to confirm it's the same
+        const currentlySelected = position
+          ? selectedObject
+          : tooltipState.object;
+        if (currentlySelected === movingObject) {
+          // Update position immediately during movement for smooth following
+          updateTooltipPosition(movingObject);
+        }
+      }
+    };
+
+    const handleObjectScaling = (e: any) => {
+      const scalingObject = e.target;
+      // Update tooltip position during scaling
+      if (scalingObject && !scalingObject.excludeFromExport) {
+        const currentlySelected = position
+          ? selectedObject
+          : tooltipState.object;
+        if (currentlySelected === scalingObject) {
+          updateTooltipPosition(scalingObject);
+        }
+      }
+    };
+
+    const handleObjectRotating = (e: any) => {
+      const rotatingObject = e.target;
+      // Update tooltip position during rotation
+      if (rotatingObject && !rotatingObject.excludeFromExport) {
+        const currentlySelected = position
+          ? selectedObject
+          : tooltipState.object;
+        if (currentlySelected === rotatingObject) {
+          updateTooltipPosition(rotatingObject);
+        }
       }
     };
 
@@ -138,6 +182,9 @@ const SelectionTooltip: React.FC<SelectionTooltipProps> = ({
     canvas.on("selection:updated", handleSelectionUpdated);
     canvas.on("selection:cleared", handleSelectionCleared);
     canvas.on("object:modified", handleObjectModified);
+    canvas.on("object:moving", handleObjectMoving);
+    canvas.on("object:scaling", handleObjectScaling);
+    canvas.on("object:rotating", handleObjectRotating);
     canvas.on("path:created", handleCanvasMove);
 
     return () => {
@@ -145,6 +192,9 @@ const SelectionTooltip: React.FC<SelectionTooltipProps> = ({
       canvas.off("selection:updated", handleSelectionUpdated);
       canvas.off("selection:cleared", handleSelectionCleared);
       canvas.off("object:modified", handleObjectModified);
+      canvas.off("object:moving", handleObjectMoving);
+      canvas.off("object:scaling", handleObjectScaling);
+      canvas.off("object:rotating", handleObjectRotating);
       canvas.off("path:created", handleCanvasMove);
     };
   }, [
@@ -154,7 +204,10 @@ const SelectionTooltip: React.FC<SelectionTooltipProps> = ({
     updateTooltipPosition,
     hideTooltip,
     position,
+    tooltipState.object,
   ]);
+
+  // No cleanup needed since we removed all timeouts
 
   const handleLockToggle = () => {
     const targetObject = position ? selectedObject : tooltipState.object;
@@ -182,7 +235,7 @@ const SelectionTooltip: React.FC<SelectionTooltipProps> = ({
 
     // Update tooltip position if using internal state
     if (!position) {
-      setTimeout(() => updateTooltipPosition(targetObject), 100);
+      updateTooltipPosition(targetObject);
     }
   };
 
@@ -469,7 +522,15 @@ const SelectionTooltip: React.FC<SelectionTooltipProps> = ({
     if (!canvasContainer) return;
 
     // Find the ContextMenuTrigger element (should be the parent of the canvas container)
-    const contextMenuTrigger = canvasContainer.parentNode;
+    let contextMenuTrigger = canvasContainer.parentNode;
+
+    // If we can't find it in the immediate parent, look for it by data attribute
+    if (!contextMenuTrigger) {
+      contextMenuTrigger = document.querySelector(
+        '[data-slot="context-menu-trigger"]'
+      );
+    }
+
     if (!contextMenuTrigger) return;
 
     // Calculate position for the context menu
@@ -478,28 +539,25 @@ const SelectionTooltip: React.FC<SelectionTooltipProps> = ({
     // Ensure the target object stays selected before triggering context menu
     if (canvas.getActiveObject() !== targetObject) {
       canvas.setActiveObject(targetObject);
-      canvas.renderAll();
+      // Don't call renderAll here as it might cause delays during dragging
     }
 
-    // Add a small delay to ensure selection state is stable
-    setTimeout(() => {
-      // Create synthetic right-click event on the ContextMenuTrigger
-      const syntheticEvent = new MouseEvent("contextmenu", {
-        bubbles: true,
-        cancelable: true,
-        clientX: targetRect.left + targetRect.width / 2,
-        clientY: targetRect.bottom + 5,
-        button: 2, // Right mouse button
-        detail: 1,
-        view: window,
-      });
+    // Create synthetic right-click event on the ContextMenuTrigger immediately
+    const syntheticEvent = new MouseEvent("contextmenu", {
+      bubbles: true,
+      cancelable: true,
+      clientX: targetRect.left + targetRect.width / 2,
+      clientY: targetRect.bottom + 5,
+      button: 2, // Right mouse button
+      detail: 1,
+      view: window,
+    });
 
-      // Mark this as a synthetic event to avoid interference
-      (syntheticEvent as any).__synthetic = true;
+    // Mark this as a synthetic event to avoid interference
+    (syntheticEvent as any).__synthetic = true;
 
-      // Dispatch to the ContextMenuTrigger element
-      contextMenuTrigger.dispatchEvent(syntheticEvent);
-    }, 10);
+    // Dispatch to the ContextMenuTrigger element immediately
+    contextMenuTrigger.dispatchEvent(syntheticEvent);
 
     // Don't hide the tooltip or selection state - let the context menu handle its own state
     // The context menu will manage its visibility independently
