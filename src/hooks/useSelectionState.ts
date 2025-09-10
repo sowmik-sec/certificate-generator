@@ -19,6 +19,33 @@ export const useSelectionState = (canvas: FabricCanvas | null, fabric: any) => {
   // Track selection clearing timeout to prevent flickering
   const selectionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Track all pending timeouts for immediate cleanup
+  const timeoutRefs = useRef<NodeJS.Timeout[]>([]);
+
+  // Clear all pending timeouts
+  const clearAllTimeouts = useCallback(() => {
+    timeoutRefs.current.forEach(clearTimeout);
+    timeoutRefs.current = [];
+
+    if (selectionTimeoutRef.current) {
+      clearTimeout(selectionTimeoutRef.current);
+      selectionTimeoutRef.current = null;
+    }
+  }, []);
+
+  // Add timeout with tracking
+  const addTimeout = useCallback((callback: () => void, delay: number) => {
+    const timeoutId = setTimeout(() => {
+      callback();
+      // Remove from tracking array
+      timeoutRefs.current = timeoutRefs.current.filter(
+        (id: NodeJS.Timeout) => id !== timeoutId
+      );
+    }, delay);
+    timeoutRefs.current.push(timeoutId);
+    return timeoutId;
+  }, []);
+
   const updateTooltipPosition = useCallback(
     (obj: any) => {
       if (!obj || !canvas) return null;
@@ -169,24 +196,19 @@ export const useSelectionState = (canvas: FabricCanvas | null, fabric: any) => {
   );
 
   const hideSelection = useCallback(() => {
-    // Clear any pending timeout
-    if (selectionTimeoutRef.current) {
-      clearTimeout(selectionTimeoutRef.current);
-      selectionTimeoutRef.current = null;
-    }
+    // Clear ALL pending timeouts immediately for instant response
+    clearAllTimeouts();
+
     // Also ensure hover rectangle is removed when selection is hidden
     removeHoverNow();
 
-    // Use a small delay to prevent flickering when switching between objects
-    selectionTimeoutRef.current = setTimeout(() => {
-      setSelectionState({
-        visible: false,
-        object: null,
-        tooltipPosition: null,
-      });
-      selectionTimeoutRef.current = null;
-    }, 50);
-  }, [removeHoverNow]);
+    // Set state immediately without any delay to prevent slow hiding
+    setSelectionState({
+      visible: false,
+      object: null,
+      tooltipPosition: null,
+    });
+  }, [removeHoverNow, clearAllTimeouts]);
 
   const updateTooltipPositionOnly = useCallback(() => {
     if (selectionState.visible && selectionState.object) {
@@ -231,7 +253,8 @@ export const useSelectionState = (canvas: FabricCanvas | null, fabric: any) => {
     const handleObjectModified = () => {
       // Only update position if we have an active selection
       if (selectionState.visible && selectionState.object) {
-        setTimeout(updateTooltipPositionOnly, 50);
+        // Reduce delay and use tracked timeout
+        addTimeout(updateTooltipPositionOnly, 25);
       }
     };
 
@@ -279,9 +302,14 @@ export const useSelectionState = (canvas: FabricCanvas | null, fabric: any) => {
           // ignore
         }
       }
-      // If selection is active, update tooltip as well
-      if (selectionState.visible && selectionState.object) {
-        setTimeout(updateTooltipPositionOnly, 30);
+      // If selection is active and the moving object is the selected object, update tooltip immediately
+      if (
+        selectionState.visible &&
+        selectionState.object &&
+        selectionState.object === obj
+      ) {
+        // Update immediately without delay for smooth following
+        updateTooltipPositionOnly();
       }
     };
 
@@ -397,19 +425,18 @@ export const useSelectionState = (canvas: FabricCanvas | null, fabric: any) => {
     DEBUG_HOVER,
     selectionState.visible,
     selectionState.object,
+    addTimeout,
   ]);
 
   // Cleanup timeout on unmount
   useEffect(() => {
     return () => {
-      if (selectionTimeoutRef.current) {
-        clearTimeout(selectionTimeoutRef.current);
-      }
+      clearAllTimeouts();
       if (hoverTimeoutRef.current) {
         clearTimeout(hoverTimeoutRef.current);
       }
     };
-  }, []);
+  }, [clearAllTimeouts]);
 
   return {
     selectionState,
