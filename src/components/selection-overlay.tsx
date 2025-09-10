@@ -48,7 +48,7 @@ const SelectionOverlay: React.FC<SelectionOverlayProps> = ({
   };
 
   // Handle clicks outside canvas bounds to close selection
-  // Only close selection when clicking completely outside the canvas area
+  // RESTORED: This is needed to close selection UI, but made compatible with context menu
   useEffect(() => {
     if (!selectionState.visible) return;
 
@@ -60,8 +60,23 @@ const SelectionOverlay: React.FC<SelectionOverlayProps> = ({
         return;
       }
 
+      // Ensure target is a valid Element with closest method
+      if (!target || typeof target.closest !== "function") {
+        return;
+      }
+
       // Don't close if clicking on selection components themselves
       if (target.closest("[data-selection-ui]")) {
+        return;
+      }
+
+      // Don't close if clicking on context menu content (CRITICAL FIX)
+      if (
+        target.closest("[data-slot='context-menu-content']") ||
+        target.closest("[data-slot='context-menu-sub-content']") ||
+        target.closest("[role='menu']") ||
+        target.closest("[role='menuitem']")
+      ) {
         return;
       }
 
@@ -73,11 +88,10 @@ const SelectionOverlay: React.FC<SelectionOverlayProps> = ({
         return;
       }
 
-      // Don't close if clicking on Radix UI dropdown content or context menu content
+      // Don't close if clicking on Radix UI dropdown content
       if (
         target.closest("[data-radix-menu-content]") ||
-        target.closest("[data-radix-popper-content-wrapper]") ||
-        target.closest("[data-radix-context-menu-content]")
+        target.closest("[data-radix-popper-content-wrapper]")
       ) {
         return;
       }
@@ -89,21 +103,31 @@ const SelectionOverlay: React.FC<SelectionOverlayProps> = ({
 
       if (canvas) {
         const canvasElement = canvas.getElement();
-        const canvasContainer = canvasElement.parentNode as HTMLElement;
+        const canvasContainer = canvasElement?.parentNode as HTMLElement;
 
         // Only close selection if clicking completely outside the canvas container
-        if (canvasContainer && !canvasContainer.contains(target)) {
+        if (
+          canvasContainer &&
+          typeof canvasContainer.contains === "function" &&
+          !canvasContainer.contains(target)
+        ) {
           // Click is outside canvas container - clear selection
-          if (canvas.getActiveObject()) {
-            canvas.discardActiveObject();
-            canvas.renderAll();
+          if (
+            canvas.getActiveObject &&
+            typeof canvas.getActiveObject === "function"
+          ) {
+            const activeObj = canvas.getActiveObject();
+            if (activeObj) {
+              canvas.discardActiveObject();
+              canvas.renderAll();
+            }
           }
           onHideSelection();
         }
       }
     };
 
-    // Use normal phase and lower priority to avoid interfering with Fabric.js
+    // Use normal phase with lower priority to allow context menu to handle first
     document.addEventListener("mousedown", handleClickOutside, false);
 
     return () => {
