@@ -21,6 +21,8 @@ import {
   generateShareableText,
   copyToClipboard,
 } from "@/lib/urlUtils";
+import { UndoRedoButtons } from "./undo-redo-buttons";
+import { Separator } from "@/components/ui/separator";
 
 interface HeaderActionsProps {
   selectedObject: any;
@@ -73,6 +75,12 @@ const HeaderActions: React.FC<HeaderActionsProps> = ({
 
   return (
     <div className="flex items-center space-x-2">
+      {/* Undo/Redo buttons */}
+      <UndoRedoButtons className="mr-2" variant="ghost" size="icon" />
+
+      {/* Separator between undo/redo and other actions */}
+      <Separator orientation="vertical" className="h-6 mx-2" />
+
       {selectedObject && (
         <Tooltip>
           <TooltipTrigger asChild>
