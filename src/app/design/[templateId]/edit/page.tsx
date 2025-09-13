@@ -29,6 +29,7 @@ import { useLayerManagement } from "@/hooks/useLayerManagement";
 import { useCanvasExport } from "@/hooks/useCanvasExport";
 import { useTemplateLoader } from "@/hooks/useTemplateLoader";
 import { useEditorShortcuts } from "@/hooks/useKeyboardShortcuts";
+import { useHistoryManager } from "@/hooks/useHistoryManager";
 
 // Import UI components
 import SidebarNavigation, { EditorMode } from "@/components/sidebar-navigation";
@@ -125,6 +126,13 @@ export default function DesignEditorPage() {
     canvas,
     canvasSize
   );
+
+  // History management for undo/redo functionality
+  const historyManager = useHistoryManager({
+    enableKeyboardShortcuts: true,
+    enableToasts: false, // Keep UI clean, user can see state in buttons
+    maxHistorySize: 50,
+  });
 
   // Load template on mount
   useEffect(() => {
@@ -326,6 +334,16 @@ export default function DesignEditorPage() {
 
   // Consolidated keyboard shortcuts for all canvas operations with improved text editing detection
   useEditorShortcuts({
+    onUndo: () => {
+      if (!isTextBeingEdited() && historyManager.canUndo) {
+        historyManager.undo();
+      }
+    },
+    onRedo: () => {
+      if (!isTextBeingEdited() && historyManager.canRedo) {
+        historyManager.redo();
+      }
+    },
     onCopy: () => {
       if (!isTextBeingEdited() && selectedObject) {
         handleCopy();
