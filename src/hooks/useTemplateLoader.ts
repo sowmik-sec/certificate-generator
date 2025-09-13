@@ -30,6 +30,16 @@ export const useTemplateLoader = (canvas: any, canvasSize: CanvasSize) => {
     (templateJson: any) => {
       if (!canvas) return;
 
+      // Temporarily disable history recording during template load
+      // For simple history implementation
+      if (canvas.historyInitialized !== undefined) {
+        canvas.historyInitialized = false;
+      }
+      // For fabric-history-v6 implementation (fallback)
+      if (typeof canvas.offHistory === "function") {
+        canvas.offHistory();
+      }
+
       // Sanitize template data to fix invalid properties
       const sanitizedTemplate = sanitizeTemplateData(templateJson);
 
@@ -60,6 +70,24 @@ export const useTemplateLoader = (canvas: any, canvasSize: CanvasSize) => {
             }
           });
           canvas.renderAll();
+
+          // Re-enable history and save initial state
+          // For simple history implementation
+          if (canvas.historyInitialized !== undefined) {
+            setTimeout(() => {
+              canvas.historyInitialized = true;
+            }, 500);
+          }
+          // For fabric-history-v6 implementation (fallback)
+          if (typeof canvas.onHistory === "function") {
+            canvas.onHistory();
+            // Save the loaded template as initial state after a short delay
+            setTimeout(() => {
+              if (typeof canvas.saveInitialState === "function") {
+                canvas.saveInitialState();
+              }
+            }, 100);
+          }
         });
         return;
       }
@@ -138,6 +166,24 @@ export const useTemplateLoader = (canvas: any, canvasSize: CanvasSize) => {
           }
         });
         canvas.renderAll();
+
+        // Re-enable history and save initial state
+        // For simple history implementation
+        if (canvas.historyInitialized !== undefined) {
+          setTimeout(() => {
+            canvas.historyInitialized = true;
+          }, 500);
+        }
+        // For fabric-history-v6 implementation (fallback)
+        if (typeof canvas.onHistory === "function") {
+          canvas.onHistory();
+          // Save the loaded template as initial state after a short delay
+          setTimeout(() => {
+            if (typeof canvas.saveInitialState === "function") {
+              canvas.saveInitialState();
+            }
+          }, 100);
+        }
       });
     },
     [canvas, canvasSize]
