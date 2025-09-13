@@ -10,6 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { UndoRedoButtons } from "./undo-redo-buttons";
 
 interface MobileHeaderProps {
   selectedObject?: any;
@@ -46,10 +47,17 @@ const MobileHeader: React.FC<MobileHeaderProps> = ({
         <ArrowLeft className="h-5 w-5" />
       </Button>
 
-      {/* Center - Title */}
-      <h1 className="text-lg font-semibold text-gray-900 truncate flex-1 mx-4 text-center">
-        Certificate Editor
-      </h1>
+      {/* Center - Title and Undo/Redo */}
+      <div className="flex-1 flex items-center justify-center mx-4">
+        <h1 className="text-lg font-semibold text-gray-900 truncate mr-4">
+          Certificate Editor
+        </h1>
+        <UndoRedoButtons
+          variant="ghost"
+          size="icon"
+          className="flex-shrink-0"
+        />
+      </div>
 
       {/* Right side - Actions */}
       <div className="flex items-center gap-2">
