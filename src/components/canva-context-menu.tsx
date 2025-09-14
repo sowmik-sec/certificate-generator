@@ -36,6 +36,18 @@ import {
 } from "lucide-react";
 import { useCanvasStore } from "@/stores/useCanvasStore";
 
+// Helper function to initialize styles for text objects to prevent removeStyleFromTo errors
+const initializeTextStyles = (fabricObj: any) => {
+  if (
+    fabricObj &&
+    (fabricObj.type === "textbox" || fabricObj.type === "text") &&
+    !fabricObj.styles
+  ) {
+    fabricObj.styles = {};
+  }
+  return fabricObj;
+};
+
 interface CanvaContextMenuProps {
   canvas: any;
   children: React.ReactNode;
@@ -371,7 +383,8 @@ const CanvaContextMenu: React.FC<CanvaContextMenuProps> = ({
           });
       }
 
-      return fabricObj;
+      // Initialize styles for text objects to prevent removeStyleFromTo errors
+      return initializeTextStyles(fabricObj);
     };
 
     try {
@@ -720,7 +733,8 @@ const CanvaContextMenu: React.FC<CanvaContextMenuProps> = ({
           });
       }
 
-      return fabricObj;
+      // Initialize styles for text objects to prevent removeStyleFromTo errors
+      return initializeTextStyles(fabricObj);
     };
 
     try {
