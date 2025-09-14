@@ -71,6 +71,11 @@ export const useCanvasText = (canvas: any, fabric: any) => {
         ...fabricOptions,
       });
 
+      // Initialize styles object to prevent removeStyleFromTo errors
+      if (!textbox.styles) {
+        textbox.styles = {};
+      }
+
       canvas.add(textbox);
       canvas.setActiveObject(textbox);
       textbox.setCoords();
