@@ -271,8 +271,12 @@ const CanvasComponent: React.FC<CanvasComponentProps> = ({
 
           // Force immediate editing
           setTimeout(() => {
+            // Ensure styles are initialized before editing
+            if (!clickedTextObject.styles) {
+              clickedTextObject.styles = {};
+            }
             clickedTextObject.enterEditing();
-            clickedTextObject.selectAll();
+            // Don't select all - let natural word selection happen on double-click
             console.log("Text editing mode entered");
           }, 50);
 
