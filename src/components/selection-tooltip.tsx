@@ -347,6 +347,10 @@ const SelectionTooltip: React.FC<SelectionTooltipProps> = ({
             textAlign: objData.textAlign || "left",
             lineHeight: objData.lineHeight || 1.16,
           });
+          // Initialize styles to prevent removeStyleFromTo errors
+          if (!fabricObj.styles) {
+            fabricObj.styles = {};
+          }
           break;
 
         case "text":
@@ -360,6 +364,10 @@ const SelectionTooltip: React.FC<SelectionTooltipProps> = ({
             textAlign: objData.textAlign || "left",
             lineHeight: objData.lineHeight || 1.16,
           });
+          // Initialize styles to prevent removeStyleFromTo errors
+          if (!fabricObj.styles) {
+            fabricObj.styles = {};
+          }
           break;
 
         case "rect":
