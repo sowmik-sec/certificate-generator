@@ -129,7 +129,7 @@ export default function DesignEditorPage() {
 
   // History management for undo/redo functionality
   const historyManager = useHistoryManager({
-    enableKeyboardShortcuts: true,
+    enableKeyboardShortcuts: false, // Disable here since we handle shortcuts below
     enableToasts: false, // Keep UI clean, user can see state in buttons
     maxHistorySize: 50,
   });
@@ -319,27 +319,43 @@ export default function DesignEditorPage() {
     if (!activeObject) return false;
 
     // Check multiple properties to determine text editing state
-    return (
+    const isEditingText =
       activeObject.isEditing === true ||
       activeObject.__isEditing === true ||
       activeObject.editing === true ||
       (activeObject.hiddenTextarea &&
-        activeObject.hiddenTextarea.style.display !== "none") ||
-      ((activeObject.type === "textbox" || activeObject.type === "i-text") &&
-        document.activeElement &&
-        (document.activeElement.tagName === "TEXTAREA" ||
-          document.activeElement.getAttribute("contenteditable") === "true"))
-    );
+        activeObject.hiddenTextarea.style.display !== "none");
+
+    // Also check if any text input is focused in the document
+    const hasFocusedTextInput =
+      document.activeElement &&
+      (document.activeElement.tagName === "TEXTAREA" ||
+        document.activeElement.tagName === "INPUT" ||
+        document.activeElement.getAttribute("contenteditable") === "true");
+
+    return isEditingText || hasFocusedTextInput;
   };
 
   // Consolidated keyboard shortcuts for all canvas operations with improved text editing detection
   useEditorShortcuts({
     onUndo: () => {
+      console.log(
+        "Undo triggered, isTextBeingEdited:",
+        isTextBeingEdited(),
+        "canUndo:",
+        historyManager.canUndo
+      );
       if (!isTextBeingEdited() && historyManager.canUndo) {
         historyManager.undo();
       }
     },
     onRedo: () => {
+      console.log(
+        "Redo triggered, isTextBeingEdited:",
+        isTextBeingEdited(),
+        "canRedo:",
+        historyManager.canRedo
+      );
       if (!isTextBeingEdited() && historyManager.canRedo) {
         historyManager.redo();
       }
