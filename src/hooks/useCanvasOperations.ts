@@ -166,6 +166,10 @@ export const useCanvasOperations = (
             textAlign: objData.textAlign || "left",
             lineHeight: objData.lineHeight || 1.16,
           });
+          // Initialize styles to prevent removeStyleFromTo errors
+          if (!fabricObj.styles) {
+            fabricObj.styles = {};
+          }
           break;
 
         case "text":
@@ -178,6 +182,10 @@ export const useCanvasOperations = (
             fill: objData.fill || "#000000",
             textAlign: objData.textAlign || "left",
           });
+          // Initialize styles to prevent removeStyleFromTo errors
+          if (!fabricObj.styles) {
+            fabricObj.styles = {};
+          }
           break;
 
         case "rect":
@@ -337,6 +345,10 @@ export const useCanvasOperations = (
             fontFamily: "Arial",
             fill: "#000000",
           });
+          // Initialize styles to prevent removeStyleFromTo errors
+          if (!fallbackObj.styles) {
+            fallbackObj.styles = {};
+          }
         } else {
           fallbackObj = new fabric.Rect({
             left: (copiedObject.left || 0) + 10,
@@ -423,6 +435,11 @@ export const useCanvasOperations = (
       _stickyNoteText: true,
     });
 
+    // Initialize styles to prevent removeStyleFromTo errors
+    if (!noteText.styles) {
+      noteText.styles = {};
+    }
+
     // Create group with both elements
     const group = new fabric.Group([noteBg, noteText], {
       left: 150,
@@ -454,7 +471,7 @@ export const useCanvasOperations = (
       canvas.add(textObj);
       canvas.setActiveObject(textObj);
       textObj.enterEditing();
-      textObj.selectAll();
+      // Don't select all - let natural selection happen
 
       const exitEditing = () => {
         canvas.remove(textObj);
