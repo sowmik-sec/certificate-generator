@@ -19,15 +19,17 @@ const TextEditingEnhancer: React.FC<TextEditingEnhancerProps> = ({
       const textObject = e.target;
       if (!textObject) return;
 
-      // Ensure immediate text editing capability
+      // Initialize styles object if not present to prevent removeStyleFromTo errors
+      if (!textObject.styles) {
+        textObject.styles = {};
+      }
+
+      // For natural Fabric.js double-click behavior, we need to handle cursor positioning properly
+      // but not override the selection that Fabric.js creates
       setTimeout(() => {
         if (textObject.hiddenTextarea) {
           textObject.hiddenTextarea.focus();
-          // Force cursor positioning
-          textObject.hiddenTextarea.setSelectionRange(
-            textObject.selectionStart || 0,
-            textObject.selectionEnd || 0
-          );
+          // Don't force cursor positioning - let Fabric.js handle natural selection
         }
       }, 0);
     };
@@ -61,7 +63,7 @@ const TextEditingEnhancer: React.FC<TextEditingEnhancerProps> = ({
         target._isTableCell
       );
 
-      // Handle groups (sticky notes and tables) with simple direct editing
+      // Only handle groups (sticky notes and tables) with special editing
       if (target.isType("group")) {
         console.log("Group double-click detected:", target.type);
 
@@ -74,11 +76,16 @@ const TextEditingEnhancer: React.FC<TextEditingEnhancerProps> = ({
           const textObj = textObjects[0]; // For now, edit the first text object
           console.log("Editing text in group directly");
 
+          // Ensure styles are initialized before editing
+          if (!textObj.styles) {
+            textObj.styles = {};
+          }
+
           // Simple direct editing without ungrouping
           setTimeout(() => {
             canvas.setActiveObject(textObj);
             textObj.enterEditing();
-            textObj.selectAll();
+            // Don't select all - let natural word selection happen
             canvas.renderAll();
           }, 50);
         }
@@ -87,9 +94,17 @@ const TextEditingEnhancer: React.FC<TextEditingEnhancerProps> = ({
         return false;
       }
 
-      // Handle individual text objects
+      // For individual text objects, don't interfere - let Fabric.js handle naturally
+      // Just ensure styles are initialized when they get focus
       if (target.type === "textbox" || target.type === "i-text") {
-        console.log("Direct text editing");
+        console.log(
+          "Individual text object - letting Fabric.js handle naturally"
+        );
+
+        // Ensure styles are initialized
+        if (!target.styles) {
+          target.styles = {};
+        }
 
         // Lock movement during editing for special text types
         if (target._stickyNoteText || target._isTableCell) {
@@ -99,11 +114,9 @@ const TextEditingEnhancer: React.FC<TextEditingEnhancerProps> = ({
           });
         }
 
-        // Start editing
-        setTimeout(() => {
-          target.enterEditing();
-          target.selectAll();
-        }, 50);
+        // Let Fabric.js handle everything else naturally
+        // Return true to allow default Fabric.js behavior
+        return true;
       }
     };
 
@@ -112,10 +125,40 @@ const TextEditingEnhancer: React.FC<TextEditingEnhancerProps> = ({
     canvas.on("text:editing:exited", handleTextEditingExited);
     canvas.on("mouse:dblclick", handleDoubleClick);
 
+    // Fix existing text objects that might not have styles initialized
+    canvas.on("selection:created", (e: any) => {
+      const activeObject = e.target;
+      if (
+        activeObject &&
+        (activeObject.type === "textbox" || activeObject.type === "i-text")
+      ) {
+        if (!activeObject.styles) {
+          activeObject.styles = {};
+        }
+      }
+    });
+
+    canvas.on("selection:updated", (e: any) => {
+      const activeObject = e.target;
+      if (
+        activeObject &&
+        (activeObject.type === "textbox" || activeObject.type === "i-text")
+      ) {
+        if (!activeObject.styles) {
+          activeObject.styles = {};
+        }
+      }
+    });
+
     // Enhanced text object setup
     canvas.on("object:added", (e: any) => {
       const obj = e.target;
       if (obj && (obj.type === "textbox" || obj.type === "i-text")) {
+        // Initialize styles array to prevent removeStyleFromTo errors
+        if (!obj.styles) {
+          obj.styles = {};
+        }
+
         // Ensure text objects have proper editing configuration
         obj.set({
           editable: true,
@@ -145,6 +188,8 @@ const TextEditingEnhancer: React.FC<TextEditingEnhancerProps> = ({
       canvas.off("text:editing:entered", handleTextEditingEntered);
       canvas.off("text:editing:exited", handleTextEditingExited);
       canvas.off("mouse:dblclick", handleDoubleClick);
+      canvas.off("selection:created");
+      canvas.off("selection:updated");
     };
   }, [canvas, fabric]);
 
