@@ -164,6 +164,12 @@ export const useTemplateLoader = (canvas: any, canvasSize: CanvasSize) => {
               moveCursor: "move",
             });
           }
+          // Initialize styles for text objects to prevent removeStyleFromTo errors
+          if (obj.type === "textbox" || obj.type === "i-text") {
+            if (!obj.styles) {
+              obj.styles = {};
+            }
+          }
         });
         canvas.renderAll();
 
